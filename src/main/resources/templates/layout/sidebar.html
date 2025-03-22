@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Navigation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <div th:fragment="sidebar">
+        <aside class="bg-black text-gray-300 w-60 h-screen p-4 fixed top-16 left-0 mt-3">
+            <nav>
+                <ul>
+                    <li class="mb-2">
+                        <a th:href="@{/dashboard}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'dashboard' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-user-line text-teal-500"></i> Dashboard
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/admin}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'admin' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-building-4-line text-gray-400"></i> Admin
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/user}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'user' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-user-settings-line text-yellow-400"></i> Users
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/client}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'client' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-file-text-line text-gray-400"></i> Clients
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/categories}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'categories' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-folder-line text-gray-400"></i> Categories
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/service}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'service' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-bar-chart-line text-green-400"></i> Services
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/step}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'step' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-settings-3-line text-gray-400"></i> Steps
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/plan}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'plan' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-feedback-line text-gray-400"></i> Plans
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/logout}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'logout' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-logout-circle-line text-blue-400"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+
+    <style>
+        
+    </style>
+
+</body>
+</html>

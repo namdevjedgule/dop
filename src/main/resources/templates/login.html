@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="flex items-center justify-center min-h-screen bg-gray-200">
+    <div class="bg-white p-8 rounded-lg shadow-lg flex w-[800px]">
+        <div class="w-1/2 hidden md:block">
+            <img th:src="@{/images/log.png}" alt="Login Illustration" class="w-full h-full object-cover rounded-l-lg">
+        </div>
+
+        <div class="w-full md:w-1/2 p-6 text-center">
+            <img th:src="@{/images/in2in_logo.png}" alt="Logo" class="w-20 h-18 mx-auto block mb-2">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Welcome back!</h2>
+
+            <form id="loginForm" method="post" th:action="@{/checkdata}" class="space-y-4">
+                <div class="relative">
+                    <input type="email" id="email" name="email" placeholder="Email"
+                        class="w-full px-4 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                        required>
+                    <i class="fa fa-envelope absolute left-3 top-3 text-teal-600"></i>
+                </div>
+                <div class="relative">
+                    <input type="password" id="password" name="password" placeholder="Password"
+                        class="w-full px-4 py-2 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600"
+                        required>
+                    <i class="fa fa-lock absolute left-3 top-3 text-teal-600"></i>
+                    <i class="fa fa-eye absolute right-3 top-3 text-teal-600 cursor-pointer" id="togglePassword"></i>
+                </div>
+                <div class="flex justify-between items-center text-sm text-gray-700">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="rememberMe" class="mr-2"> Remember me
+                    </label>
+                    <a href="/forgot-password" class="text-teal-600 hover:underline">Forgot Password?</a>
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-teal-700">Login</button>
+            </form>
+            <p class="text-teal-600 hover:underline cursor-pointer mt-4">Analytics Dashboard</p>
+        </div>
+
+        <script>
+            document.getElementById("loginForm").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const email = document.getElementById("email").value.trim();
+                const password = document.getElementById("password").value.trim();
+
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+                if (!emailPattern.test(email)) {
+                    Swal.fire({
+                        title: "Invalid Email!",
+                        text: "Please enter a valid email address with abc@gmail.com.",
+                        icon: "warning",
+                        confirmButtonColor: "#d33",
+                        width: '200px',
+                        height: '50px',
+                    });
+                    return;
+                }
+
+                if (!passwordPattern.test(password)) {
+                    Swal.fire({
+                        title: "Weak Password!",
+                        text: "Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.",
+                        icon: "warning",
+                        confirmButtonColor: "#d33",
+                        width: '200px',
+                        height: '50px',
+                    });
+                    return;
+                }
+
+                const form = document.getElementById("loginForm");
+                const formData = new FormData(form);
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        Swal.fire({
+                            title: "Login Success!",
+                            text: "You have successfully logged in.",
+                            icon: "success",
+                            toast: true,
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 1500,
+                            timerProgressBar: true
+                        });
+                        setTimeout(() => {
+                            window.location.href = "/dashboard";
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: "Login Failed!",
+                            text: "Invalid email or password.",
+                            icon: "error",
+                            confirmButtonColor: "#d33"
+                        });
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Something went wrong. Please try again.",
+                        icon: "error",
+                        confirmButtonColor: "#d33"
+                    });
+                }
+            });
+
+        </script>
+</body>
+
+</html>
