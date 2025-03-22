@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+
+                <main class="flex-1 p-10 ml-60">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD USER</h1>
+                
+                        <form id="adduser">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700">FIRST NAME <span class="text-red-500">*</span></label>
+                                    <input type="text" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter First Name" required>
+                                </div>
+            
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700">LAST NAME <span class="text-red-500">*</span></label>
+                                    <input type="text" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Last Name" required>
+                                </div>
+                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700">EMAIL ADDRESS <span class="text-red-500">*</span></label>
+                                    <input type="email" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Email Address" required>
+                                </div>
+                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700">PASSWORD <span class="text-red-500">*</span></label>
+                                    <input type="password" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Password" required>
+                                </div>
+                            </div>
+                
+                            <div class="mt-6 flex justify-end space-x-4">
+                                <button type="submit" class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">
+                                    Save
+                                </button>
+                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </main>
+                
+                
+                
+
+        </div>
+    </div>
+
+    <script>
+    </script>
+</body>
+
+</html>

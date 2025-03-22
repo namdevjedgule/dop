@@ -1,8 +1,9 @@
 package com.example.dop.Service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.dop.Model.User;
@@ -13,7 +14,7 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	public User saveUser(User user) {
 		user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
@@ -33,4 +34,13 @@ public class UserService {
 
 		return user;
 	}
+
+	public long countUsers() {
+		return userRepository.count();
+	}
+
+	public Optional<User> getUserByEmail(String email) {
+		return userRepository.findByUserEmailId(email);
+	}
+
 }
