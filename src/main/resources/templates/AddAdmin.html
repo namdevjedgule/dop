@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
+</head>
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD ADMIN</h1>
+ <form action="/saveAdmin" method="post" enctype="multipart/form-data">
+             <div class="flex gap-6 items-start">
+    
+    <div class="flex flex-col items-center">
+        <label for="profile-upload" class="relative cursor-pointer">
+            <img id="profile-preview" src="https://via.placeholder.com/200x150" 
+                class="w-40 h-28 border shadow-sm object-cover" />
+        </label>
+
+        <!-- Label below the image -->
+        <label for="profile-upload" class="mt-2 text-gray-700 font-medium cursor-pointer">Upload Image</label>
+
+        <!-- Hidden File Input -->
+        <input type="file" name="profileImage" id="profile-upload" class="hidden" accept="image/*" 
+            onchange="previewImage(event)">
+    </div>
+                    <div class="flex-1 grid grid-cols-2 gap-4">
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">First Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="firstName" placeholder="Enter First Name" class="flex-1 p-2 border rounded" name="afirstname">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">Last Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="lastName" placeholder="Enter Last Name" class="flex-1 p-2 border rounded" name="alastname">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">Email Address <span class="text-red-500">*</span></label>
+                            <input type="email" id="email" placeholder="Enter Email Address" class="flex-1 p-2 border rounded"name="aemail">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">Password <span class="text-red-500">*</span></label>
+                            <input type="password" id="password" placeholder="Enter Password" class="flex-1 p-2 border rounded" name="apassword">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-end gap-4 mt-6">
+<button type="submit" onclick="validateForm(event)" class="bg-teal-500 text-white px-4 py-2 rounded shadow-md hover:bg-teal-600">Save</button>
+<button type="button" onclick="confirmCancel()" class="bg-red-500 text-white px-4 py-2 rounded shadow-md hover:bg-red-600">
+    Cancel
+</button>
+                </div>
+               </form>
+            </div>
+            </main>
+        </div>
+        
+
+
+    <!-- JavaScript for Profile Preview and Validation -->
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                document.getElementById('profile-preview').src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+        function confirmCancel() {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Your changes will not be saved!",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, cancel",
+                cancelButtonText: "Keep editing",
+                width: "200px",
+                height: "200px",
+            }).then((result) => {
+                if (result.isConfirmed) {
+            
+                    window.location.href = "/AddAdmin"; 
+                }
+            });
+        }
+
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission if validation fails
+
+            const firstName = document.getElementById("firstName").value.trim();
+            const lastName = document.getElementById("lastName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            const nameRegex = /^[A-Za-z]+$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
+            const minPasswordLength = 6; 
+
+            if (firstName === "" || lastName === "" || email === "" || password === "") {
+                Swal.fire({
+                    icon: "error",
+                    text: "Please fill in all required fields!",
+                    width: "300px",
+                });
+                return false;
+            }
+
+            if (!nameRegex.test(firstName)) {
+                Swal.fire({
+                    icon: "error",
+                    text: "First Name should contain only alphabets!",
+                    width: "300px",
+                });
+                return false;
+            }
+
+            if (!nameRegex.test(lastName)) {
+                Swal.fire({
+                    icon: "error",
+                    text: "Last Name should contain only alphabets!",
+                    width: "300px",
+                });
+                return false;
+            }
+
+            if (!emailRegex.test(email)) {
+                Swal.fire({
+                    icon: "error",
+                    text: "Email must be in format abc@gmail.com!",
+                    width: "300px",
+                });
+                return false;
+            }
+
+            if (password.length < minPasswordLength) {
+                Swal.fire({
+                    icon: "error",
+                    text: "Password must be greater than 5 characters!",
+                    width: "300px",
+                });
+                return false;
+            }
+
+            Swal.fire({
+                icon: "success",
+                text: "Admin added successfully.",
+                width: "300px",
+            }).then(() => {
+                document.querySelector("form").submit(); // Submit the form after success alert
+            });
+        }
+
+        
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-btn');
+
+        let activeDropdown = null;
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('w-16');
+            sidebar.classList.toggle('w-60');
+        });
+
+        function toggleDropdown(id) {
+            const dropdowns = document.querySelectorAll("ul[id$='-dropdown']");
+            dropdowns.forEach(dropdown => {
+                if (dropdown.id !== id) {
+                    dropdown.classList.add("hidden"); // Close other dropdowns
+                }
+            });
+
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle("hidden");
+
+            activeDropdown = dropdown.classList.contains("hidden") ? null : id;
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+    <!-- Header -->
+    <div th:insert="~{layout/header :: header}" class="w-full bg-white shadow-md p-4 fixed top-0 left-0 z-10"></div>
+
+    <main class="flex flex-1 pt-16">
+        <!-- Sidebar -->
+        <div th:insert="~{layout/sidebar :: sidebar}" class="bg-black text-white w-55 h-screen fixed left-0 top-16"></div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-60 p-6 overflow-y-auto">
+            <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-4xl">
+                <h2 class="text-2xl font-semibold mb-4">EDIT ADMIN</h2>
+ <form action="/UpdateAdmin" method="post" enctype="multipart/form-data">
+                <div class="flex gap-6">
+                    <!-- Profile Image Upload -->
+                   <input type="hidden" name="aid" th:value="${ap.aid}">
+                    <div class="relative">
+                        <label for="profile-upload">
+                            <img id="profile-preview" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full border shadow-sm" alt="Profile">
+                            <span class="absolute bottom-2 right-2 bg-teal-500 p-2 rounded-full cursor-pointer">
+                                📷
+                            </span>
+                        </label>
+                        <input type="file" name="profileImage" id="profile-upload" class="hidden" accept="image/*" onchange="previewImage(event)">
+                    </div>
+
+                   
+                    <div class="flex-1 grid grid-cols-2 gap-4">
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">First Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="firstName" placeholder="Enter First Name" class="flex-1 p-2 border rounded" name="afirstname" th:value="${ap.afirstname}">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">Last Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="lastName" placeholder="Enter Last Name" class="flex-1 p-2 border rounded" name="alastname" th:value="${ap.alastname}">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">Email Address <span class="text-red-500">*</span></label>
+                            <input type="email" id="email" placeholder="Enter Email Address" class="flex-1 p-2 border rounded"name="aemail" th:value="${ap.aemail}">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="w-32 font-medium">Password <span class="text-red-500">*</span></label>
+                            <input type="password" id="password" placeholder="Enter Password" class="flex-1 p-2 border rounded" name="apassword" th:value="${ap.apassword}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-end gap-4 mt-6">
+                    <button onclick="validateForm()" class="bg-teal-500 text-white px-4 py-2 rounded shadow-md hover:bg-teal-600">Save</button>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded shadow-md hover:bg-red-600">Cancel</button>
+                </div>
+               </form>
+            </div>
+            
+        </div>
+        
+    </main>
+
+    <!-- JavaScript for Profile Preview and Validation -->
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function () {
+                document.getElementById('profile-preview').src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function validateForm() {
+            const firstName = document.getElementById("firstName").value.trim();
+            const lastName = document.getElementById("lastName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            const nameRegex = /^[A-Za-z]+$/; // Only alphabets
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; // Only Gmail format
+            const minPasswordLength = 6; // Password must be greater than 5
+
+            if (firstName === "" || lastName === "" || email === "" || password === "") {
+                Swal.fire({
+                    icon: "error",
+                    text: "Please fill in all required fields!",
+                    width: "200px",
+                    height: "200px",
+                });
+                return;
+            }
+
+            if (!nameRegex.test(firstName)) {
+                Swal.fire({
+                    icon: "error",
+                    text: "First Name should contain only alphabets!",
+                    width: "200px",
+                    height: "200px",
+                });
+                return;
+            }
+            
+            if (!nameRegex.test(lastName)) {
+                Swal.fire({
+                    icon: "error",
+                    text: "First Name should contain only alphabets!",
+                    width: "200px",
+                    height: "200px",
+                });
+                return;
+            }
+
+            if (!emailRegex.test(email)) {
+                Swal.fire({
+                    icon: "error",
+                    text: "Email must be in format abc@gmail.com!",
+                    width: "200px",
+                    height: "200px",
+                });
+                return;
+            }
+
+            if (password.length < minPasswordLength) {
+                Swal.fire({
+                    icon: "error",
+                    text: "Password must be greater than 5 characters!",
+                    width: "200px",
+                    height: "200px",
+                });
+                return;
+            }
+
+            Swal.fire({
+                icon: "success",
+                text: "Admin Updated successfully.",
+                width: "200px",
+                height: "200px",
+            });
+        }
+        
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggle-btn');
+
+        let activeDropdown = null;
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('w-16');
+            sidebar.classList.toggle('w-60');
+        });
+
+        function toggleDropdown(id) {
+            const dropdowns = document.querySelectorAll("ul[id$='-dropdown']");
+            dropdowns.forEach(dropdown => {
+                if (dropdown.id !== id) {
+                    dropdown.classList.add("hidden"); // Close other dropdowns
+                }
+            });
+
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle("hidden");
+
+            activeDropdown = dropdown.classList.contains("hidden") ? null : id;
+        }
+    </script>
+
+</body>
+</html>
