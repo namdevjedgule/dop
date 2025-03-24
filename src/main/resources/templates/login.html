@@ -60,15 +60,15 @@
                     const response = await fetch("/checkdata", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, password })  // ✅ Send JSON data
+                        body: JSON.stringify({ email, password }) 
                     });
 
-                    const data = await response.json(); // Read response as JSON
+                    const data = await response.json(); 
 
                     if (response.ok && data.success) {
                         showPopup("Login Success!", data.message, "success");
                         setTimeout(() => {
-                            window.location.href = "/dashboard"; // Redirect to dashboard
+                            window.location.href = "/dashboard"; 
                         }, 1500);
                     } else {
                         showPopup("Login Failed!", data.message || "Invalid email or password.", "error");
