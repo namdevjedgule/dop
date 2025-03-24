@@ -67,7 +67,7 @@ public class User {
 	}
 
 	public void setUserEmailId(String userEmailId) {
-		this.userEmailId = userEmailId;
+		this.userEmailId = (userEmailId != null) ? userEmailId.toLowerCase() : null;
 	}
 
 	public String getUserPassword() {
