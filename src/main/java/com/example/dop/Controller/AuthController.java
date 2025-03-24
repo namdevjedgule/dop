@@ -76,7 +76,7 @@ public class AuthController {
 		return "redirect:/";
 	}
 
-	@PostMapping("/logout")
+	@GetMapping("/logout")
 	public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
 		session.invalidate();
 		redirectAttributes.addFlashAttribute("success", "You have been logged out.");

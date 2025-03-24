@@ -8,63 +8,111 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-[#e9f5f5]">
     <div class="flex flex-col min-h-screen">
         <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
-
         <div class="flex flex-1 pt-20">
-            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
-                th:insert="~{layout/sidebar :: sidebar}"></aside>
-
-                <main class="flex-1 p-10 ml-60">
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD USER</h1>
-                
-                        <form id="adduser">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700">FIRST NAME <span class="text-red-500">*</span></label>
-                                    <input type="text" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter First Name" required>
-                                </div>
-            
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700">LAST NAME <span class="text-red-500">*</span></label>
-                                    <input type="text" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Last Name" required>
-                                </div>
-                
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700">EMAIL ADDRESS <span class="text-red-500">*</span></label>
-                                    <input type="email" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Email Address" required>
-                                </div>
-                
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700">PASSWORD <span class="text-red-500">*</span></label>
-                                    <input type="password" class="mt-1 block w-full max-w-lg px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Password" required>
-                                </div>
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD USER</h1>
+                    <form id="adduser" novalidate>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">FIRST NAME <span class="text-red-500">*</span></label>
+                                <input type="text" id="firstName" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter First Name">
                             </div>
-                
-                            <div class="mt-6 flex justify-end space-x-4">
-                                <button type="submit" class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">
-                                    Save
-                                </button>
-                                <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md">
-                                    Cancel
-                                </button>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">LAST NAME <span class="text-red-500">*</span></label>
+                                <input type="text" id="lastName" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Last Name">
                             </div>
-                        </form>
-                    </div>
-                </main>
-                
-                
-                
-
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">EMAIL ADDRESS <span class="text-red-500">*</span></label>
+                                <input type="email" id="userEmailId" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Email Address">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">PASSWORD <span class="text-red-500">*</span></label>
+                                <input type="password" id="password" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" placeholder="Enter Password">
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <button type="submit" class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">Save</button>
+                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
         </div>
     </div>
 
     <script>
+        document.getElementById("adduser").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            let firstName = document.getElementById("firstName").value.trim();
+            let lastName = document.getElementById("lastName").value.trim();
+            let userEmailId = document.getElementById("userEmailId").value.trim();
+            let userPassword = document.getElementById("password").value.trim();
+
+            let nameRegex = /^[A-Za-z]+$/;
+            let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            function showToast(title, message, icon) {
+                Swal.fire({
+                    title: title,
+                    text: message,
+                    icon: icon,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    toast: true
+                });
+            }
+
+            if (!firstName) return showToast("Missing Field", "First Name is required!", "warning");
+            if (!firstName.match(nameRegex)) return showToast("Invalid Input", "First Name should contain only letters.", "error");
+            if (!lastName) return showToast("Missing Field", "Last Name is required!", "warning");
+            if (!lastName.match(nameRegex)) return showToast("Invalid Input", "Last Name should contain only letters.", "error");
+            if (!userEmailId) return showToast("Missing Field", "Email is required!", "warning");
+            if (!emailRegex.test(userEmailId)) return showToast("Invalid Email", "Enter a valid email address.", "error");
+            if (!userPassword) return showToast("Missing Field", "Password is required!", "warning");
+            if (!userPassword.match(passwordRegex)) return showToast("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");
+
+            let userData = { firstName, lastName, userEmailId, userPassword };
+
+            try {
+                let response = await fetch("/users/saveUser", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(userData)
+                });
+
+                let data = await response.json();
+
+                if (data.status === "success") {
+                    Swal.fire({
+                        title: "Success!",
+                        text: data.message,
+                        icon: "success",
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 3000,
+                        toast: true
+                    }).then(() => {
+                        window.location.href = "/users/list";
+                    });
+                } else {
+                    showToast("Error", data.message, "error");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                showToast("Error", "Server error! Please try again later.", "error");
+            }
+        });
     </script>
 </body>
-
 </html>

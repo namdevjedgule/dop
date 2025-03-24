@@ -1,16 +1,19 @@
 package com.example.dop.Model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +31,12 @@ public class User {
 
 	@Column(nullable = false)
 	private String userPassword;
+
+	private LocalDateTime memberSince;
+
+	private LocalDateTime lastLogin;
+
+	private String status;
 
 	public Long getUserId() {
 		return userId;
@@ -67,6 +76,35 @@ public class User {
 
 	public void setUserPassword(String userPassword) {
 		this.userPassword = userPassword;
+	}
+
+	public LocalDateTime getMemberSince() {
+		return memberSince;
+	}
+
+	public void setMemberSince(LocalDateTime memberSince) {
+		this.memberSince = memberSince;
+	}
+
+	public LocalDateTime getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(LocalDateTime lastLogin) {
+		this.lastLogin = lastLogin;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	@Transient
+	public String getName() {
+		return firstName + " " + lastName;
 	}
 
 }

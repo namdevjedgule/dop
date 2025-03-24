@@ -1,0 +1,70 @@
+<body id="category-dropdown" class="hidden pl-6 transition-all duration-300">
+                            <li><a th:href="@{/company-management/list}" class="block p-2 hover:bg-gray-700">
+                            <i class="ri-list-check text-yellow-400"></i> List</a></li>
+                            <li><a th:href="@{/company-management/add}" class="block p-2 hover:bg-gray-700">
+                            <i class="ri-add-line text-yellow-400"></i> Add</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/analytics}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'analytics' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-bar-chart-line text-green-400"></i> Analytics
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/configuration}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'configuration' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-settings-3-line text-gray-400"></i> Services
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/feedback}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'feedback' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-feedback-line text-gray-400"></i> Steps
+                        </a>
+                    </li>
+
+                    <li class="mb-2">
+                        <a th:href="@{/logout}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'logout' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="ri-logout-circle-line text-blue-400"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+    
+    <!-- Toggle Button -->
+    <button id="toggle-btn" class="absolute top-4 left-4 bg-blue-500 text-white px-2 py-1 rounded-md">☰</button>
+    
+    <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('toggle-btn');
+
+    let activeDropdown = null;
+
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('w-16');
+        sidebar.classList.toggle('w-60');
+    });
+
+    function toggleDropdown(id) {
+        const dropdowns = document.querySelectorAll("ul[id$='-dropdown']");
+        dropdowns.forEach(dropdown => {
+            if (dropdown.id !== id) {
+                dropdown.classList.add("hidden"); // Close other dropdowns
+            }
+        });
+
+        const dropdown = document.getElementById(id);
+        dropdown.classList.toggle("hidden");
+
+        activeDropdown = dropdown.classList.contains("hidden") ? null : id;
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">USERS LIST</h1>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow" onkeyup="searchUsers()">
+                        <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
+                            <option value="all">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <input type="text" placeholder="Created At" class="p-2 border rounded flex-grow">
+                        <div class="flex gap-2">
+                            <button onclick="window.location.href='/users/add'" class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
+                            <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i class="fa fa-sync"></i></button>
+                        </div>
+                    </div>
+                    
+
+                    <table class="w-full border-collapse rounded shadow-md">
+                        <thead>
+                            <tr class="bg-teal-600 text-white">
+                                <th class="p-2">
+                                    <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
+                                </th>
+                                <th class="p-2">NAME/EMAIL</th>
+                                <th class="p-2">LAST LOGIN</th>
+                                <th class="p-2">SUBSCRIPTION</th>
+                                <th class="p-2">STATUS</th>
+                                <th class="p-2">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b" th:each="user : ${users}">
+                                <td class="p-2"><input type="checkbox" class="rowCheckbox"></td>
+                                <td class="p-2">
+                                    <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
+                                    <span class="block text-sm text-gray-600" th:text="${user.userEmailId}"></span>
+                                </td>
+                                <td class="p-2 text-gray-600">
+                                    Member Since: <span th:text="${user.memberSince}"></span><br>
+                                    Last Login: <span th:text="${user.lastLogin}"></span>
+                                </td>
+                                <td class="p-2 text-center">
+                                    <span class="block">Free</span>
+                                    <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">Active</span>
+                                </td>
+                                <td class="p-2 text-center">
+                                    <span
+                                        th:classappend="${user.status == 'Active' ? 'bg-green-500 text-white px-2 py-1 rounded flex items-center justify-center gap-1' : 
+                                                           user.status == 'Inactive' ? 'bg-red-500 text-white px-2 py-1 rounded flex items-center justify-center gap-1' : ''}"
+                                        class="text-xs font-semibold">
+                                        <i
+                                            th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span th:text="${user.status}"></span>
+                                    </span>
+                                </td>
+
+                                <td class="p-2 text-center">
+                                    <button class="bg-gray-500 text-white px-3 py-1 rounded">Action</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function filterByStatus() {
+            let selectedStatus = document.getElementById("statusFilter").value;
+            let rows = document.querySelectorAll("tbody tr");
+            rows.forEach(row => {
+                let statusCell = row.querySelector("td:nth-child(5) span");
+                if (selectedStatus === "all" || statusCell.textContent.trim() === selectedStatus) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+        function toggleCheckboxes(source) {
+            let checkboxes = document.querySelectorAll(".rowCheckbox");
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+
+        function searchUsers() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let rows = document.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                let name = row.querySelector("td:nth-child(2) span:first-child").textContent.toLowerCase();
+                let email = row.querySelector("td:nth-child(2) span:last-child").textContent.toLowerCase();
+
+                if (name.includes(input) || email.includes(input)) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>

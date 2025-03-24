@@ -14,4 +14,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query(value = "CALL sp_user_login(:email)", nativeQuery = true)
 	User loginUser(@Param("email") String email);
 
+	boolean existsByUserEmailId(String email);
 }

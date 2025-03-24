@@ -1,8 +1,12 @@
 package com.example.dop.Controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,6 +42,30 @@ public class UserController {
 		return "userAdd";
 	}
 
+	@GetMapping("/list")
+	public String showUserListPage(HttpSession session, Model model) {
+		User user = (User) session.getAttribute("loggedInUser");
+
+		if (user == null) {
+			return "redirect:/";
+		}
+
+		List<User> users = userService.getAllUsers();
+
+		// Debugging
+		if (users.isEmpty()) {
+			System.out.println("No users found in database.");
+		} else {
+			System.out.println("Users retrieved: " + users.size());
+		}
+
+		model.addAttribute("users", users);
+		model.addAttribute("fname", user.getFirstName());
+		model.addAttribute("email", user.getUserEmailId());
+		model.addAttribute("currentPage", "userList");
+		return "userList";
+	}
+
 	@GetMapping("/{email}")
 	public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
 		Optional<User> user = userService.getUserByEmail(email);
@@ -45,9 +73,21 @@ public class UserController {
 	}
 
 	@PostMapping("/saveUser")
-	public ResponseEntity<User> saveUser(@RequestBody User user) {
-		User savedUser = userService.saveUser(user);
-		return ResponseEntity.ok(savedUser);
+	public ResponseEntity<Map<String, Object>> saveUser(@RequestBody User user) {
+		try {
+			User savedUser = userService.saveUser(user);
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "User saved successfully!");
+			response.put("user", savedUser);
+
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			Map<String, Object> errorResponse = new HashMap<>();
+			errorResponse.put("status", "error");
+			errorResponse.put("message", "Something went wrong!");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
 	}
 
 }

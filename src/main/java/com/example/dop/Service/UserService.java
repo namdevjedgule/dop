@@ -1,9 +1,11 @@
 package com.example.dop.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.dop.Model.User;
@@ -14,11 +16,25 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
-	private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	public User saveUser(User user) {
+		if (userRepository.existsByUserEmailId(user.getUserEmailId())) {
+			throw new RuntimeException("Email already exists");
+		}
+
 		user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
+
+		user.setMemberSince(LocalDateTime.now());
+		user.setLastLogin(LocalDateTime.now());
+		user.setStatus("Active");
+
 		return userRepository.save(user);
+	}
+
+	public boolean checkPassword(String rawPassword, String encodedPassword) {
+		return passwordEncoder.matches(rawPassword, encodedPassword);
 	}
 
 	public User loginUser(String email, String password) {
@@ -41,6 +57,10 @@ public class UserService {
 
 	public Optional<User> getUserByEmail(String email) {
 		return userRepository.findByUserEmailId(email);
+	}
+
+	public List<User> getAllUsers() {
+		return userRepository.findAll();
 	}
 
 }
