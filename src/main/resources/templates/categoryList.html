@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">CATEGORIES LIST</h1>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow"
+                            onkeyup="searchUsers()">
+                        <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
+                            <option value="all">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                        <input type="text" placeholder="Created At" class="p-2 border rounded flex-grow">
+                        <div class="flex gap-2">
+                            <button onclick="window.location.href='/categories/add'"
+                                class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
+                            <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
+                                    class="fa fa-sync"></i></button>
+                            <button onclick="deleteRow()" class="bg-red-500 text-white p-2 rounded"><i
+                                    class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+
+
+                    <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                        <thead>
+                            <tr class="bg-teal-600 text-white border border-gray-300">
+                                <th class="p-2 border border-gray-300">
+                                    <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
+                                </th>
+                                <th class="p-2 border border-gray-300">NAME</th>
+                                <th class="p-2 border border-gray-300">DATE</th>
+                                <th class="p-2 border border-gray-300">STATUS</th>
+                                <th class="p-2 border border-gray-300">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border border-gray-300" th:each="category : ${categories}"
+                                th:data-category-id="${category.categoryId}">
+                                <td class="p-2 border text-center border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
+                                <td class="p-2 border text-center border-gray-300">
+                                    <span th:text="${category.categoryName}"></span>
+                                </td>
+                                <td class="p-2 text-center text-gray-600 border border-gray-300">
+                                    <span th:text="${#temporals.format(category.categoryDate, 'dd MMM, yyyy')}"></span>
+                                </td>
+                                <td class="p-2 text-center border border-gray-300">
+                                    <span th:id="'status-' + ${category.categoryId}"
+                                        class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1"
+                                        th:classappend="${category.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                                        <i
+                                            th:classappend="${category.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span th:text="${category.status}"></span>
+                                    </span>
+                                </td>
+
+                                <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
+                                    <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
+                                        onclick="toggleMenu(event, this)">
+                                        Action
+                                    </button>
+                                    <div
+                                        class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
+                                        <ul class="text-left">
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
+                                                onclick="editCategory(this)">Edit</li>
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
+                                                th:attr="onclick='toggleCategoryStatus(this, ' + ${category.categoryId} + ')'"
+                                                th:text="${category.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                            </li>
+                                            <li class="p-2 hover:bg-red-500 text-red-700 cursor-pointer"
+                                                onclick="deleteCategory(this)">Delete</li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu(event, button) {
+            event.stopPropagation();
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                if (menu !== button.nextElementSibling) {
+                    menu.classList.add("hidden");
+                }
+            });
+            let menu = button.nextElementSibling;
+            menu.classList.toggle("hidden");
+        }
+        document.addEventListener("click", function () {
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                menu.classList.add("hidden");
+            });
+        });
+
+        function searchUsers() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let rows = document.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                let categoryName = row.querySelector("td:nth-child(2) span:first-child").textContent.toLowerCase();
+
+                if (categoryName.includes(input)) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        function filterByStatus() {
+            let selectedStatus = document.getElementById("statusFilter").value;
+            let rows = document.querySelectorAll("tbody tr");
+            rows.forEach(row => {
+                let statusCell = row.querySelector("td:nth-child(5) span");
+                if (selectedStatus === "all" || statusCell.textContent.trim() === selectedStatus) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+        function toggleCheckboxes(source) {
+            let checkboxes = document.querySelectorAll(".rowCheckbox");
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+
+        function deleteCategory(button) {
+            let row = button.closest("tr");
+            let categoryId = row.getAttribute("data-category-id");
+
+            if (!categoryId) {
+                Swal.fire("Error", "Category ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This category will be permanently deleted!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/categories/delete/${categoryId}`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Category has been removed.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to delete category.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function deleteRow() {
+            let selectedCategories = [];
+            document.querySelectorAll(".rowCheckbox:checked").forEach(checkbox => {
+                let row = checkbox.closest("tr");
+                let categoryId = row.getAttribute("data-category-id");
+                if (categoryId) selectedCategories.push(categoryId);
+            });
+
+            if (selectedCategories.length === 0) {
+                Swal.fire("No Selection", "Please select at least one category to delete.", "warning");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/categories/delete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ categoryIds: selectedCategories })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Selected categories have been deleted.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Something went wrong!", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function editCategory(button) {
+            let row = button.closest("tr");
+            let categoryId = row.getAttribute("data-category-id");
+            if (!categoryId) {
+                Swal.fire("Error", "Category ID not found!", "error");
+                return;
+            }
+
+            window.location.href = `/categories/add?categoryId=` + categoryId;
+        }
+
+        function deactivateCategory(button) {
+            let row = button.closest("tr");
+            let categoryId = row.getAttribute("data-category-id");
+
+            if (!categoryId) {
+                Swal.fire("Error", "Category ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to deactivate this category?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, deactivate it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/categories/deactivate/${categoryId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deactivated!", "Category has been deactivated.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to deactivate category.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function toggleCategoryStatus(element, categoryId) {
+            let row = element.closest("tr");
+            let statusElement = document.getElementById(`status-${categoryId}`);
+
+            if (!statusElement) {
+                console.error(`Status element not found for category ID: ${categoryId}`);
+                return;
+            }
+
+            fetch(`/categories/toggleStatus/${categoryId}`, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let newStatus = data.newStatus;
+                        statusElement.textContent = newStatus;
+                        statusElement.classList.toggle("bg-green-500", newStatus === "Active");
+                        statusElement.classList.toggle("bg-red-500", newStatus === "Inactive");
+
+                        let actionMenuItem = element;
+                        actionMenuItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+                    } else {
+                        console.error("Failed to update category status.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+    </script>
+</body>
+
+</html>

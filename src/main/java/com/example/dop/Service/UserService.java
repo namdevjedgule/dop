@@ -63,4 +63,35 @@ public class UserService {
 		return userRepository.findAll();
 	}
 
+	public void deleteUser(Long id) {
+		if (userRepository.existsById(id)) {
+			userRepository.deleteById(id);
+		} else {
+			throw new RuntimeException("User not found");
+		}
+	}
+
+	public void deactivateUser(Long id) {
+		User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not found"));
+		user.setStatus("Inactive");
+		userRepository.save(user);
+	}
+
+	public User getUserById(Long id) {
+		return userRepository.findById(id).orElse(null);
+	}
+
+//	public boolean existsByUserName(String userName) {
+//		return userRepository.findByUserName(userName).isPresent();
+//	}
+
+	public User toggleUserStatus(Long id) {
+		Optional<User> userOpt = userRepository.findById(id);
+		if (userOpt.isPresent()) {
+			User user = userOpt.get();
+			user.setStatus(user.getStatus().equals("Active") ? "Inactive" : "Active");
+			userRepository.save(user);
+		}
+		return null;
+	}
 }

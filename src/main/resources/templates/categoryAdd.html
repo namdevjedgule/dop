@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Category</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">ADD CATEGORY</h1>
+                    <form id="addcategory" novalidate>
+                        <input type="hidden" id="categoryId">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700">CATEGORY NAME <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" id="categoryName"
+                                    class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                    placeholder="Enter Category Name">
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <button type="submit"
+                                class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">Save</button>
+                            <button type="button"
+                                class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md"
+                                onclick="handleCancel()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryId = urlParams.get("categoryId");
+
+            if (categoryId) {
+                document.getElementById("formTitle").textContent = "EDIT CATEGORY";
+                try {
+                    let response = await fetch(`/categories/${categoryId}`);
+                    if (!response.ok) throw new Error("Failed to fetch category");
+                    let category = await response.json();
+                    document.getElementById("categoryId").value = category.categoryId;
+                    document.getElementById("categoryName").value = category.categoryName;
+                } catch (error) {
+                    console.error("Error fetching category:", error);
+                    showToast("Error", "Failed to load category data!", "error");
+                }
+            }
+
+            document.getElementById("addcategory").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                let categoryId = document.getElementById("categoryId").value;
+                let categoryName = document.getElementById("categoryName").value.trim();
+                let nameRegex = /^[A-Za-z\s]+$/;
+
+                if (!categoryName) return showToast("Missing Field", "Category Name is required!", "warning");
+                if (!categoryName.match(nameRegex)) return showToast("Invalid Input", "Category Name should contain only letters.", "error");
+
+                try {
+                    let requestBody = {
+                        categoryName: categoryName,
+                        status: "Active"
+                    };
+
+                    let method = categoryId ? "PUT" : "POST";
+                    let url = categoryId ? `/categories/update/${categoryId}` : "/categories/saveCategory";
+
+                    let response = await fetch(url, {
+                        method: method,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    let data = await response.json();
+                    if (response.ok) {
+                        showToast("Success!", categoryId ? "Category updated successfully!" : "Category added successfully!", "success");
+                        setTimeout(() => {
+                            window.location.href = "/categories/list";
+                        }, 1500);
+                    } else {
+                        showToast("Error", data.message || "Something went wrong!", "error");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    showToast("Error", "Server error! Please try again later.", "error");
+                }
+            });
+        });
+
+        function showToast(title, message, icon) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: icon,
+                confirmButtonColor: "#3085d6",
+                position: "top",
+                showConfirmButton: false,
+                timer: 1500,
+                toast: true,
+                timerProgressBar: true
+            });
+        }
+
+        function handleCancel() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryId = urlParams.get('categoryId');
+
+            if (categoryId) {
+                window.location.href = '/categories/list';
+            } else {
+                window.location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="bg-[#e9f5f5]">
@@ -23,7 +23,8 @@
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h1 class="text-2xl font-bold text-teal-700 mb-6">USERS LIST</h1>
                     <div class="flex flex-wrap gap-4 mb-4">
-                        <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow" onkeyup="searchUsers()">
+                        <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow"
+                            onkeyup="searchUsers()">
                         <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
                             <option value="all">Select Status</option>
                             <option value="Active">Active</option>
@@ -31,11 +32,13 @@
                         </select>
                         <input type="text" placeholder="Created At" class="p-2 border rounded flex-grow">
                         <div class="flex gap-2">
-                            <button onclick="window.location.href='/users/add'" class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
-                            <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i class="fa fa-sync"></i></button>
+                            <button onclick="window.location.href='/users/add'"
+                                class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
+                            <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
+                                    class="fa fa-sync"></i></button>
                         </div>
                     </div>
-                    
+
 
                     <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
                         <thead>
@@ -51,7 +54,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="border border-gray-300" th:each="user : ${users}">
+                            <tr class="border border-gray-300" th:each="user : ${users}"
+                                th:data-user-id="${user.userId}">
                                 <td class="p-2 border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
                                 <td class="p-2 border border-gray-300">
                                     <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
@@ -63,30 +67,66 @@
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
                                     <span class="block">Free</span>
-                                    <span class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1 normal-case">
+                                    <span
+                                        class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1 normal-case">
                                         <i class="fas fa-check-circle"></i> Active
                                     </span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1"
-                                          th:classappend="${user.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
-                                        <i th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                    <span
+                                        class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1"
+                                        th:classappend="${user.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                                        <i
+                                            th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
                                         <span th:text="${user.status}"></span>
                                     </span>
                                 </td>
-                                <td class="p-2 text-center border border-gray-300">
-                                    <button class="bg-gray-500 text-white px-3 py-1 rounded">Action</button>
+                                <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
+                                    <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
+                                        onclick="toggleMenu(event, this)">
+                                        Action
+                                    </button>
+                                    <div
+                                        class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
+                                        <ul class="text-left">
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer" onclick="editUser(this)">
+                                            Edit</li>
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
+                                                th:attr="onclick='toggleUserStatus(this, ' + ${user.userId} + ')'"
+                                                th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                            </li>
+                                            <li class="p-2 hover:bg-red-500 text-red-700 cursor-pointer"
+                                                onclick="deleteUser(this)">Delete</li>
+                                        </ul>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    
+
                 </div>
             </main>
         </div>
     </div>
 
     <script>
+
+        function toggleMenu(event, button) {
+            event.stopPropagation();
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                if (menu !== button.nextElementSibling) {
+                    menu.classList.add("hidden");
+                }
+            });
+            let menu = button.nextElementSibling;
+            menu.classList.toggle("hidden");
+        }
+        document.addEventListener("click", function () {
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                menu.classList.add("hidden");
+            });
+        });
+
         function filterByStatus() {
             let selectedStatus = document.getElementById("statusFilter").value;
             let rows = document.querySelectorAll("tbody tr");
@@ -122,6 +162,72 @@
             });
         }
 
+        function deleteUser(button) {
+            let row = button.closest("tr");
+            let userId = row.getAttribute("data-user-id");
+
+            if (!userId) {
+                Swal.fire("Error", "User ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This user will be permanently deleted!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/delete/${userId}`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Users has been removed.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to delete user.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function toggleUserStatus(element, userId) {
+            let row = element.closest("tr");
+            let statusElement = document.getElementById(`status-${userId}`);
+
+            if (!statusElement) {
+                console.error(`Status element not found for category ID: ${userId}`);
+                return;
+            }
+
+            fetch(`/users/toggleStatus/${userId}`, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let newStatus = data.newStatus;
+                        statusElement.textContent = newStatus;
+                        statusElement.classList.toggle("bg-green-500", newStatus === "Active");
+                        statusElement.classList.toggle("bg-red-500", newStatus === "Inactive");
+
+                        let actionMenuItem = element;
+                        actionMenuItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+                    } else {
+                        console.error("Failed to update user status.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
     </script>
 </body>
 

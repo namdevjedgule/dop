@@ -12,7 +12,8 @@
 
 <body>
     <div th:fragment="sidebar">
-        <aside class="bg-black text-gray-300 w-60 h-screen p-4 fixed top-16 left-0 mt-3 text-sm overflow-y-auto max-h-screen">
+        <aside
+            class="bg-black text-gray-300 w-60 h-screen p-4 fixed top-16 left-0 mt-3 text-sm overflow-y-auto max-h-screen">
 
             <nav>
                 <ul>
@@ -104,24 +105,28 @@
                         </ul>
                     </li>
 
-                    <li class="mb-2" x-data="{ open: false }">
+                    <li class="mb-2" x-data="{ open: false }"
+                        x-init="open = ['categoryList', 'categoryAdd'].includes('[[${currentPage}]]')">
                         <button @click="open = !open"
-                            class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600">
+                            class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
+                            th:classappend="${currentPage == 'categoryList' || currentPage == 'categoryAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
                             <div class="flex items-center gap-3">
                                 <i class="fa-solid fa-folder text-gray-400"></i> Categories
                             </div>
                             <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
                         </button>
-                        <ul x-show="open" class="ml-6 mt-2 bg-gray-800 rounded p-2">
+                        <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
                             <li class="mb-1">
                                 <a th:href="@{/categories/list}"
-                                    class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                    th:classappend="${currentPage == 'categoryList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
                             <li>
                                 <a th:href="@{/categories/add}"
-                                    class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                    th:classappend="${currentPage == 'categoryAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-plus text-teal-400"></i> Add
                                 </a>
                             </li>
@@ -135,11 +140,36 @@
                         </a>
                     </li>
 
-                    <li class="mb-2">
-                        <a th:href="@{/step}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
-                            th:classappend="${currentPage == 'step' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
-                            <i class="fa-solid fa-list-ol text-gray-400"></i> Steps
-                        </a>
+                    <li class="mb-2" x-data="{ open: false }"
+                        x-init="open = ['stepList', 'stepAdd'].includes('[[${currentPage}]]')">
+
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
+                            th:classappend="${currentPage == 'stepList' || currentPage == 'stepAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
+
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-list-ol text-gray-400"></i> Steps
+                            </div>
+
+                            <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
+                        </button>
+
+                        <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
+                            <li class="mb-1">
+                                <a th:href="@{/steps/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                    th:classappend="${currentPage == 'stepList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                                    <i class="fa-solid fa-list text-white"></i> List
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/steps/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                    th:classappend="${currentPage == 'stepAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                                    <i class="fa-solid fa-plus text-teal-400"></i> Add
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
                     <li class="mb-2">
