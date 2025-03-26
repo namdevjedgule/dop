@@ -107,59 +107,126 @@
             const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
             const minPasswordLength = 6; 
 
+            // Check if any field is empty
             if (firstName === "" || lastName === "" || email === "" || password === "") {
                 Swal.fire({
-                    icon: "error",
-                    text: "Please fill in all required fields!",
-                    width: "300px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Missing Field</span>",
+                    text: "All fields are required!",
+                    toast: true,
+                    position: "top-middle",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
-                return false;
+                return false; // Ensure validation stops execution
             }
 
+            // Validate first name (only alphabets)
             if (!nameRegex.test(firstName)) {
                 Swal.fire({
-                    icon: "error",
-                    text: "First Name should contain only alphabets!",
-                    width: "300px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Input</span>",
+                    text: "First name should contain only alphabets!",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
                 return false;
             }
 
+            // Validate last name (only alphabets)
             if (!nameRegex.test(lastName)) {
                 Swal.fire({
-                    icon: "error",
-                    text: "Last Name should contain only alphabets!",
-                    width: "300px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Input</span>",
+                    text: "Last name should contain only alphabets!",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
                 return false;
             }
 
+            // Validate email format
             if (!emailRegex.test(email)) {
                 Swal.fire({
-                    icon: "error",
-                    text: "Email must be in format abc@gmail.com!",
-                    width: "300px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Email</span>",
+                    text: "Email must be in format abc@gmail.com",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
                 return false;
             }
 
+            // Validate password length
             if (password.length < minPasswordLength) {
                 Swal.fire({
-                    icon: "error",
-                    text: "Password must be greater than 5 characters!",
-                    width: "300px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Weak Password</span>",
+                    text: "Password must be at least 6 characters long",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
                 return false;
             }
 
+            // If all validations pass, show success message and submit form
             Swal.fire({
                 icon: "success",
-                text: "Admin added successfully.",
-                width: "300px",
+                title: "<span class='text-gray-700 font-semibold'>Success</span>",
+                text: "Form Submitted Successfully!",
+                toast: true,
+                position: "top-center",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: "bg-[#e0f2f1] shadow-md",
+                    title: "text-gray-800",
+                    content: "text-gray-600",
+                }
             }).then(() => {
-                document.querySelector("form").submit(); // Submit the form after success alert
+                document.querySelector("form").submit(); // Submit the form after alert closes
             });
         }
+
 
         
         const sidebar = document.getElementById('sidebar');
