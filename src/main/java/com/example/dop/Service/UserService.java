@@ -94,4 +94,10 @@ public class UserService {
 		}
 		return null;
 	}
-}
+
+	 public User findById(Long userId) {
+	        Optional<User> user = userRepository.findById(userId);
+	        return user.orElse(null); // Return user if found, else null
+	    }
+
+	}

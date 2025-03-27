@@ -199,6 +199,31 @@
                             <i class="fa-solid fa-clipboard-list text-gray-400"></i> Plans
                         </a>
                     </li>
+                    
+                    <li class="mb-2" x-data="{ open: false }">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-handshake text-gray-400"></i> Subscription
+                            </div>
+                            <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" class="ml-6 mt-2 bg-gray-800 rounded p-2">
+                            <li class="mb-1">
+                                <a th:href="@{/subscription/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
+                                    <i class="fa-solid fa-list text-white"></i> List
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/subscription/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
+                                    <i class="fa-solid fa-plus text-teal-400"></i> Add
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
 
                     <li class="mb-2">
                         <a th:href="@{/logout}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
