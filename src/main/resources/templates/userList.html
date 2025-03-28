@@ -30,7 +30,7 @@
                             <option value="Active">Active</option>
                             <option value="Inactive">Inactive</option>
                         </select>
-                        <input type="text" placeholder="Created At" class="p-2 border rounded flex-grow">
+                        <input type="date" id="memberSinceFilter" class="p-2 border rounded" onchange="filterByMemberSince()">
                         <div class="flex gap-2">
                             <button onclick="window.location.href='/users/add'"
                                 class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
@@ -40,7 +40,7 @@
                     </div>
 
 
-                    <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                    <table id="userTable" class="w-full border border-gray-300 border-collapse rounded shadow-md">
                         <thead>
                             <tr class="bg-teal-600 text-white border border-gray-300">
                                 <th class="p-2 border border-gray-300">
@@ -53,7 +53,7 @@
                                 <th class="p-2 border border-gray-300">ACTION</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="userTableBody">
                             <tr class="border border-gray-300" th:each="user : ${users}"
                                 th:data-user-id="${user.userId}">
                                 <td class="p-2 border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
@@ -62,20 +62,24 @@
                                     <span class="block text-sm text-gray-600" th:text="${user.userEmailId}"></span>
                                 </td>
                                 <td class="p-2 text-gray-600 border border-gray-300">
-                                    Member Since: <span th:text="${user.memberSince}"></span><br>
-                                    Last Login: <span th:text="${user.lastLogin}"></span>
+                                    Member Since: <span
+                                        th:text="${#temporals.format(user.memberSince, 'dd MMM, yyyy')}"></span><br>
+                                    Last Login: <span
+                                        th:text="${#temporals.format(user.lastLogin, 'dd MMM, yyyy')}"></span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
                                     <span class="block">Free</span>
                                     <span
-                                        class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1 normal-case">
+                                        class="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded items-center justify-center gap-1 normal-case"
+                                        style="width: 80px;">
                                         <i class="fas fa-check-circle"></i> Active
                                     </span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span
-                                        class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center gap-1"
-                                        th:classappend="${user.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                                    <span th:id="'status-' + ${user.userId}"
+                                        class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center"
+                                        th:classappend="${user.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
+                                        style="width: 80px; height: 32px;">
                                         <i
                                             th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
                                         <span th:text="${user.status}"></span>
@@ -90,7 +94,7 @@
                                         class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
                                         <ul class="text-left">
                                             <li class="p-2 hover:bg-gray-200 cursor-pointer" onclick="editUser(this)">
-                                            Edit</li>
+                                                Edit</li>
                                             <li class="p-2 hover:bg-gray-200 cursor-pointer"
                                                 th:attr="onclick='toggleUserStatus(this, ' + ${user.userId} + ')'"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
@@ -103,13 +107,49 @@
                             </tr>
                         </tbody>
                     </table>
-
+                    <div class="flex justify-between items-center mt-4">
+                        <button id="prevBtn" onclick="prevPage()"
+                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Prev</button>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-gray-300 rounded">Page 1</span>
+                        <button id="nextBtn" onclick="nextPage()"
+                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Next</button>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
 
     <script>
+
+        const rowsPerPage = 10;
+        let currentPage = 1;
+
+        function updatePagination() {
+            let rows = document.querySelectorAll("#userTableBody tr");
+            let totalPages = Math.ceil(rows.length / rowsPerPage);
+            document.getElementById("pageIndicator").textContent = `Page ${currentPage} of ${totalPages}`;
+
+            rows.forEach((row, index) => {
+                row.style.display = (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) ? "table-row" : "none";
+            });
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        }
+
+        function nextPage() {
+            let rows = document.querySelectorAll("#userTableBody tr");
+            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+                currentPage++;
+                updatePagination();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", updatePagination);
 
         function toggleMenu(event, button) {
             event.stopPropagation();
@@ -160,6 +200,17 @@
                     row.style.display = "none";
                 }
             });
+        }
+
+        function editUser(button) {
+            let row = button.closest("tr");
+            let userId = row.getAttribute("data-user-id");
+            if (!userId) {
+                Swal.fire("Error", "User ID not found!", "error");
+                return;
+            }
+
+            window.location.href = `/users/add?userId=` + userId;
         }
 
         function deleteUser(button) {
@@ -228,6 +279,34 @@
                 })
                 .catch(error => console.error("Error:", error));
         }
+
+        function filterByMemberSince() {
+            let selectedDate = document.getElementById("memberSinceFilter").value;
+            let rows = document.querySelectorAll("#userTableBody tr");
+
+            rows.forEach(row => {
+                let memberSinceCell = row.querySelector("td:nth-child(3) span:first-child");
+
+                if (memberSinceCell) {
+                    let memberSinceText = memberSinceCell.textContent.trim();
+                    let formattedDate = formatDate(selectedDate);
+
+                    if (selectedDate === "" || memberSinceText === formattedDate) {
+                        row.style.display = "table-row";
+                    } else {
+                        row.style.display = "none";
+                    }
+                }
+            });
+        }
+        function formatDate(inputDate) {
+            if (!inputDate) return "";
+
+            let dateObj = new Date(inputDate);
+            let options = { day: "2-digit", month: "short", year: "numeric" };
+            return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
+        }
+
     </script>
 </body>
 

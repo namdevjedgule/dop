@@ -21,7 +21,7 @@
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">ADD STEP</h1>
                     <form id="addstep" novalidate>
-                        <input type="hidden" id="categoryId">
+                        <input type="hidden" id="stepId">
                         <div class="flex gap-6">
                             <div class="w-1/4 flex flex-col items-center">
                                 <div
@@ -32,9 +32,9 @@
                                         class="absolute inset-0 flex flex-col items-center justify-center text-pink-500">
                                         <img th:src="@{/icons/no-image-icon.png}" alt="No Image"
                                             class="w-16 h-16 mx-auto" />
-                                        <p class="mt-2 text-sm font-medium">No image</p>
+                                        <p id="no-image-text" class="mt-2 text-sm font-medium">No image</p>
                                     </div>
-                                    <input type="file" id="imageUpload" class="hidden" accept="image/*"/>
+                                    <input type="file" id="imageUpload" class="hidden" accept="image/*" />
                                     <label for="imageUpload"
                                         class="absolute bottom-2 right-2 bg-[#e9f5f5] p-2 rounded-full shadow-lg cursor-pointer border border-gray-300">
                                         <img th:src="@{/icons/camera-icon.png}" alt="Upload" class="w-6 h-6" />
@@ -55,14 +55,14 @@
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700">ICON <span
                                                 class="text-red-500">*</span></label>
-                                        <input type="text"
+                                        <input type="text" id="icon"
                                             class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
                                             placeholder="Enter Icon" />
                                     </div>
                                 </div>
                                 <div class="mt-4">
                                     <label class="block text-sm font-semibold text-gray-700">ALT TITLE</label>
-                                    <input type="text"
+                                    <input type="text" id="altTitle"
                                         class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
                                         placeholder="Enter Alt Title" />
                                 </div>
@@ -110,7 +110,7 @@
                 return;
             }
 
-            let maxSize = 2 * 1024 * 1024; // 2MB
+            let maxSize = 2 * 1024 * 1024;
             if (file.size > maxSize) {
                 showToast("File Too Large", "Image size must be under 2MB!", "error");
                 event.target.value = "";
@@ -152,51 +152,136 @@
             }
         }
 
-        document.getElementById("addstep").addEventListener("submit", async function (event) {
-    event.preventDefault();
+        // document.getElementById("addstep").addEventListener("submit", async function (event) {
+        //     event.preventDefault();
 
-    let titleName = document.getElementById("titleName").value.trim();
-    let icon = document.getElementById("icon")?.value.trim() || "";  // Ensure it exists
-    let altTitle = document.getElementById("altTitle")?.value.trim() || "";
-    let description = document.getElementById("editor").value.trim();
-    let imageFile = document.getElementById("imageUpload").files[0];
+        //     let titleName = document.getElementById("titleName").value.trim();
+        //     let icon = document.getElementById("icon")?.value.trim() || "";
+        //     let altTitle = document.getElementById("altTitle")?.value.trim() || "";
+        //     let description = document.getElementById("editor").value.trim();
+        //     let imageFile = document.getElementById("imageUpload").files[0];
 
-    if (!titleName) return showToast("Missing Field", "Title is required!", "warning");
-    if (!description) return showToast("Missing Field", "Description is required!", "warning");
-    if (!imageFile) return showToast("Missing Field", "Please upload an image!", "warning");
+        //     if (!titleName) return showToast("Missing Field", "Title is required!", "warning");
+        //     if (!description) return showToast("Missing Field", "Description is required!", "warning");
+        //     if (!imageFile) return showToast("Missing Field", "Please upload an image!", "warning");
 
-    let formData = new FormData();
-    formData.append("titleName", titleName);
-    formData.append("icon", icon); // 👈 Ensure it's added
-    if (altTitle) formData.append("altTitle", altTitle);
-    formData.append("description", description);
-    formData.append("imageFile", imageFile);
+        //     let formData = new FormData();
+        //     formData.append("titleName", titleName);
+        //     formData.append("icon", icon);
+        //     if (altTitle) formData.append("altTitle", altTitle);
+        //     formData.append("description", description);
+        //     formData.append("imageFile", imageFile);
 
-    console.log("FormData before sending:");
-    for (let pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);  // Debugging
-    }
+        //     console.log("FormData before sending:");
+        //     for (let pair of formData.entries()) {
+        //         console.log(pair[0] + ": " + pair[1]);
+        //     }
 
-    try {
-        let response = await fetch("/steps/save", {
-            method: "POST",
-            body: formData
+        //     try {
+        //         let response = await fetch("/steps/saveStep", {
+        //             method: "POST",
+        //             body: formData
+        //         });
+
+        //         let data = await response.json();
+        //         if (response.ok) {
+        //             showToast("Success!", "Step saved successfully!", "success");
+        //             setTimeout(() => {
+        //                 window.location.href = "/steps/list";
+        //             }, 1500);
+        //         } else {
+        //             showToast("Error", data.message || "Something went wrong!", "error");
+        //         }
+        //     } catch (error) {
+        //         console.error("Error:", error);
+        //         showToast("Error", "Server error! Please try again later.", "error");
+        //     }
+        // });
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const stepId = urlParams.get("stepId");
+
+            if (stepId) {
+                document.getElementById("formTitle").textContent = "EDIT STEP";
+                try {
+                    let response = await fetch(`/steps/${stepId}`);
+                    if (!response.ok) throw new Error("Failed to fetch step details");
+                    let step = await response.json();
+
+                    document.getElementById("stepId").value = step.stepId;
+                    document.getElementById("titleName").value = step.titleName;
+                    document.getElementById("icon").value = step.icon;
+                    document.getElementById("editor").value = step.description;
+                    document.getElementById("altTitle").value = step.altTitle || "";
+
+                    if (step.imageFile) {
+                        let preview = document.getElementById("preview");
+                        preview.src = step.imageFile.startsWith("http")
+                            ? step.imageFile
+                            : `/images/${step.imageFile}`;
+                        preview.classList.remove("hidden");
+                        document.getElementById("no-image-text").style.display = "none";
+                    }
+                } catch (error) {
+                    console.error("Error fetching step:", error);
+                    showToast("Error", "Failed to load step data!", "error");
+                }
+            }
+
+            document.getElementById("addstep").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                let stepId = document.getElementById("stepId").value;
+                let titleName = document.getElementById("titleName").value.trim();
+                let icon = document.getElementById("icon").value.trim();
+                let altTitle = document.getElementById("altTitle").value.trim();
+                let description = document.getElementById("editor").value.trim();
+                let imageFile = document.getElementById("imageUpload").files[0];
+
+                if (!titleName) return showToast("Missing Field", "Title is required!", "warning");
+                if(!icon) return showToast("Missing Field", "Icon is required!", "warning");
+                if (!description) return showToast("Missing Field", "Description is required!", "warning");
+
+
+                if (!imageFile && !stepId) {
+                    return showToast("Missing Field", "Please upload an image!", "warning");
+                }
+
+                let formData = new FormData();
+                formData.append("titleName", titleName);
+                formData.append("icon", icon);
+                if (altTitle) formData.append("altTitle", altTitle);
+                formData.append("description", description);
+                if (imageFile) formData.append("imageFile", imageFile);
+
+                console.log("Step Data Sent:", formData);
+
+                try {
+                    let method = stepId ? "PUT" : "POST";
+                    let url = stepId ? `/steps/update/${stepId}` : "/steps/saveStep";
+
+                    let response = await fetch(url, {
+                        method: method,
+                        body: formData,
+                    });
+
+                    let data = await response.json();
+
+                    if (response.ok) {
+                        showToast("Success!", stepId ? "Step updated successfully!" : "Step added successfully!", "success");
+                        setTimeout(() => {
+                            window.location.href = "/steps/list";
+                        }, 1500);
+                    } else {
+                        showToast("Error", data.message || "Something went wrong!", "error");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    showToast("Error", "Server error! Please try again later.", "error");
+                }
+            });
         });
-
-        let data = await response.json();
-        if (response.ok) {
-            showToast("Success!", "Step saved successfully!", "success");
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            showToast("Error", data.message || "Something went wrong!", "error");
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        showToast("Error", "Server error! Please try again later.", "error");
-    }
-});
 
 
         function showToast(title, message, icon) {
@@ -212,6 +297,7 @@
                 timerProgressBar: true
             });
         }
+
     </script>
 </body>
 

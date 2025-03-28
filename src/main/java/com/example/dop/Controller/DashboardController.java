@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.dop.Model.User;
+import com.example.dop.Service.AdminService;
 import com.example.dop.Service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -13,8 +14,8 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class DashboardController {
 
-//	@Autowired
-//	private AdminService adminService;
+	@Autowired
+	private AdminService adminService;
 
 	@Autowired
 	private UserService userService;
@@ -30,11 +31,11 @@ public class DashboardController {
 			return "redirect:/";
 		}
 
-//		long totalAdmins = adminService.countAdmins();
+		long totalAdmins = adminService.countAdmins();
 		long totalUsers = userService.countUsers();
 //		long totalPages = pageService.countPages();
 
-//		model.addAttribute("totalAdmins", totalAdmins);
+		model.addAttribute("totalAdmins", totalAdmins);
 		model.addAttribute("totalUsers", totalUsers);
 //		model.addAttribute("totalPages", totalPages);
 		model.addAttribute("fname", user.getFirstName());
