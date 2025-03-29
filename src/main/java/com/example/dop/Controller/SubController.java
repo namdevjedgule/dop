@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.dop.Model.Company;
+import com.example.dop.Model.SubNameMaster;
 import com.example.dop.Model.Subscription;
 import com.example.dop.Model.User;
 import com.example.dop.Service.SubService;
@@ -38,58 +40,80 @@ public class SubController
 	
 	
 	@GetMapping("/add")
-	public String add()
-	{
-		return "SubscriptionAdd";
+	public String add(Model model) {
+	    List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
+	    model.addAttribute("subNameMasters", subNameMasters);
+	    model.addAttribute("subscription", new Subscription());
+	    return "SubscriptionAdd";
 	}
+
 	
 	@GetMapping("/list")
-	public String List( @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "statusFilter", required = false) String statusFilter,
-            Model model)
-	{
-		List<Subscription> subs;
+	public String listSubscriptions(
+	        @RequestParam(value = "keyword", required = false) String keyword,
+	        @RequestParam(value = "statusFilter", required = false) String statusFilter,
+	        @RequestParam(value = "page", defaultValue = "0") int page,
+	        Model model) {
+	    
+	    List<Subscription> subs;
 
-        if (keyword != null) keyword = keyword.trim();
+	    // Remove leading/trailing spaces from keyword
+	    if (keyword != null) keyword = keyword.trim();
 
-        if (keyword != null && !keyword.isEmpty() && statusFilter != null && !statusFilter.isEmpty()) {
-        	subs = subService.searchsubByStatus(keyword, statusFilter);
-        } else if (keyword != null && !keyword.isEmpty()) {
-        	subs = subService.searchSub(keyword);
-        } else if (statusFilter != null && !statusFilter.isEmpty()) {
-           
-        	subs = subService.getSubByStatus(statusFilter);
-        } else {
-        	subs = subService.getSubcriptions();
-        }
+	    // Check conditions and call appropriate service method
+	   if (keyword != null && !keyword.isEmpty()) {
+	        subs = subService.searchSubByKeyword(keyword);
+	    } else if (statusFilter != null && !statusFilter.isEmpty()) {
+	        subs = subService.getSubByStatus(statusFilter);
+	    } else {
+	        subs = subService.getSubcriptions();
+	    }
 
-        model.addAttribute("subs", subs);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("statusFilter", statusFilter); 
+	    model.addAttribute("subs", subs);
+	    model.addAttribute("keyword", keyword);
+	    model.addAttribute("statusFilter", statusFilter);
+	    int pageSize = 5; // Number of items per page
 
-		return "SubscriptionList";
+	    Page<Subscription> subscriptionPage = subService.getPaginatedSubscriptions(page, pageSize, keyword, statusFilter);
+
+	    model.addAttribute("subscriptions", subscriptionPage.getContent());
+	    model.addAttribute("currentPage", page);
+	    model.addAttribute("totalPages", subscriptionPage.getTotalPages());
+	    
+
+	    return "SubscriptionList"; // Your template name
 	}
+
+
+
 	
 	@PostMapping("/save")
 	public String saveSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
-	    Long userId = (Long) session.getAttribute("userId"); // Retrieve user ID from session
+	    Long userId = (Long) session.getAttribute("userId");
 
 	    if (userId == null) {
-	        return "redirect:/login"; // Redirect if user is not logged in
+	        return "redirect:/login";
 	    }
 
 	    User user = userService.findById(userId);
-	    subscription.setCreatedBy(user);  
+	    subscription.setCreatedBy(user);
 	    subscription.setStatus("Active");
+
 	    subService.saveSubscription(subscription, user);
-	        return "redirect:/subscription/add"; 
-	    }
+	    return "redirect:/subscription/add";
+	}
+
 	@GetMapping("/edit/{id}")
 	public String editSubscription(@PathVariable("id") Long id, Model model) { 
-	    Subscription sub = subService.findById(id);
-	    model.addAttribute("subscription", sub);
+	    Subscription subscription = subService.findById(id);
+	    List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters(); // Fetch dropdown options
+
+	    model.addAttribute("subscription", subscription);
+	    model.addAttribute("subNameMasters", subNameMasters); // Send list to frontend
+
 	    return "EditSubscription";
 	}
+
 
 
 	@PostMapping("/update")

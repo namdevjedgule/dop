@@ -149,6 +149,6 @@ public class AdminController
 	    public String del(@PathVariable("id") Long id)
 	    {
 	    	adminService.deleteAdmin(id);
-	    	return"redirect:/ListAdmin";
+	    	return"redirect:/admin/list";
 	    }
 }

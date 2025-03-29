@@ -1,4 +1,6 @@
 package com.example.dop.Model;
+
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,11 +15,14 @@ public class Subscription
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
-	private String name;
+	@ManyToOne
+    @JoinColumn(name = "sub_name_master_id", referencedColumnName = "id") // Ensure correct mapping
+    private SubNameMaster subNameMaster;
+
 	private String code;
 	private Long price;
 	private String project;
-	  @Column(name = "row_count")  // Renaming the column in the database
+	  @Column(name = "row_count") 
 	    private String rowCount;  
 	private Long days;
 	@ManyToOne
@@ -39,12 +44,7 @@ public class Subscription
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
+	
 	public String getCode() {
 		return code;
 	}
@@ -82,5 +82,11 @@ public class Subscription
 	public void setCreatedBy(User createdBy) {
 		this.createdBy = createdBy;
 	}
-
+	public SubNameMaster getSubNameMaster() {
+		return subNameMaster;
+	}
+	public void setSubNameMaster(SubNameMaster subNameMaster) {
+		this.subNameMaster = subNameMaster;
+	}
+	
 }

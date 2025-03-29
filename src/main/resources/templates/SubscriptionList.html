@@ -9,6 +9,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
+    
     <style>
         /* Ensure dropdown menu does not overlap the button */
         .action-menu {
@@ -74,7 +77,7 @@
                                     <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
                                 </th>
                                 <th class="p-2 border border-gray-300">NAME</th>
-                                <th class="p-2 border border-gray-300">CODE</th>
+                             
                                 <th class="p-2 border border-gray-300">PRICE</th>
                                 <th class="p-2 border border-gray-300">PROJECT AUTHORIZED</th>
                                 <th class="p-2 border border-gray-300">ROWS</th>
@@ -85,17 +88,17 @@
                          <tbody>
                             <tr class="border border-gray-300" th:each="sub : ${subs}" th:data-sub-id="${sub.id}">
                                 <td class="p-2 border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
-                                <td class="p-2 border border-gray-300" th:text="${sub.name}"></td>
-                                <td class="p-2 border border-gray-300 text-gray-600" th:text="${sub.code}"></td>
+                                <td class="p-2 border border-gray-300" th:text="${sub.subNameMaster.subName}"></td>
                                 <td class="p-2 text-center border border-gray-300" th:text="${sub.price}"></td>
                                 <td class="p-2 text-center border border-gray-300" th:text="${sub.project}"></td>
                                 <td class="p-2 text-center border border-gray-300" th:text="${sub.rowCount}"></td>
                                 <td class="p-2 text-center border border-gray-300">
                                     <span th:classappend="${sub.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}"
-                                        class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center">
-                                        <i th:classappend="${sub.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
-                                        <span th:text="${sub.status}"></span>
-                                    </span>
+      class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center w-20">
+    <i th:classappend="${sub.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+   <span th:text="${sub.status}" class="ml-1"></span>
+</span>
+
                                 </td>
                                <td class="p-2 text-center border border-gray-300 relative">
     <button onclick="toggleDropdown(event, this)" class="dropdown-btn bg-gray-200 p-2 rounded px-4 py-2 focus:outline-none">
@@ -122,6 +125,25 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="flex justify-center items-center mt-4 space-x-4">
+    <!-- Left Arrow (Previous) -->
+    <a th:if="${currentPage > 0}"
+       th:href="@{/subscription/list(page=${currentPage - 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
+       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
+        <i class="ri-arrow-left-s-line"></i> <!-- Left Arrow Icon -->
+    </a>
+
+    <!-- Page Numbers -->
+    <span th:text="'Page ' + (${currentPage + 1}) + ' of ' + ${totalPages}" class="font-semibold"></span>
+
+    <!-- Right Arrow (Next) -->
+    <a th:if="${currentPage + 1 < totalPages}"
+       th:href="@{/subscription/list(page=${currentPage + 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
+       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
+        <i class="ri-arrow-right-s-line"></i> <!-- Right Arrow Icon -->
+    </a>
+</div>
+                
             </main>
         </div>
     </div>
