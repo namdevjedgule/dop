@@ -3,7 +3,6 @@ package com.example.dop.Controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,8 +13,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.dop.Model.User;
 import com.example.dop.Service.UserService;
@@ -30,16 +31,31 @@ public class UserController {
 	private UserService userService;
 
 	@GetMapping("/add")
-	public String showAddUserPage(HttpSession session, Model model) {
-		User user = (User) session.getAttribute("loggedInUser");
+	public String showAddUserPage(@RequestParam(value = "userId", required = false) Long userId, HttpSession session,
+			Model model) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-		if (user == null) {
+		if (loggedInUser == null) {
 			return "redirect:/";
 		}
 
-		model.addAttribute("fname", user.getFirstName());
-		model.addAttribute("email", user.getUserEmailId());
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getUserEmailId());
 		model.addAttribute("currentPage", "userAdd");
+
+		if (userId != null) {
+			User user = userService.getUserById(userId);
+			if (user == null) {
+				model.addAttribute("error", "User not found!");
+				return "userAdd";
+			}
+			model.addAttribute("user", user);
+			model.addAttribute("isEdit", true);
+		} else {
+			model.addAttribute("user", new User());
+			model.addAttribute("isEdit", false);
+		}
+
 		return "userAdd";
 	}
 
@@ -53,7 +69,6 @@ public class UserController {
 
 		List<User> users = userService.getAllUsers();
 
-		// Debugging
 		if (users.isEmpty()) {
 			System.out.println("No users found in database.");
 		} else {
@@ -65,12 +80,6 @@ public class UserController {
 		model.addAttribute("email", user.getUserEmailId());
 		model.addAttribute("currentPage", "userList");
 		return "userList";
-	}
-
-	@GetMapping("/{email}")
-	public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-		Optional<User> user = userService.getUserByEmail(email);
-		return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	@PostMapping("/saveUser")
@@ -116,6 +125,43 @@ public class UserController {
 		}
 
 		return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
+	}
+
+	@GetMapping("/{userId}")
+	public ResponseEntity<?> getUserById(@PathVariable Long userId) {
+		User user = userService.getUserById(userId);
+
+		if (user != null) {
+			return ResponseEntity.ok(user);
+		} else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+
+	@PutMapping("/update/{userId}")
+	public ResponseEntity<Map<String, Object>> updateUser(@PathVariable Long userId, @RequestBody User updatedUser) {
+		try {
+			User existingUser = userService.getUserById(userId);
+			if (existingUser == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(Map.of("status", "error", "message", "User not found!"));
+			}
+
+			existingUser.setFirstName(updatedUser.getFirstName());
+			existingUser.setLastName(updatedUser.getLastName());
+			existingUser.setUserEmailId(updatedUser.getUserEmailId());
+
+			if (updatedUser.getUserPassword() != null && !updatedUser.getUserPassword().isEmpty()) {
+				existingUser.setUserPassword(updatedUser.getUserPassword());
+			}
+
+			userService.saveUser(existingUser);
+
+			return ResponseEntity.ok(Map.of("status", "success", "message", "User updated successfully!"));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
+		}
 	}
 
 }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Category List</title>
+    <title>Step List</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
@@ -21,18 +21,18 @@
 
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-teal-700 mb-6">CATEGORIES LIST</h1>
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">STEPS LIST</h1>
                     <div class="flex flex-wrap gap-4 mb-4">
                         <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow"
-                            onkeyup="searchUsers()">
+                            onkeyup="searchSteps()">
                         <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
                             <option value="all">Select Status</option>
                             <option value="Active">Active</option>
                             <option value="Inactive">Inactive</option>
                         </select>
-                        <input type="date" id="categoryDateFilter" class="p-2 border rounded" onchange="filterCategoryByDate()">
+                        <input type="date" id="stepDateFilter" class="p-2 border rounded" onchange="filterStepByDate()">
                         <div class="flex gap-2">
-                            <button onclick="window.location.href='/categories/add'"
+                            <button onclick="window.location.href='/steps/add'"
                                 class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
                             <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
                                     class="fa fa-sync"></i></button>
@@ -40,70 +40,78 @@
                                     class="fa fa-trash"></i></button>
                         </div>
                     </div>
-
-
-                    <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                    <table id="stepTable" class="w-full border border-gray-300 border-collapse rounded shadow-md">
                         <thead>
                             <tr class="bg-teal-600 text-white border border-gray-300">
                                 <th class="p-2 border border-gray-300">
                                     <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
                                 </th>
-                                <th class="p-2 border border-gray-300">NAME</th>
+                                <th class="p-2 border border-gray-300">SL NO.</th>
+                                <th class="p-2 border border-gray-300">IMAGE</th>
+                                <th class="p-2 border border-gray-300">TITLE</th>
                                 <th class="p-2 border border-gray-300">DATE</th>
                                 <th class="p-2 border border-gray-300">STATUS</th>
                                 <th class="p-2 border border-gray-300">ACTION</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr class="border border-gray-300" th:each="category : ${categories}"
-                                th:data-category-id="${category.categoryId}">
+                        <tbody id="tableBody">
+                            <tr class="border border-gray-300" th:each="step, iterStat : ${steps}"
+                                th:data-step-id="${step.stepId}">
                                 <td class="p-2 border text-center border-gray-300"><input type="checkbox"
                                         class="rowCheckbox"></td>
+                                <td class="p-2 border text-center border-gray-300" th:text="${iterStat.count}"></td>
                                 <td class="p-2 border text-center border-gray-300">
-                                    <span th:text="${category.categoryName}"></span>
+                                    <div class="flex justify-center items-center">
+                                        <img th:src="@{'/uploads/' + ${step.imageUrl}}" alt="Step Image"
+                                            class="w-16 h-16 object-cover">
+                                    </div>
+                                </td>
+                                <td class="p-2 border text-center border-gray-300">
+                                    <span th:text="${step.titleName}"></span>
                                 </td>
                                 <td class="p-2 text-center text-gray-600 border border-gray-300">
-                                    <span th:text="${#temporals.format(category.categoryDate, 'dd MMM, yyyy')}"></span>
+                                    <span th:text="${#temporals.format(step.stepDate, 'dd MMM, yyyy')}"></span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span th:id="'status-' + ${category.categoryId}"
+                                    <span th:id="'status-' + ${step.stepId}"
                                         class="text-xs font-semibold px-3 py-1 rounded text-white inline-flex items-center justify-center"
-                                        th:classappend="${category.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
+                                        th:classappend="${step.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
                                         style="width: 80px; height: 32px;">
                                         <i
-                                            th:classappend="${category.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
-                                        <span th:text="${category.status}"></span>
+                                            th:classappend="${step.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span th:text="${step.status}" class="ml-1"></span>
                                     </span>
                                 </td>
 
                                 <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
                                     <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
-                                        onclick="toggleMenu(event, this)">
+                                        style="width: 80px; height: 32px;" onclick="toggleMenu(event, this)">
                                         Action
                                     </button>
                                     <div
                                         class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
                                         <ul class="text-left">
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer" onclick="editStep(this)">
+                                                Edit</li>
                                             <li class="p-2 hover:bg-gray-200 cursor-pointer"
-                                                onclick="editCategory(this)">Edit</li>
-                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
-                                                th:attr="onclick='toggleCategoryStatus(this, ' + ${category.categoryId} + ')'"
-                                                th:text="${category.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                                th:attr="onclick='toggleStepStatus(this, ' + ${step.stepId} + ')'">
+                                                <span
+                                                    th:text="${step.status == 'Active' ? 'Deactivate' : 'Activate'}"></span>
                                             </li>
                                             <li class="p-2 hover:bg-red-500 text-red-700 cursor-pointer"
-                                                onclick="deleteCategory(this)">Delete</li>
+                                                onclick="deleteStep(this)">Delete</li>
                                         </ul>
                                     </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    <div class="flex justify-between items-center mt-4">
-                        <button id="prevBtn" onclick="prevPage()"
-                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Prev</button>
-                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-gray-300 rounded">Page 1</span>
-                        <button id="nextBtn" onclick="nextPage()"
-                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Next</button>
+                    <div class="flex justify-center mt-4 gap-2">
+                        <button id="prevPage" class="px-4 py-2 bg-gray-300 rounded mx-1"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <span id="currentPage" class="px-4 py-2 bg-teal-600 text-white rounded mx-1">1</span>
+                        <button id="nextPage" class="px-4 py-2 bg-gray-300 rounded mx-1"><i
+                                class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
             </main>
@@ -111,6 +119,39 @@
     </div>
 
     <script>
+
+        let currentPage = 1;
+        let rowsPerPage = 5;
+        let table = document.getElementById("stepsTable");
+        let tbody = document.getElementById("tableBody");
+        let rows = tbody.getElementsByTagName("tr");
+
+        function displayTablePage(page) {
+            let start = (page - 1) * rowsPerPage;
+            let end = start + rowsPerPage;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = i >= start && i < end ? "table-row" : "none";
+            }
+        }
+
+        document.getElementById("prevPage").addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTablePage(currentPage);
+                document.getElementById("currentPage").textContent = currentPage;
+            }
+        });
+
+        document.getElementById("nextPage").addEventListener("click", function () {
+            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+                currentPage++;
+                displayTablePage(currentPage);
+                document.getElementById("currentPage").textContent = currentPage;
+            }
+        });
+
+        displayTablePage(currentPage);
+
         function toggleMenu(event, button) {
             event.stopPropagation();
             document.querySelectorAll(".action-menu").forEach(menu => {
@@ -121,39 +162,43 @@
             let menu = button.nextElementSibling;
             menu.classList.toggle("hidden");
         }
-        document.addEventListener("click", function () {
-            document.querySelectorAll(".action-menu").forEach(menu => {
-                menu.classList.add("hidden");
-            });
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".action-menu") && !event.target.closest(".action-btn")) {
+                document.querySelectorAll(".action-menu").forEach(menu => {
+                    menu.classList.add("hidden");
+                });
+            }
         });
 
-        function searchUsers() {
+
+        function searchSteps() {
             let input = document.getElementById("searchInput").value.toLowerCase();
-            let rows = document.querySelectorAll("tbody tr");
+            let rows = document.querySelectorAll("#tableBody tr");
 
             rows.forEach(row => {
-                let categoryName = row.querySelector("td:nth-child(2) span:first-child").textContent.toLowerCase();
-
-                if (categoryName.includes(input)) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
+                let titleCell = row.querySelector("td:nth-child(4) span"); // Adjusted for correct column
+                if (titleCell) {
+                    let titleName = titleCell.textContent.toLowerCase();
+                    row.style.display = titleName.includes(input) ? "table-row" : "none";
                 }
             });
         }
+
 
         function filterByStatus() {
             let selectedStatus = document.getElementById("statusFilter").value;
-            let rows = document.querySelectorAll("tbody tr");
+            let rows = document.querySelectorAll("#tableBody tr");
+
             rows.forEach(row => {
-                let statusCell = row.querySelector("td:nth-child(4) span");
-                if (selectedStatus === "all" || statusCell.textContent.trim() === selectedStatus) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
+                let statusCell = row.querySelector("td:nth-child(6) span"); // Corrected column index
+                if (statusCell) {
+                    let statusText = statusCell.textContent.trim();
+                    row.style.display = (selectedStatus === "all" || statusText === selectedStatus) ? "table-row" : "none";
                 }
             });
         }
+
+
         function toggleCheckboxes(source) {
             let checkboxes = document.querySelectorAll(".rowCheckbox");
             checkboxes.forEach(checkbox => {
@@ -161,18 +206,18 @@
             });
         }
 
-        function deleteCategory(button) {
+        function deleteStep(button) {
             let row = button.closest("tr");
-            let categoryId = row.getAttribute("data-category-id");
+            let stepId = row.getAttribute("data-step-id");
 
-            if (!categoryId) {
-                Swal.fire("Error", "Category ID not found!", "error");
+            if (!stepId) {
+                Swal.fire("Error", "Step ID not found!", "error");
                 return;
             }
 
             Swal.fire({
                 title: "Are you sure?",
-                text: "This category will be permanently deleted!",
+                text: "This step will be permanently deleted!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
@@ -180,17 +225,17 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/categories/delete/${categoryId}`, {
+                    fetch(`/steps/delete/${stepId}`, {
                         method: "DELETE",
                         headers: { "Content-Type": "application/json" }
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === "success") {
-                                Swal.fire("Deleted!", "Category has been removed.", "success")
+                                Swal.fire("Deleted!", "Step has been removed.", "success")
                                     .then(() => location.reload());
                             } else {
-                                Swal.fire("Error", data.message || "Failed to delete category.", "error");
+                                Swal.fire("Error", data.message || "Failed to delete step.", "error");
                             }
                         })
                         .catch(error => {
@@ -202,15 +247,15 @@
         }
 
         function deleteRow() {
-            let selectedCategories = [];
+            let selectedSteps = [];
             document.querySelectorAll(".rowCheckbox:checked").forEach(checkbox => {
                 let row = checkbox.closest("tr");
-                let categoryId = row.getAttribute("data-category-id");
-                if (categoryId) selectedCategories.push(categoryId);
+                let stepId = row.getAttribute("data-step-id");
+                if (stepId) selectedSteps.push(stepId);
             });
 
-            if (selectedCategories.length === 0) {
-                Swal.fire("No Selection", "Please select at least one category to delete.", "warning");
+            if (selectedSteps.length === 0) {
+                Swal.fire("No Selection", "Please select at least one step to delete.", "warning");
                 return;
             }
 
@@ -224,15 +269,15 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch("/categories/delete", {
+                    fetch("/steps/delete", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ categoryIds: selectedCategories })
+                        body: JSON.stringify({ stepIds: selectedSteps })
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === "success") {
-                                Swal.fire("Deleted!", "Selected categories have been deleted.", "success")
+                                Swal.fire("Deleted!", "Selected steps have been deleted.", "success")
                                     .then(() => location.reload());
                             } else {
                                 Swal.fire("Error", data.message || "Something went wrong!", "error");
@@ -246,29 +291,29 @@
             });
         }
 
-        function editCategory(button) {
+        function editStep(button) {
             let row = button.closest("tr");
-            let categoryId = row.getAttribute("data-category-id");
-            if (!categoryId) {
-                Swal.fire("Error", "Category ID not found!", "error");
+            let stepId = row.getAttribute("data-step-id");
+            if (!stepId) {
+                Swal.fire("Error", "Step ID not found!", "error");
                 return;
             }
 
-            window.location.href = `/categories/add?categoryId=` + categoryId;
+            window.location.href = `/steps/add?stepId=` + stepId;
         }
 
-        function deactivateCategory(button) {
+        function deactivateStep(button) {
             let row = button.closest("tr");
-            let categoryId = row.getAttribute("data-category-id");
+            let stepId = row.getAttribute("data-step-id");
 
-            if (!categoryId) {
-                Swal.fire("Error", "Category ID not found!", "error");
+            if (!stepId) {
+                Swal.fire("Error", "Step ID not found!", "error");
                 return;
             }
 
             Swal.fire({
                 title: "Are you sure?",
-                text: "Do you want to deactivate this category?",
+                text: "Do you want to deactivate this step?",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
@@ -276,17 +321,17 @@
                 confirmButtonText: "Yes, deactivate it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/categories/deactivate/${categoryId}`, {
+                    fetch(`/steps/deactivate/${stepId}`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" }
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === "success") {
-                                Swal.fire("Deactivated!", "Category has been deactivated.", "success")
+                                Swal.fire("Deactivated!", "Step has been deactivated.", "success")
                                     .then(() => location.reload());
                             } else {
-                                Swal.fire("Error", data.message || "Failed to deactivate category.", "error");
+                                Swal.fire("Error", data.message || "Failed to deactivate step.", "error");
                             }
                         })
                         .catch(error => {
@@ -297,16 +342,16 @@
             });
         }
 
-        function toggleCategoryStatus(element, categoryId) {
+        function toggleStepStatus(element, stepId) {
             let row = element.closest("tr");
-            let statusElement = document.getElementById(`status-${categoryId}`);
+            let statusElement = document.getElementById(`status-${stepId}`);
 
             if (!statusElement) {
-                console.error(`Status element not found for category ID: ${categoryId}`);
+                console.error(`Status element not found for step ID: ${stepId}`);
                 return;
             }
 
-            fetch(`/categories/toggleStatus/${categoryId}`, { method: "POST" })
+            fetch(`/steps/toggleStatus/${stepId}`, { method: "POST" })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -324,38 +369,33 @@
                 .catch(error => console.error("Error:", error));
         }
 
-        function filterCategoryByDate() {
-            let selectedDate = document.getElementById("categoryDateFilter").value;
-            let rows = document.querySelectorAll("tbody tr");
+        function filterStepByDate() {
+            let selectedDate = document.getElementById("stepDateFilter").value;
+            let rows = document.querySelectorAll("#tableBody tr");
 
             if (!selectedDate) {
                 rows.forEach(row => row.style.display = "table-row");
                 return;
             }
-
             let formattedSelectedDate = formatDate(selectedDate);
-
             rows.forEach(row => {
-                let dateCell = row.querySelector("td:nth-child(3) span"); 
+                let dateCell = row.querySelector("td:nth-child(5) span"); 
 
                 if (dateCell) {
-                    let categoryDateText = dateCell.textContent.trim();
-
-                    if (categoryDateText === formattedSelectedDate) {
-                        row.style.display = "table-row";
+                    let stepDateText = dateCell.textContent.trim(); 
+                    if (stepDateText === formattedSelectedDate) {
+                        row.style.display = "table-row"; 
                     } else {
                         row.style.display = "none";
                     }
                 }
             });
         }
-
         function formatDate(inputDate) {
             let dateObj = new Date(inputDate);
             let options = { day: "2-digit", month: "short", year: "numeric" };
             return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
         }
-
 
     </script>
 </body>
