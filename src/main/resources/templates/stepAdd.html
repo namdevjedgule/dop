@@ -152,52 +152,6 @@
             }
         }
 
-        // document.getElementById("addstep").addEventListener("submit", async function (event) {
-        //     event.preventDefault();
-
-        //     let titleName = document.getElementById("titleName").value.trim();
-        //     let icon = document.getElementById("icon")?.value.trim() || "";
-        //     let altTitle = document.getElementById("altTitle")?.value.trim() || "";
-        //     let description = document.getElementById("editor").value.trim();
-        //     let imageFile = document.getElementById("imageUpload").files[0];
-
-        //     if (!titleName) return showToast("Missing Field", "Title is required!", "warning");
-        //     if (!description) return showToast("Missing Field", "Description is required!", "warning");
-        //     if (!imageFile) return showToast("Missing Field", "Please upload an image!", "warning");
-
-        //     let formData = new FormData();
-        //     formData.append("titleName", titleName);
-        //     formData.append("icon", icon);
-        //     if (altTitle) formData.append("altTitle", altTitle);
-        //     formData.append("description", description);
-        //     formData.append("imageFile", imageFile);
-
-        //     console.log("FormData before sending:");
-        //     for (let pair of formData.entries()) {
-        //         console.log(pair[0] + ": " + pair[1]);
-        //     }
-
-        //     try {
-        //         let response = await fetch("/steps/saveStep", {
-        //             method: "POST",
-        //             body: formData
-        //         });
-
-        //         let data = await response.json();
-        //         if (response.ok) {
-        //             showToast("Success!", "Step saved successfully!", "success");
-        //             setTimeout(() => {
-        //                 window.location.href = "/steps/list";
-        //             }, 1500);
-        //         } else {
-        //             showToast("Error", data.message || "Something went wrong!", "error");
-        //         }
-        //     } catch (error) {
-        //         console.error("Error:", error);
-        //         showToast("Error", "Server error! Please try again later.", "error");
-        //     }
-        // });
-
         document.addEventListener("DOMContentLoaded", async function () {
             const urlParams = new URLSearchParams(window.location.search);
             const stepId = urlParams.get("stepId");
