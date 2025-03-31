@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 
 @Entity
@@ -23,9 +24,16 @@ public class Admin
 	private String apassword;
 	private String status;
 	private LocalDate created_on;
-	 @Column(name = "profile_photo")  
+	 @Column(name = "profile_photo") 
 	    private String profilePhoto;
+	 private boolean active = true;
 	 
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 	public String getProfilePhoto() {
 		return profilePhoto;
 	}

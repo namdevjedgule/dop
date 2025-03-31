@@ -6,6 +6,9 @@ import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.example.dop.Model.Company;
 import com.example.dop.Repository.CompanyRepo;
@@ -62,6 +65,11 @@ public List<Company> getCompanies() {
 	{
 		companyRepo.deleteById(cid);
 		
+	}
+	public Page<Company> getPaginatedCompanies(int page, int pageSize, String keyword, String statusFilter) {
+		Pageable pageable = PageRequest.of(page, pageSize);
+
+        return companyRepo.findAll(pageable);
 	}
 	
 		

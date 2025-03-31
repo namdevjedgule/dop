@@ -88,5 +88,9 @@ public class Subscription
 	public void setSubNameMaster(SubNameMaster subNameMaster) {
 		this.subNameMaster = subNameMaster;
 	}
+	public void setCreatedBy(String name) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

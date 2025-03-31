@@ -4,37 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
 </head>
-<body class="bg-gray-100 h-screen flex flex-col">
-    <!-- Header -->
-    <div th:insert="~{layout/header :: header}" class="w-full bg-white shadow-md p-4 fixed top-0 left-0 z-10"></div>
-
-    <main class="flex flex-1 pt-16">
-        <!-- Sidebar -->
-        <div th:insert="~{layout/sidebar :: sidebar}" class="bg-black text-white w-55 h-screen fixed left-0 top-16"></div>
-
-        <!-- Main Content -->
-        <div class="flex-1 ml-60 p-6 overflow-y-auto">
-            <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-4xl">
-                <h2 class="text-2xl font-semibold mb-4">EDIT ADMIN</h2>
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">Edit ADMIN</h1>
  <form action="/UpdateAdmin" method="post" enctype="multipart/form-data">
-                <div class="flex gap-6">
-                    <!-- Profile Image Upload -->
-                   <input type="hidden" name="aid" th:value="${ap.aid}">
-                    <div class="relative">
-                        <label for="profile-upload">
-                            <img id="profile-preview" src="https://via.placeholder.com/150" class="w-32 h-32 rounded-full border shadow-sm" alt="Profile">
-                            <span class="absolute bottom-2 right-2 bg-teal-500 p-2 rounded-full cursor-pointer">
-                                📷
-                            </span>
-                        </label>
-                        <input type="file" name="profileImage" id="profile-upload" class="hidden" accept="image/*" onchange="previewImage(event)">
-                    </div>
+             <div class="flex gap-6 items-start">
+    
+    <div class="flex flex-col items-center">
+        <label for="profile-upload" class="relative cursor-pointer">
+            <img id="profile-preview" 
+             th:src="${ap.profilePhoto != null} ? @{${ap.profilePhoto}} : '/uploads/default-avatar.jpg'" 
+             alt="Admin Photo" class="w-40 h-28 border shadow-sm object-cover">
+        </label>
+<input type="hidden" th:value="${ap.aid}" name="aid">
+       
+        <label for="profile-upload" class="mt-2 text-gray-700 font-medium cursor-pointer">Upload Image</label>
 
-                   
+        
+       <!-- Hidden File Input -->
+    <input type="file" name="profileImage" id="profile-upload" class="hidden" accept="image/*" 
+           onchange="previewImage(event)">
+
+   
+    
+<p th:if="${ap.profilePhoto == null}" style="color: red;">No image available</p>
+
+            
+    </div>
                     <div class="flex-1 grid grid-cols-2 gap-4">
                         <div class="flex items-center gap-2">
                             <label class="w-32 font-medium">First Name <span class="text-red-500">*</span></label>
@@ -57,15 +63,17 @@
 
                 <!-- Buttons -->
                 <div class="flex justify-end gap-4 mt-6">
-                    <button onclick="validateForm()" class="bg-teal-500 text-white px-4 py-2 rounded shadow-md hover:bg-teal-600">Save</button>
-                    <button class="bg-red-500 text-white px-4 py-2 rounded shadow-md hover:bg-red-600">Cancel</button>
+<button type="submit" onclick="validateForm(event)" class="bg-teal-500 text-white px-4 py-2 rounded shadow-md hover:bg-teal-600">Save</button>
+<button type="button" onclick="confirmCancel()" class="bg-red-500 text-white px-4 py-2 rounded shadow-md hover:bg-red-600">
+    Cancel
+</button>
                 </div>
                </form>
             </div>
-            
+            </main>
         </div>
         
-    </main>
+
 
     <!-- JavaScript for Profile Preview and Validation -->
     <script>
@@ -76,74 +84,158 @@
             };
             reader.readAsDataURL(event.target.files[0]);
         }
+        function confirmCancel() {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Your changes will not be saved!",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, cancel",
+                cancelButtonText: "Keep editing",
+                width: "200px",
+                height: "200px",
+            }).then((result) => {
+                if (result.isConfirmed) {
+            
+                	window.location.reload();
+                }
+            });
+        }
 
-        function validateForm() {
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission if validation fails
+
             const firstName = document.getElementById("firstName").value.trim();
             const lastName = document.getElementById("lastName").value.trim();
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
 
-            const nameRegex = /^[A-Za-z]+$/; // Only alphabets
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; // Only Gmail format
-            const minPasswordLength = 6; // Password must be greater than 5
+            const nameRegex = /^[A-Za-z]+$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
+            const minPasswordLength = 6; 
 
+            // Check if any field is empty
             if (firstName === "" || lastName === "" || email === "" || password === "") {
                 Swal.fire({
-                    icon: "error",
-                    text: "Please fill in all required fields!",
-                    width: "200px",
-                    height: "200px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Missing Field</span>",
+                    text: "All fields are required!",
+                    toast: true,
+                    position: "top-middle",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
-                return;
+                return false; // Ensure validation stops execution
             }
 
+            // Validate first name (only alphabets)
             if (!nameRegex.test(firstName)) {
                 Swal.fire({
-                    icon: "error",
-                    text: "First Name should contain only alphabets!",
-                    width: "200px",
-                    height: "200px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Input</span>",
+                    text: "First name should contain only alphabets!",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
-                return;
+                return false;
             }
-            
+
+            // Validate last name (only alphabets)
             if (!nameRegex.test(lastName)) {
                 Swal.fire({
-                    icon: "error",
-                    text: "First Name should contain only alphabets!",
-                    width: "200px",
-                    height: "200px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Input</span>",
+                    text: "Last name should contain only alphabets!",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
-                return;
+                return false;
             }
 
+            // Validate email format
             if (!emailRegex.test(email)) {
                 Swal.fire({
-                    icon: "error",
-                    text: "Email must be in format abc@gmail.com!",
-                    width: "200px",
-                    height: "200px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Email</span>",
+                    text: "Email must be in format abc@gmail.com",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
-                return;
+                return false;
             }
 
+            // Validate password length
             if (password.length < minPasswordLength) {
                 Swal.fire({
-                    icon: "error",
-                    text: "Password must be greater than 5 characters!",
-                    width: "200px",
-                    height: "200px",
+                    icon: "warning",
+                    title: "<span class='text-gray-700 font-semibold'>Weak Password</span>",
+                    text: "Password must be at least 6 characters long",
+                    toast: true,
+                    position: "top-center",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: "bg-[#e0f2f1] shadow-md",
+                        title: "text-gray-800",
+                        content: "text-gray-600",
+                    }
                 });
-                return;
+                return false;
             }
 
+           
             Swal.fire({
                 icon: "success",
-                text: "Admin Updated successfully.",
-                width: "200px",
-                height: "200px",
+                title: "<span class='text-gray-700 font-semibold'>Success</span>",
+                text: "Form Updated Successfully!",
+                toast: true,
+                position: "top-center",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: "bg-[#e0f2f1] shadow-md",
+                    title: "text-gray-800",
+                    content: "text-gray-600",
+                }
+            }).then(() => {
+                document.querySelector("form").submit();
             });
         }
+
+
         
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggle-btn');

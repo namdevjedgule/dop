@@ -40,7 +40,12 @@ public class SubController
 	
 	
 	@GetMapping("/add")
-	public String add(Model model) {
+	public String add(Model model , HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/";
+		}
+		model.addAttribute("fname", loggedInUser.getFirstName());
 	    List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
 	    model.addAttribute("subNameMasters", subNameMasters);
 	    model.addAttribute("subscription", new Subscription());
@@ -53,14 +58,19 @@ public class SubController
 	        @RequestParam(value = "keyword", required = false) String keyword,
 	        @RequestParam(value = "statusFilter", required = false) String statusFilter,
 	        @RequestParam(value = "page", defaultValue = "0") int page,
-	        Model model) {
+	        Model model, HttpSession session) {
 	    
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/";
+		}
+		model.addAttribute("fname", loggedInUser.getFirstName());
 	    List<Subscription> subs;
 
-	    // Remove leading/trailing spaces from keyword
+	    
 	    if (keyword != null) keyword = keyword.trim();
 
-	    // Check conditions and call appropriate service method
+	    
 	   if (keyword != null && !keyword.isEmpty()) {
 	        subs = subService.searchSubByKeyword(keyword);
 	    } else if (statusFilter != null && !statusFilter.isEmpty()) {
@@ -72,7 +82,7 @@ public class SubController
 	    model.addAttribute("subs", subs);
 	    model.addAttribute("keyword", keyword);
 	    model.addAttribute("statusFilter", statusFilter);
-	    int pageSize = 5; // Number of items per page
+	    int pageSize = 5; 
 
 	    Page<Subscription> subscriptionPage = subService.getPaginatedSubscriptions(page, pageSize, keyword, statusFilter);
 
@@ -81,35 +91,50 @@ public class SubController
 	    model.addAttribute("totalPages", subscriptionPage.getTotalPages());
 	    
 
-	    return "SubscriptionList"; // Your template name
+	    return "SubscriptionList";
 	}
 
 
-
-	
 	@PostMapping("/save")
 	public String saveSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
 	    Long userId = (Long) session.getAttribute("userId");
 
 	    if (userId == null) {
-	        return "redirect:/login";
+	        System.out.println("User ID is null. Redirecting to login.");
+	        return "redirect:/login"; 
 	    }
 
-	    User user = userService.findById(userId);
-	    subscription.setCreatedBy(user);
-	    subscription.setStatus("Active");
+	    System.out.println("User ID from session: " + userId);
 
-	    subService.saveSubscription(subscription, user);
-	    return "redirect:/subscription/add";
+	    try {
+	        User user = userService.findById(userId);
+	        System.out.println("User found: " + user.getFirstName());
+
+	        subscription.setCreatedBy(user);
+	        subscription.setStatus("Active");
+
+	        subService.saveSubscription(subscription);
+	        return "redirect:/subscription/add";
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return "redirect:/error";
+	    }
 	}
 
 	@GetMapping("/edit/{id}")
-	public String editSubscription(@PathVariable("id") Long id, Model model) { 
+	public String editSubscription(@PathVariable("id") Long id, Model model,HttpSession session)
+{
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/";
+		}
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		
 	    Subscription subscription = subService.findById(id);
-	    List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters(); // Fetch dropdown options
+	    List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters(); 
 
 	    model.addAttribute("subscription", subscription);
-	    model.addAttribute("subNameMasters", subNameMasters); // Send list to frontend
+	    model.addAttribute("subNameMasters", subNameMasters); 
 
 	    return "EditSubscription";
 	}
@@ -124,7 +149,7 @@ public class SubController
 	    }
 	    User user = userService.findById(userId);
 	    subscription.setCreatedBy(user);
-	    subService.saveSubscription(subscription, user);
+	    subService.saveSubscription(subscription);
 	    return "redirect:/subscription/list";
 	}
 	

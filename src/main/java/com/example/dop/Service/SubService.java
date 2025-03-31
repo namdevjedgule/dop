@@ -51,8 +51,8 @@ public class SubService
 		return subRepo.findAll();
 	}
 
-	 public Subscription saveSubscription(Subscription subscription, User user) {
-	        subscription.setCreatedBy(user);  
+	 public Subscription saveSubscription(Subscription subscription) {
+	          
 	        return subRepo.save(subscription);
 	    }
 
