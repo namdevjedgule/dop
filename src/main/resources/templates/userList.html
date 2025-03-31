@@ -56,7 +56,7 @@
                         <tbody id="userTableBody">
                             <tr class="border border-gray-300" th:each="user : ${users}"
                                 th:data-user-id="${user.userId}">
-                                <td class="p-2 border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
+                                <td class="p-2 text-center border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
                                 <td class="p-2 border border-gray-300">
                                     <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
                                     <span class="block text-sm text-gray-600" th:text="${user.userEmailId}"></span>
@@ -93,13 +93,13 @@
                                     <div
                                         class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
                                         <ul class="text-left">
-                                            <li class="p-2 hover:bg-gray-200 cursor-pointer" onclick="editUser(this)">
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer" onclick="editUser(this)">
                                                 Edit</li>
-                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                                 th:attr="onclick='toggleUserStatus(this, ' + ${user.userId} + ')'"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
                                             </li>
-                                            <li class="p-2 hover:bg-red-500 text-red-700 cursor-pointer"
+                                            <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
                                                 onclick="deleteUser(this)">Delete</li>
                                         </ul>
                                     </div>
@@ -109,10 +109,12 @@
                     </table>
                     <div class="flex justify-between items-center mt-4">
                         <button id="prevBtn" onclick="prevPage()"
-                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Prev</button>
-                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-gray-300 rounded">Page 1</span>
+                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
+                            class="fas fa-arrow-left"></i></button>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded">Page 1</span>
                         <button id="nextBtn" onclick="nextPage()"
-                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Next</button>
+                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
+                            class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
             </main>

@@ -56,7 +56,8 @@
                             <button type="submit"
                                 class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">Save</button>
                             <button type="button"
-                                class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md" onclick="handleCancel()">Cancel</button>
+                                class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md"
+                                onclick="handleCancel()">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -138,59 +139,6 @@
                 }
             });
         });
-
-        //     document.getElementById("adduser").addEventListener("submit", async function (event) {
-        //         event.preventDefault();
-
-        //         let firstName = document.getElementById("firstName").value.trim();
-        //         let lastName = document.getElementById("lastName").value.trim();
-        //         let userEmailId = document.getElementById("userEmailId").value.trim();
-        //         let userPassword = document.getElementById("password").value.trim();
-
-        //         let nameRegex = /^[A-Za-z]+$/;
-        //         let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        //         let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-        //         if (!firstName) return showToast("Missing Field", "First Name is required!", "warning");
-        //         if (!firstName.match(nameRegex)) return showToast("Invalid Input", "First Name should contain only letters.", "error");
-        //         if (!lastName) return showToast("Missing Field", "Last Name is required!", "warning");
-        //         if (!lastName.match(nameRegex)) return showToast("Invalid Input", "Last Name should contain only letters.", "error");
-        //         if (!userEmailId) return showToast("Missing Field", "Email is required!", "warning");
-        //         if (!emailRegex.test(userEmailId)) return showToast("Invalid Email", "Enter a valid email address.", "error");
-        //         if (!userPassword) return showToast("Missing Field", "Password is required!", "warning");
-        //         if (!userPassword.match(passwordRegex)) return showToast("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");
-
-        //         let userData = { firstName, lastName, userEmailId, userPassword };
-        //         console.log("User Data Sent:", userData);
-
-        //         try {
-        //             let response = await fetch("/users/saveUser", {
-        //                 method: "POST",
-        //                 headers: { "Content-Type": "application/json" },
-        //                 body: JSON.stringify(userData)
-        //             });
-
-        //             let data;
-        //             try {
-        //                 data = await response.json();
-        //             } catch (error) {
-        //                 console.error("Invalid JSON response:", error);
-        //                 return showToast("Error", "Unexpected response from server.", "error");
-        //             }
-
-        //             if (response.ok && data.status === "success") {
-        //                 showToast("Success!", data.message, "success");
-        //                 setTimeout(() => {
-        //                     window.location.href = "/users/list";
-        //                 }, 1500);
-        //             } else {
-        //                 showToast("Error", data.message || "Something went wrong!", "error");
-        //             }
-        //         } catch (error) {
-        //             console.error("Error:", error);
-        //             showToast("Error", "Server error! Please try again later.", "error");
-        //         }
-        //     });
 
         function showToast(title, message, icon) {
             Swal.fire({

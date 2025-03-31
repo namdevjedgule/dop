@@ -104,7 +104,11 @@
                         </ul>
                     </li>
 
+<<<<<<< HEAD
             <!--         <li class="mb-2" x-data="{ open: false }"
+=======
+                    <!-- <li class="mb-2" x-data="{ open: false }"
+>>>>>>> 55a5e616f466a0efe34564c32521e6dbbbe53a62
                         x-init="open = ['categoryList', 'categoryAdd'].includes('[[${currentPage}]]')">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
@@ -158,11 +162,6 @@
                                 </a>
                             </li>
                         </ul>
-                    <li class="mb-2">
-                        <a th:href="@{/service}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
-                            th:classappend="${currentPage == 'service' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
-                            <i class="fa-solid fa-concierge-bell text-gray-400"></i> Services
-                        </a>
                     </li>
 
                     <li class="mb-2" x-data="{ open: false }"
@@ -194,6 +193,7 @@
                     </li>
 
                     <li class="mb-2" x-data="{ open: false }"
+<<<<<<< HEAD
     x-init="open = ['planList', 'planAdd'].includes('[[${currentPage}]]')">
     <button @click="open = !open"
         class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
@@ -245,6 +245,65 @@
     </ul>
 </li>
  <li class="mb-2">
+=======
+                        x-init="open = ['planList', 'planAdd'].includes('[[${currentPage}]]')">
+
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
+                            th:classappend="${currentPage == 'planList' || currentPage == 'planAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
+
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-clipboard-list text-gray-400"></i> Plans
+                            </div>
+
+                            <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
+                        </button>
+
+                        <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
+                            <li class="mb-1">
+                                <a th:href="@{/plans/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                    th:classappend="${currentPage == 'planList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                                    <i class="fa-solid fa-list text-white"></i> List
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/plans/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                    th:classappend="${currentPage == 'planAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                                    <i class="fa-solid fa-plus text-teal-400"></i> Add
+                                </a>
+                            </li>
+                        </ul>
+                    </li> -->
+                    
+                    <li class="mb-2" x-data="{ open: false }">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-receipt text-green-400"></i> Subscription
+                            </div>
+                            <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" class="ml-6 mt-2 bg-gray-800 rounded p-2">
+                            <li class="mb-1">
+                                <a th:href="@{/subscription/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
+                                    <i class="fa-solid fa-list text-white"></i> List
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/subscription/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
+                                    <i class="fa-solid fa-plus text-teal-400"></i> Add
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+
+                    <li class="mb-2">
+>>>>>>> 55a5e616f466a0efe34564c32521e6dbbbe53a62
                         <a th:href="@{/logout}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                             th:classappend="${currentPage == 'logout' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                             <i class="fa-solid fa-sign-out-alt text-blue-400"></i> Logout

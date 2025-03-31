@@ -95,7 +95,7 @@ public class UserController {
 		} catch (Exception e) {
 			Map<String, Object> errorResponse = new HashMap<>();
 			errorResponse.put("status", "error");
-			errorResponse.put("message", "Something went wrong!");
+			errorResponse.put("message", "Email Id is already exist!");
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
 		}
 	}
