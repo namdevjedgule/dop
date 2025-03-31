@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Company</title>
+    <title>Add Subscription</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
@@ -16,32 +16,39 @@
             <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD Company</h1>
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">EDIT SUBSCRIPTION</h1>
                     
-                    <form action="/saveCompany" method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
+                    <form action="/subscription/update" method="post" onsubmit="return validateForm(event)">
                         <div class="flex gap-6">
+                        <input type="hidden" name="id" th:value="${subscription.id}">
                             <div class="flex-1 grid grid-cols-2 gap-4">
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Company Name <span class="text-red-500">*</span></label>
-                                    <input type="text" id="companyName" placeholder="Enter Company Name" class="flex-1 p-2 border rounded" name="CompanyName">
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Activity <span class="text-red-500">*</span></label>
-                                    <select id="activity" name="Activity" class="flex-1 p-2 border rounded">
-                                        <option value="" disabled selected>Select Activity</option>
-                                        <option value="file-management">File Management</option>
-                                        <option value="analytics">Analytics</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
+                                    <label class="w-32 font-medium"> Name <span class="text-red-500">*</span></label>
+<select name="subNameMaster.id" id="subNameMaster" class="border border-black">
+        <option value="" disabled>Select</option>
+        <option th:each="sub : ${subNameMasters}" 
+                th:value="${sub.id}" 
+                th:text="${sub.subName}" 
+                th:selected="${sub.id == subscription.subNameMaster.id}">
+        </option>
+    </select>                                </div>
+                                
 
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Email Address <span class="text-red-500">*</span></label>
-                                    <input type="email" id="email" placeholder="Enter Email Address" class="flex-1 p-2 border rounded" name="cemail">
+                                    <label class="w-32 font-medium">Price<span class="text-red-500">*</span></label>
+                                    <input type="text" id="price"  class="flex-1 p-2 border rounded" name="price" th:value="${subscription.price}">
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Password <span class="text-red-500">*</span></label>
-                                    <input type="password" id="password" placeholder="Enter Password" class="flex-1 p-2 border rounded" name="cpassword">
+                                    <label class="w-32 font-medium">Project Authorized <span class="text-red-500">*</span></label>
+                                    <input type="text" id="project" class="flex-1 p-2 border rounded" name="project" th:value="${subscription.project}">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label class="w-32 font-medium">File Rows <span class="text-red-500">*</span></label>
+                                    <input type="text" id="rows"  class="flex-1 p-2 border rounded" name="rowCount" th:value="${subscription.rowCount}">
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <label class="w-32 font-medium">Days<span class="text-red-500">*</span></label>
+                                    <input type="text" id="days"  class="flex-1 p-2 border rounded" name="days" th:value="${subscription.days}">
                                 </div>
                             </div>
                         </div>
@@ -67,6 +74,11 @@
                 cancelButtonColor: "#3085d6",
                 confirmButtonText: "Yes, cancel",
                 cancelButtonText: "Keep editing",
+                customClass: {
+                    popup: "bg-[#e0f2f1] shadow-md",
+                    title: "text-gray-800",
+                    content: "text-gray-600",
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = "/companyAdd"; 
@@ -77,16 +89,17 @@
         function validateForm(event) {
             event.preventDefault(); // Prevent default submission
 
-            const companyName = document.getElementById("companyName").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const activity = document.getElementById("activity").value;
+           
+            const price = document.getElementById("price").value.trim();
+            const project = document.getElementById("project").value;
+            const rows = document.getElementById("rows").value;
+            const days = document.getElementById("days").value;
 
-            const nameRegex = /^[A-Za-z\s]+$/;  // Allows spaces in company name
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
+            const nameRegex = /^[A-Za-z\s]+$/;
+            const daysRegex = /^[0-9]+$/; 
             const minPasswordLength = 6; 
 
-            if (companyName === "" || email === "" || password === "" || activity === "") {
+            if ( price === "" || project === "" || rows==="" || days ==="") {
                 Swal.fire({
                 	 icon: "warning",
                      title: "<span class='text-gray-700 font-semibold'>Missing Field</span>",
@@ -106,11 +119,11 @@
             }
 
            
-            if (!emailRegex.test(email)) {
+            if (!daysRegex.test(days)) {
                 Swal.fire({
                 	icon: "warning",
-                    title: "<span class='text-gray-700 font-semibold'>Invalid Email</span>",
-                    text: "Email must be in format abc@gmail.com",
+                    title: "<span class='text-gray-700 font-semibold'>Invalid Days</span>",
+                    text: "Only numbers allowed",
                     toast: true,
                     position: "top-center",
                     showConfirmButton: false,
@@ -125,29 +138,12 @@
                 return false;
             }
 
-            if (password.length < minPasswordLength) {
-                Swal.fire({
-                	icon: "warning",
-                    title: "<span class='text-gray-700 font-semibold'>Weak Password</span>",
-                    text: "Password must be at least 6 characters long",
-                    toast: true,
-                    position: "top-center",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    customClass: {
-                        popup: "bg-[#e0f2f1] shadow-md",
-                        title: "text-gray-800",
-                        content: "text-gray-600",
-                    }
-                });
-                return false;
-            }
+           
 
             Swal.fire({
                 icon: "success",
                 title: "Success",
-                text: "Form Submitted Successfully!",
+                text: "Form Updated Successfully!",
                 position: "top-center",
                 showConfirmButton: false,
                 timer: 3000,

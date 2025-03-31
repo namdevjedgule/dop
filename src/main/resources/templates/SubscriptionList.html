@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+
+    
+    <style>
+        /* Ensure dropdown menu does not overlap the button */
+        .action-menu {
+            z-index: 50; /* Ensure it appears above other elements */
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            min-width: 150px;
+        }
+
+        .action-menu.show {
+            display: block;
+        }
+
+        .action-btn {
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">SUBSCRIPTIONS LIST</h1>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <form method="get" action="/subscription/list" class="relative flex-1">
+                        <input type="text" name="keyword" th:value="${keyword}" placeholder="Search"
+                            class="border p-2 pr-10 rounded-md w-full focus:ring-2 focus:ring-teal-500 outline-none">
+                        <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                            <i class="ri-search-line"></i>
+                        </button>
+                    </form>
+                       <form method="get" action="/subscription/list" class="w-40">
+                        <select name="statusFilter" class="p-2 border rounded-md w-full focus:ring-2 focus:ring-teal-500 outline-none" onchange="this.form.submit()">
+                            <option value="" th:selected="${statusFilter == null or statusFilter == ''}">All Status</option>
+                            <option value="Active" th:selected="${statusFilter == 'Active'}">Active</option>
+                            <option value="Inactive" th:selected="${statusFilter == 'Inactive'}">Inactive</option>
+                        </select>
+                    </form>
+                        <input type="text" placeholder="Created At" class="p-2 border rounded flex-grow">
+                        <div class="flex gap-2">
+                            <button onclick="window.location.href='/subscription/add'"
+                                class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
+                            <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
+                                    class="fa fa-sync"></i></button>
+                        </div>
+                    </div>
+
+                    <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                        <thead>
+                            <tr class="bg-teal-600 text-white border border-gray-300">
+                                <th class="p-2 border border-gray-300">
+                                    <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
+                                </th>
+                                <th class="p-2 border border-gray-300">NAME</th>
+                             
+                                <th class="p-2 border border-gray-300">PRICE</th>
+                                <th class="p-2 border border-gray-300">PROJECT AUTHORIZED</th>
+                                <th class="p-2 border border-gray-300">ROWS</th>
+                                <th class="p-2 border border-gray-300">STATUS</th>
+                                <th class="p-2 border border-gray-300">ACTION</th>
+                            </tr>
+                        </thead>
+                         <tbody>
+                            <tr class="border border-gray-300" th:each="sub : ${subs}" th:data-sub-id="${sub.id}">
+                                <td class="p-2 border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
+                                <td class="p-2 border border-gray-300" th:text="${sub.subNameMaster.subName}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${sub.price}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${sub.project}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${sub.rowCount}"></td>
+                                <td class="p-2 text-center border border-gray-300">
+                                    <span th:classappend="${sub.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}"
+      class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center w-20">
+    <i th:classappend="${sub.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+   <span th:text="${sub.status}" class="ml-1"></span>
+</span>
+
+                                </td>
+                               <td class="p-2 text-center border border-gray-300 relative">
+    <button onclick="toggleDropdown(event, this)" class="dropdown-btn bg-gray-200 p-2 rounded px-4 py-2 focus:outline-none">
+        Action ▼
+    </button>
+
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu absolute bottom-full right-0 mb-2 min-w-[150px] bg-white border rounded shadow-md hidden z-50">
+        <a th:href="@{/subscription/edit/{id}(id=${sub.id})}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            <i class="ri-edit-box-line mr-2"></i> Edit
+        </a>
+        <a href="javascript:void(0);" th:attr="onclick='toggleSubscriptionStatus(this, event, ' + ${sub.id} + ')'"
+           class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            <i class="ri-close-circle-line mr-2"></i> <span th:text="${sub.status == 'Active' ? 'Deactivate' : 'Activate'}"></span>
+        </a>
+<a href="javascript:void(0);" th:attr="onclick='deleteSubscription(this, event, ' + ${sub.id} + ')'"
+           class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+            <i class="ri-delete-bin-6-line mr-2"></i> Delete
+        </a>
+    </div>
+</td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex justify-center items-center mt-4 space-x-4">
+    <!-- Left Arrow (Previous) -->
+    <a th:if="${currentPage > 0}"
+       th:href="@{/subscription/list(page=${currentPage - 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
+       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
+        <i class="ri-arrow-left-s-line"></i> <!-- Left Arrow Icon -->
+    </a>
+
+    <!-- Page Numbers -->
+    <span th:text="'Page ' + (${currentPage + 1}) + ' of ' + ${totalPages}" class="font-semibold"></span>
+
+    <!-- Right Arrow (Next) -->
+    <a th:if="${currentPage + 1 < totalPages}"
+       th:href="@{/subscription/list(page=${currentPage + 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
+       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
+        <i class="ri-arrow-right-s-line"></i> <!-- Right Arrow Icon -->
+    </a>
+</div>
+                
+            </main>
+        </div>
+    </div>
+
+    <script>
+    function toggleDropdown(event, button) {
+        event.stopPropagation();
+        document.querySelectorAll(".dropdown-menu").forEach(menu => {
+            menu.classList.add("hidden");
+        });
+        let menu = button.nextElementSibling;
+        menu.classList.toggle("hidden");
+    }
+
+    document.addEventListener("click", function () {
+        document.querySelectorAll(".dropdown-menu").forEach(menu => {
+            menu.classList.add("hidden");
+        });
+    });
+
+    function editSubscription(subId) {
+        window.location.href = "/subscription/edit/" + subId;
+    }
+
+    function deleteSubscription(element, event, subId) {
+        event.stopPropagation();
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This subscription will be permanently deleted!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch("/subscription/delete/" + subId, {
+                    method: "DELETE"
+                }).then(response => response.text())
+                  .then(data => {
+                      Swal.fire("Deleted!", data, "success").then(() => {
+                          element.closest('tr').remove(); // Remove row from UI
+                      });
+                  }).catch(error => {
+                      console.error("Error:", error);
+                      Swal.fire("Error", "Failed to delete subscription.", "error");
+                  });
+            }
+        });
+    }
+
+    function toggleSubscriptionStatus(element, event, subId) {
+        event.stopPropagation();
+        fetch("/subscription/toggle-status/" + subId, {
+            method: "POST"
+        }).then(response => response.text())
+          .then(data => {
+              Swal.fire("Success!", data, "success").then(() => {
+                  location.reload();
+              });
+          }).catch(error => console.error("Error:", error));
+    }
+</script>
+
+</body>
+
+</html>

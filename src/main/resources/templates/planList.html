@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User List</title>
+    <title>Plan List</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
@@ -21,18 +21,18 @@
 
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-teal-700 mb-6">USERS LIST</h1>
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">PLANS LIST</h1>
                     <div class="flex flex-wrap gap-4 mb-4">
                         <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow"
-                            onkeyup="searchUsers()">
+                            onkeyup="searchPlans()">
                         <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
                             <option value="all">Select Status</option>
                             <option value="Active">Active</option>
                             <option value="Inactive">Inactive</option>
                         </select>
-                        <input type="date" id="memberSinceFilter" class="p-2 border rounded" onchange="filterByMemberSince()">
+                        <input type="date" id="planDateFilter" class="p-2 border rounded" onchange="filterPlansByDate()">
                         <div class="flex gap-2">
-                            <button onclick="window.location.href='/users/add'"
+                            <button onclick="window.location.href='/plans/add'"
                                 class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
                             <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
                                     class="fa fa-sync"></i></button>
@@ -40,51 +40,42 @@
                     </div>
 
 
-                    <table id="userTable" class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                    <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
                         <thead>
                             <tr class="bg-teal-600 text-white border border-gray-300">
                                 <th class="p-2 border border-gray-300">
                                     <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
                                 </th>
-                                <th class="p-2 border border-gray-300">NAME/EMAIL</th>
-                                <th class="p-2 border border-gray-300">LAST LOGIN</th>
-                                <th class="p-2 border border-gray-300">SUBSCRIPTION</th>
+                                <th class="p-2 border border-gray-300">SL NO.</th>
+                                <th class="p-2 border border-gray-300">NAME</th>
+                                <th class="p-2 border border-gray-300">DATE</th>
                                 <th class="p-2 border border-gray-300">STATUS</th>
                                 <th class="p-2 border border-gray-300">ACTION</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody">
-                            <tr class="border border-gray-300" th:each="user : ${users}"
-                                th:data-user-id="${user.userId}">
-                                <td class="p-2 text-center border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
-                                <td class="p-2 border border-gray-300">
-                                    <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
-                                    <span class="block text-sm text-gray-600" th:text="${user.userEmailId}"></span>
+                        <tbody id="tableBody">
+                            <tr class="border border-gray-300" th:each="plan, iterStat : ${plans}"
+                                th:data-plan-id="${plan.planId}">
+                                <td class="p-2 border text-center border-gray-300"><input type="checkbox"
+                                        class="rowCheckbox"></td>
+                                <td class="p-2 border text-center border-gray-300" th:text="${iterStat.count}"></td>
+                                <td class="p-2 border text-center border-gray-300">
+                                    <span th:text="${plan.planName}"></span>
                                 </td>
-                                <td class="p-2 text-gray-600 border border-gray-300">
-                                    Member Since: <span
-                                        th:text="${#temporals.format(user.memberSince, 'dd MMM, yyyy')}"></span><br>
-                                    Last Login: <span
-                                        th:text="${#temporals.format(user.lastLogin, 'dd MMM, yyyy')}"></span>
+                                <td class="p-2 text-center text-gray-600 border border-gray-300">
+                                    <span th:text="${#temporals.format(plan.planDate, 'dd MMM, yyyy')}"></span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span class="block">Free</span>
-                                    <span
-                                        class="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded items-center justify-center gap-1 normal-case"
-                                        style="width: 80px;">
-                                        <i class="fas fa-check-circle"></i> Active
-                                    </span>
-                                </td>
-                                <td class="p-2 text-center border border-gray-300">
-                                    <span th:id="'status-' + ${user.userId}"
-                                        class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center"
-                                        th:classappend="${user.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
+                                    <span th:id="'status-' + ${plan.planId}"
+                                        class="text-xs font-semibold px-3 py-1 rounded text-white inline-flex items-center justify-center"
+                                        th:classappend="${plan.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
                                         style="width: 80px; height: 32px;">
                                         <i
-                                            th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
-                                        <span th:text="${user.status}"></span>
+                                            th:classappend="${plan.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span th:text="${plan.status}"></span>
                                     </span>
                                 </td>
+
                                 <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
                                     <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
                                         onclick="toggleMenu(event, this)">
@@ -93,14 +84,14 @@
                                     <div
                                         class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
                                         <ul class="text-left">
-                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer" onclick="editUser(this)">
-                                                Edit</li>
-                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
-                                                th:attr="onclick='toggleUserStatus(this, ' + ${user.userId} + ')'"
-                                                th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
+                                                onclick="editPlan(this)">Edit</li>
+                                            <li class="p-2 hover:bg-gray-200 cursor-pointer"
+                                                th:attr="onclick='togglePlanStatus(this, ' + ${plan.planId} + ')'"
+                                                th:text="${plan.status == 'Active' ? 'Deactivate' : 'Activate'}">
                                             </li>
-                                            <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
-                                                onclick="deleteUser(this)">Delete</li>
+                                            <li class="p-2 hover:bg-red-500 text-red-700 cursor-pointer"
+                                                onclick="deletePlan(this)">Delete</li>
                                         </ul>
                                     </div>
                                 </td>
@@ -109,12 +100,10 @@
                     </table>
                     <div class="flex justify-between items-center mt-4">
                         <button id="prevBtn" onclick="prevPage()"
-                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
-                            class="fas fa-arrow-left"></i></button>
-                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded">Page 1</span>
+                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Prev</button>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-gray-300 rounded">Page 1</span>
                         <button id="nextBtn" onclick="nextPage()"
-                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
-                            class="fas fa-arrow-right"></i></button>
+                            class="bg-gray-500 text-white px-4 py-2 rounded disabled:opacity-50">Next</button>
                     </div>
                 </div>
             </main>
@@ -122,37 +111,6 @@
     </div>
 
     <script>
-
-        const rowsPerPage = 10;
-        let currentPage = 1;
-
-        function updatePagination() {
-            let rows = document.querySelectorAll("#userTableBody tr");
-            let totalPages = Math.ceil(rows.length / rowsPerPage);
-            document.getElementById("pageIndicator").textContent = `Page ${currentPage} of ${totalPages}`;
-
-            rows.forEach((row, index) => {
-                row.style.display = (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) ? "table-row" : "none";
-            });
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                updatePagination();
-            }
-        }
-
-        function nextPage() {
-            let rows = document.querySelectorAll("#userTableBody tr");
-            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
-                currentPage++;
-                updatePagination();
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", updatePagination);
-
         function toggleMenu(event, button) {
             event.stopPropagation();
             document.querySelectorAll(".action-menu").forEach(menu => {
@@ -169,11 +127,26 @@
             });
         });
 
+        function searchPlans() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let rows = document.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                let planName = row.querySelector("td:nth-child(3) span:first-child").textContent.toLowerCase();
+
+                if (planName.includes(input)) {
+                    row.style.display = "table-row";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
         function filterByStatus() {
             let selectedStatus = document.getElementById("statusFilter").value;
             let rows = document.querySelectorAll("tbody tr");
             rows.forEach(row => {
-                let statusCell = row.querySelector("td:nth-child(5) span");
+                let statusCell = row.querySelector("td:nth-child(4) span");
                 if (selectedStatus === "all" || statusCell.textContent.trim() === selectedStatus) {
                     row.style.display = "table-row";
                 } else {
@@ -188,45 +161,18 @@
             });
         }
 
-        function searchUsers() {
-            let input = document.getElementById("searchInput").value.toLowerCase();
-            let rows = document.querySelectorAll("tbody tr");
-
-            rows.forEach(row => {
-                let name = row.querySelector("td:nth-child(2) span:first-child").textContent.toLowerCase();
-                let email = row.querySelector("td:nth-child(2) span:last-child").textContent.toLowerCase();
-
-                if (name.includes(input) || email.includes(input)) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        function editUser(button) {
+        function deletePlan(button) {
             let row = button.closest("tr");
-            let userId = row.getAttribute("data-user-id");
-            if (!userId) {
-                Swal.fire("Error", "User ID not found!", "error");
-                return;
-            }
+            let planId = row.getAttribute("data-plan-id");
 
-            window.location.href = `/users/add?userId=` + userId;
-        }
-
-        function deleteUser(button) {
-            let row = button.closest("tr");
-            let userId = row.getAttribute("data-user-id");
-
-            if (!userId) {
-                Swal.fire("Error", "User ID not found!", "error");
+            if (!planId) {
+                Swal.fire("Error", "Plan ID not found!", "error");
                 return;
             }
 
             Swal.fire({
                 title: "Are you sure?",
-                text: "This user will be permanently deleted!",
+                text: "This plan will be permanently deleted!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
@@ -234,17 +180,17 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/users/delete/${userId}`, {
+                    fetch(`/plans/delete/${planId}`, {
                         method: "DELETE",
                         headers: { "Content-Type": "application/json" }
                     })
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === "success") {
-                                Swal.fire("Deleted!", "Users has been removed.", "success")
+                                Swal.fire("Deleted!", "Plan has been removed.", "success")
                                     .then(() => location.reload());
                             } else {
-                                Swal.fire("Error", data.message || "Failed to delete user.", "error");
+                                Swal.fire("Error", data.message || "Failed to delete plan.", "error");
                             }
                         })
                         .catch(error => {
@@ -255,16 +201,67 @@
             });
         }
 
-        function toggleUserStatus(element, userId) {
-            let row = element.closest("tr");
-            let statusElement = document.getElementById(`status-${userId}`);
-
-            if (!statusElement) {
-                console.error(`Status element not found for category ID: ${userId}`);
+        function editPlan(button) {
+            let row = button.closest("tr");
+            let planId = row.getAttribute("data-plan-id");
+            if (!planId) {
+                Swal.fire("Error", "Plan ID not found!", "error");
                 return;
             }
 
-            fetch(`/users/toggleStatus/${userId}`, { method: "POST" })
+            window.location.href = `/plans/add?planId=` + planId;
+        }
+
+        function deactivatePlan(button) {
+            let row = button.closest("tr");
+            let planId = row.getAttribute("data-plan-id");
+
+            if (!planId) {
+                Swal.fire("Error", "Plan ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to deactivate this plan?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, deactivate it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/plans/deactivate/${planId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deactivated!", "Plan has been deactivated.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to deactivate plan.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function togglePlanStatus(element, planId) {
+            let row = element.closest("tr");
+            let statusElement = document.getElementById(`status-${planId}`);
+
+            if (!statusElement) {
+                console.error(`Status element not found for plan ID: ${planId}`);
+                return;
+            }
+
+            fetch(`/plans/toggleStatus/${planId}`, { method: "POST" })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -276,24 +273,30 @@
                         let actionMenuItem = element;
                         actionMenuItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
                     } else {
-                        console.error("Failed to update user status.");
+                        console.error("Failed to update plan status.");
                     }
                 })
                 .catch(error => console.error("Error:", error));
         }
 
-        function filterByMemberSince() {
-            let selectedDate = document.getElementById("memberSinceFilter").value;
-            let rows = document.querySelectorAll("#userTableBody tr");
+        function filterPlansByDate() {
+            let selectedDate = document.getElementById("planDateFilter").value;
+            let rows = document.querySelectorAll("tbody tr");
+
+            if (!selectedDate) {
+                rows.forEach(row => row.style.display = "table-row");
+                return;
+            }
+
+            let formattedSelectedDate = formatDate(selectedDate);
 
             rows.forEach(row => {
-                let memberSinceCell = row.querySelector("td:nth-child(3) span:first-child");
+                let dateCell = row.querySelector("td:nth-child(3) span"); 
 
-                if (memberSinceCell) {
-                    let memberSinceText = memberSinceCell.textContent.trim();
-                    let formattedDate = formatDate(selectedDate);
+                if (dateCell) {
+                    let planDateText = dateCell.textContent.trim();
 
-                    if (selectedDate === "" || memberSinceText === formattedDate) {
+                    if (planDateText === formattedSelectedDate) {
                         row.style.display = "table-row";
                     } else {
                         row.style.display = "none";
@@ -301,13 +304,13 @@
                 }
             });
         }
-        function formatDate(inputDate) {
-            if (!inputDate) return "";
 
+        function formatDate(inputDate) {
             let dateObj = new Date(inputDate);
             let options = { day: "2-digit", month: "short", year: "numeric" };
             return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
         }
+
 
     </script>
 </body>

@@ -85,13 +85,10 @@ public class CategoryController {
 	@PostMapping("/saveCategory")
 	public ResponseEntity<Map<String, Object>> saveCategory(@RequestBody Category category) {
 		try {
-			// Check if category name already exists
 			if (categoryService.existsByCategoryName(category.getCategoryName())) {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 						.body(Map.of("status", "error", "message", "Category name already exists!"));
 			}
-
-			// Ensure categoryDate is set
 			if (category.getCategoryDate() == null) {
 				category.setCategoryDate(LocalDateTime.now());
 			}
@@ -153,7 +150,7 @@ public class CategoryController {
 			}
 
 			existingCategory.setCategoryName(updatedCategory.getCategoryName());
-			categoryService.saveCategory(existingCategory); // Save updated category
+			categoryService.saveCategory(existingCategory); 
 
 			return ResponseEntity.ok(Map.of("status", "success", "message", "Category updated successfully!"));
 		} catch (Exception e) {
@@ -168,7 +165,7 @@ public class CategoryController {
 		if (category != null) {
 			return ResponseEntity.ok(category);
 		} else {
-			return ResponseEntity.notFound().build(); // 404 if not found
+			return ResponseEntity.notFound().build(); 
 		}
 	}
 

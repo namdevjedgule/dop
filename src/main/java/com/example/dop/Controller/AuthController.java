@@ -59,6 +59,7 @@ public class AuthController {
 		if (userOptional.isPresent()) {
 			User user = userOptional.get();
 			if (passwordEncoder.matches(password, user.getUserPassword())) {
+				session.setAttribute("userId", user.getUserId()); // Store userId in session
 				session.setAttribute("loggedInUser", user);
 				session.setAttribute("loginAttempts", 0);
 				response.put("success", true);
