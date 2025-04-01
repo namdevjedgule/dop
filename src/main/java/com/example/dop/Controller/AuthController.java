@@ -26,6 +26,7 @@ public class AuthController {
 
 	@Autowired
 	private UserService userService;
+
 	@Autowired
 	private UserRepository userRepository;
 
