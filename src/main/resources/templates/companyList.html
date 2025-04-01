@@ -62,7 +62,7 @@
                 </div>
 
                
-               <form id="deleteForm" method="post" th:action="@{/deleteSelected}" class="relative flex-1" onsubmit="return confirmDeleteSelected(event)">
+               <form id="deleteForm" method="post" th:action="@{/deleteSelectedCompany}" class="relative flex-1" onsubmit="return confirmDeleteSelected(event)">
                     
                         <table class="w-full border-collapse border rounded-md">
                             <thead>
@@ -100,12 +100,19 @@
             <a th:href="@{/editcompany/{id}(id=${company.cid})}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                 <i class="ri-edit-box-line mr-2"></i> Edit
             </a>
-            <a th:href="@{/deactivate/{id}(id=${company.cid})}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <i class="ri-close-circle-line mr-2"></i> Deactivate
+           <a th:href="@{/toggleStatus/{id}(id=${company.cid})}" 
+               class="flex items-center px-4 py-2 text-sm hover:bg-gray-100"
+               th:classappend="${company.status == 'Active'} ? 'text-gray-700' : 'text-green-600'">
+                <i class="ri-toggle-line mr-2"></i> 
+                <span th:text="${company.status == 'Active'} ? 'Deactivate' : 'Activate'"></span>
             </a>
-             <a href="#" th:data-url="@{/delete/{id}(id=${company.cid})}" onclick="confirmDelete(event, this)" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                <i class="ri-delete-bin-6-line mr-2"></i> Delete
-            </a>
+
+<a href="#" th:data-url="@{/client/deleteCompany/{id}(id=${company.cid})}" 
+   onclick="confirmDelete(event, this)" 
+   class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+    <i class="ri-delete-bin-6-line mr-2"></i> Delete
+</a>
+
         </div>
     </div>
 </td>
@@ -248,27 +255,24 @@
     
     function confirmDelete(event, element) {
         event.preventDefault();
-        const url = element.getAttribute("data-url");
+        
+        const url = element.getAttribute("data-url"); 
 
         Swal.fire({
-        	title:"<span class='text-gray-700 font-semibold'>Warning</span>",
+            title: "Warning",
             text: "You won't be able to revert this!",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!",
-            customClass: {
-                popup: "bg-[#e0f2f1] shadow-md",
-                title: "text-gray-800",
-                content: "text-gray-600",
-            }
+            confirmButtonText: "Yes, delete it!"
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = url;
+                window.location.href = url;  
             }
         });
     }
+
     function confirmDeleteSelected(event) {
         event.preventDefault(); 
 

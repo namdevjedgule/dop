@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -61,18 +62,31 @@ public List<Company> getCompanies() {
 
 	
 	
-	public void deleteCompany(Long cid) 
-	{
-		companyRepo.deleteById(cid);
-		
-	}
+	public void deleteCompany(Long id) {
+        if (companyRepo.existsById(id)) {
+        	companyRepo.deleteById(id);
+        } else {
+            throw new RuntimeException("Subscription not found!");
+        }
+    }
 	public Page<Company> getPaginatedCompanies(int page, int pageSize, String keyword, String statusFilter) {
 		Pageable pageable = PageRequest.of(page, pageSize);
 
         return companyRepo.findAll(pageable);
 	}
-	
-		
+	 public void deleteCompanyById(Long id) {
+	        companyRepo.deleteById(id);
+	    }
 
-	
+	   
+	  public void toggleCompanyStatus(Long id) {
+	        Optional<Company> companyOpt = companyRepo.findById(id);
+	        if (companyOpt.isPresent()) {
+	            Company company = companyOpt.get();
+	           
+	            company.setStatus(company.getStatus().equals("Active") ? "Inactive" : "Active");
+	            companyRepo.save(company);
+	        }
+	    }
+
 }

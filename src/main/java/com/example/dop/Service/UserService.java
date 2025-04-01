@@ -95,10 +95,10 @@ public class UserService {
 		return null;
 	}
 
-	public User findById(Long userId) {
-		Optional<User> user = userRepository.findById(userId);
-		return user.orElse(null); // Return user if found, else null
-	}
+//	public User findById(Long userId) {
+//		Optional<User> user = userRepository.findById(userId);
+//		return user.orElse(null); // Return user if found, else null
+//	}
 
 	public User updateUser(Long userId, User userDetails) {
 		User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found!"));

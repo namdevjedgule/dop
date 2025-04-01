@@ -175,7 +175,7 @@ public class AdminController
 	    @GetMapping("/toggle-status/{id}")
 	    public String toggleAdminStatus(@PathVariable Long id) {
 	        adminService.toggleAdminStatus(id);
-	        return "redirect:/admin/list"; // Redirect to the admin list page
+	        return "redirect:/admin/list"; 
 	    }
 	    
 	    @PostMapping("/update-status/{id}/{newStatus}")

@@ -20,19 +20,19 @@
  <form action="/saveAdmin" method="post" enctype="multipart/form-data">
              <div class="flex gap-6 items-start">
     
-    <div class="flex flex-col items-center">
-        <label for="profile-upload" class="relative cursor-pointer">
-            <img id="profile-preview" src="https://via.placeholder.com/200x150" 
-                class="w-40 h-28 border shadow-sm object-cover" />
-        </label>
+   <div class="flex flex-col items-center">
+    <label for="profile-upload" class="relative cursor-pointer">
+        <img id="profile-preview" src="/images/user-icon.jpg" 
+            class="w-40 h-28 border border-teal-700 shadow-sm object-cover" />
+    </label>
 
-        <!-- Label below the image -->
-        <label for="profile-upload" class="mt-2 text-gray-700 font-medium cursor-pointer">Upload Image</label>
+    <!-- Label below the image -->
+    <label for="profile-upload" class="mt-2 text-teal-700 font-medium cursor-pointer">Upload Image</label>
 
-        <!-- Hidden File Input -->
-        <input type="file" name="profileImage" id="profile-upload" class="hidden" accept="image/*" 
-            onchange="previewImage(event)">
-    </div>
+    <!-- Hidden File Input -->
+    <input type="file" name="profileImage" id="profile-upload" class="hidden" accept="image/*" 
+        onchange="previewImage(event)">
+</div>
                     <div class="flex-1 grid grid-cols-2 gap-4">
                         <div class="flex items-center gap-2">
                             <label class="w-32 font-medium">First Name <span class="text-red-500">*</span></label>
@@ -69,13 +69,13 @@
 
     <!-- JavaScript for Profile Preview and Validation -->
     <script>
-        function previewImage(event) {
-            const reader = new FileReader();
-            reader.onload = function () {
-                document.getElementById('profile-preview').src = reader.result;
-            };
-            reader.readAsDataURL(event.target.files[0]);
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            document.getElementById('profile-preview').src = reader.result;
         }
+        reader.readAsDataURL(event.target.files[0]);
+    }
         function confirmCancel() {
             Swal.fire({
                 title: "Are you sure?",

@@ -23,7 +23,7 @@
                             <div class="flex-1 grid grid-cols-2 gap-4">
                                 <div class="flex items-center gap-2">
                                     <label class="w-32 font-medium"> Name <span class="text-red-500">*</span></label>
-                                  <select name="subNameMaster.id" id="subNameMaster" class="border border-black">
+                                  <select name="subNameMaster.id" id="subNameMaster" class="flex-1 p-2 border rounded border border-black">
     <option value="" disabled selected>Select</option>
     <option th:each="sub : ${subNameMasters}" th:value="${sub.id}" th:text="${sub.subName}"></option>
 </select>
