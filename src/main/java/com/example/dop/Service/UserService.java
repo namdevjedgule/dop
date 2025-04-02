@@ -116,10 +116,10 @@ public class UserService {
 
 	
 
-	public User findById(Long id) {
-	    System.out.println("Fetching user with ID: " + id);
-	    return userRepository.findById(id).orElseThrow(() -> 
-	        new RuntimeException("User not found in database."));
-	}
+//	public User findById(Long id) {
+//	    System.out.println("Fetching user with ID: " + id);
+//	    return userRepository.findById(id).orElseThrow(() -> 
+//	        new RuntimeException("User not found in database."));
+//	}
 
 }

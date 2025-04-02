@@ -107,7 +107,7 @@ public class SubController
 	    System.out.println("User ID from session: " + userId);
 
 	    try {
-	        User user = userService.findById(userId);
+	        User user = userService.getUserById(userId);
 	        System.out.println("User found: " + user.getFirstName());
 
 	        subscription.setCreatedBy(user);
@@ -147,7 +147,7 @@ public class SubController
 	    if (userId == null) {
 	        return "redirect:/login";
 	    }
-	    User user = userService.findById(userId);
+	    User user = userService.getUserById(userId);
 	    subscription.setCreatedBy(user);
 	    subService.saveSubscription(subscription);
 	    return "redirect:/subscription/list";
