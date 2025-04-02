@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add User</title>
+    <title>Template</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
@@ -19,52 +19,79 @@
                 th:insert="~{layout/sidebar :: sidebar}"></aside>
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">ADD USER</h1>
-                   <form id="adduser" novalidate>
-                        <input type="hidden" id="userId">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="flex items-center space-x-4">
-                                <label class="text-sm font-semibold text-gray-700 w-40">FIRST NAME <span
-                                        class="text-red-500">*</span></label>
-                                <input type="text" id="firstName"
-                                    class="mt-1 block flex-1 px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
-                                    placeholder="Enter First Name">
+                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">CREATE TEMPLATE</h1>
+                    <form id="addTemplate" novalidate enctype="multipart/form-data">
+                        <input type="hidden" id="templateId">
+                        <div class="w-full bg-white p-4 rounded-lg shadow-md">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700">UPLOAD FILE <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="file" id="uploadFile" accept=".csv"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                        onchange="validateFile()" />
+                                    <p id="fileError" class="text-red-500 text-sm mt-1 hidden">Invalid file. Allowed:
+                                        PDF, DOCX, PNG, JPG (Max: 5MB).</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700">FILE NAME </label>
+                                    <input type="text" id="fileName"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                        placeholder="Enter alternative file name" />
+                                </div>
                             </div>
-                            <div class="flex items-center space-x-4">
-                                <label class="text-sm font-semibold text-gray-700 w-40">LAST NAME <span
+                            <div class="mt-4">
+                                <label class="block text-sm font-semibold text-gray-700">DESCRIPTION <span
                                         class="text-red-500">*</span></label>
-                                <input type="text" id="lastName"
-                                    class="mt-1 block flex-1 px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
-                                    placeholder="Enter Last Name">
+                                <textarea id="editor"
+                                    class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300 h-32"
+                                    placeholder="Enter Description"></textarea>
                             </div>
-                            <div class="flex items-center space-x-4">
-                                <label class="text-sm font-semibold text-gray-700 w-40">EMAIL ADDRESS <span
-                                        class="text-red-500">*</span></label>
-                                <input type="email" id="userEmailId"
-                                    class="mt-1 block flex-1 px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
-                                    placeholder="Enter Email Address">
-                            </div>
-                            <div class="flex items-center space-x-4">
-                                <label class="text-sm font-semibold text-gray-700 w-40">PASSWORD <span
-                                        class="text-red-500">*</span></label>
-                                <input type="password" id="password"
-                                    class="mt-1 block flex-1 px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
-                                    placeholder="Enter Password">
+                            <div class="mt-6 flex justify-end space-x-4">
+                                <button type="submit"
+                                    class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md"
+                                    onclick="return validateForm()">
+                                    UPLOAD
+                                </button>
+                                <button type="button"
+                                    class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md"
+                                    onclick="handleCancel()">
+                                    CANCEL
+                                </button>
                             </div>
                         </div>
-                        <div class="mt-6 flex justify-end space-x-4">
-                            <button type="submit"
-                                class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">Save</button>
-                            <button type="button"
-                                class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md"
-                                onclick="handleCancel()">Cancel</button>
-                        </div>
-
-
                     </form>
 
+                    <script>
+                        function validateFile() {
+                            const fileInput = document.getElementById('uploadFile');
+                            const fileError = document.getElementById('fileError');
+                            const allowedType = 'text/csv';
+                            const maxSize = 5 * 1024 * 1024; // 5MB
 
-                    </form>                    
+                            if (fileInput.files.length > 0) {
+                                const file = fileInput.files[0];
+
+                                if (file.type !== allowedType || file.size > maxSize) {
+                                    fileError.classList.remove('hidden');
+                                    fileInput.value = "";
+                                    return false;
+                                } else {
+                                    fileError.classList.add('hidden');
+                                }
+                            }
+                            return true;
+                        }
+
+                        function validateForm() {
+                            const fileInput = document.getElementById('uploadFile');
+                            if (fileInput.files.length === 0) {
+                                alert('Please upload a valid CSV file before submitting.');
+                                return false;
+                            }
+                            return true;
+                        }
+                    </script>
 
                 </div>
             </main>
