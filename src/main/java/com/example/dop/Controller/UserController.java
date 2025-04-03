@@ -1,5 +1,7 @@
 package com.example.dop.Controller;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.dop.Model.Admin;
 import com.example.dop.Model.User;
 import com.example.dop.Service.UserService;
 
@@ -33,14 +36,13 @@ public class UserController {
 	@GetMapping("/add")
 	public String showAddUserPage(@RequestParam(value = "userId", required = false) Long userId, HttpSession session,
 			Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (loggedInUser == null) {
+		if (admin == null) {
 			return "redirect:/";
 		}
-
-		model.addAttribute("fname", loggedInUser.getFirstName());
-		model.addAttribute("email", loggedInUser.getUserEmailId());
+		model.addAttribute("fname", admin.getFirstName());
+		model.addAttribute("email", admin.getEmail());
 		model.addAttribute("currentPage", "userAdd");
 
 		if (userId != null) {
@@ -61,13 +63,21 @@ public class UserController {
 
 	@GetMapping("/list")
 	public String showUserListPage(HttpSession session, Model model) {
-		User user = (User) session.getAttribute("loggedInUser");
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (user == null) {
+		if (admin == null) {
 			return "redirect:/";
 		}
+		model.addAttribute("fname", admin.getFirstName());
+		model.addAttribute("email", admin.getEmail());
 
-		List<User> users = userService.getAllUsers();
+		List<User> users = new ArrayList<>(); // Always initialize to avoid null issues
+		try {
+			users = userService.getAllUsers();
+			System.out.println("Users retrieved: " + users.size());
+		} catch (Exception e) {
+			System.err.println("Error fetching users: " + e.getMessage());
+		}
 
 		if (users.isEmpty()) {
 			System.out.println("No users found in database.");
@@ -76,8 +86,7 @@ public class UserController {
 		}
 
 		model.addAttribute("users", users);
-		model.addAttribute("fname", user.getFirstName());
-		model.addAttribute("email", user.getUserEmailId());
+
 		model.addAttribute("currentPage", "userList");
 		return "userList";
 	}
@@ -93,9 +102,12 @@ public class UserController {
 
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
+			e.printStackTrace(); // This prints the actual error in the backend logs
+
 			Map<String, Object> errorResponse = new HashMap<>();
 			errorResponse.put("status", "error");
-			errorResponse.put("message", "Email Id is already exist!");
+			errorResponse.put("message", "Some error occurred: " + e.getMessage()); // Show actual error
+
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
 		}
 	}
@@ -149,10 +161,10 @@ public class UserController {
 
 			existingUser.setFirstName(updatedUser.getFirstName());
 			existingUser.setLastName(updatedUser.getLastName());
-			existingUser.setUserEmailId(updatedUser.getUserEmailId());
+			existingUser.setEmail(updatedUser.getEmail());
 
-			if (updatedUser.getUserPassword() != null && !updatedUser.getUserPassword().isEmpty()) {
-				existingUser.setUserPassword(updatedUser.getUserPassword());
+			if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+				existingUser.setPassword(updatedUser.getPassword());
 			}
 
 			userService.saveUser(existingUser);
@@ -162,6 +174,12 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Map.of("status", "error", "message", e.getMessage()));
 		}
+	}
+
+	@GetMapping("/check-email")
+	public ResponseEntity<?> checkEmail(@RequestParam String email) {
+		boolean exists = userService.checkIfEmailExists(email);
+		return ResponseEntity.ok(Collections.singletonMap("exists", exists));
 	}
 
 }

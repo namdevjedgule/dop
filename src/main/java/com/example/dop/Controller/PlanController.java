@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.dop.Model.Admin;
 import com.example.dop.Model.Plan;
-import com.example.dop.Model.User;
 import com.example.dop.Service.PlanService;
 
 import jakarta.servlet.http.HttpSession;
@@ -38,14 +38,14 @@ public class PlanController {
 	@GetMapping("/add")
 	public String showAddPlanPage(@RequestParam(value = "planId", required = false) Long planId, Model model,
 			HttpSession session) {
-		User user = (User) session.getAttribute("loggedInUser");
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (user == null) {
+		if (admin == null) {
 			return "redirect:/";
 		}
+		model.addAttribute("fname", admin.getFirstName());
 
 		model.addAttribute("currentPage", "planAdd");
-		model.addAttribute("fname", user.getFirstName());
 
 		if (planId != null) {
 			Plan plan = planService.getPlanById(planId);
@@ -65,12 +65,12 @@ public class PlanController {
 
 	@GetMapping("/list")
 	public String showPlanListPage(HttpSession session, Model model) {
-		User user = (User) session.getAttribute("loggedInUser");
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (user == null) {
+		if (admin == null) {
 			return "redirect:/";
 		}
-		model.addAttribute("fname", user.getFirstName());
+		model.addAttribute("fname", admin.getFirstName());
 		List<Plan> plans = planService.getAllPlans();
 
 		if (plans.isEmpty()) {

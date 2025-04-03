@@ -25,180 +25,165 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.dop.Model.Admin;
 import com.example.dop.Model.Template;
-import com.example.dop.Model.User;
 import com.example.dop.Repository.TemplateRepo;
 import com.example.dop.Service.AdminService;
 import com.example.dop.Service.TemplateService;
 import com.example.dop.Service.UserService;
+
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-public class TemplateController 
-{
+public class TemplateController {
 	@Autowired
 	TemplateService templateService;
-	
+
 	@Autowired
 	AdminService adminService;
-	
+
 	@Autowired
 	UserService userService;
-	
+
 	@Autowired
 	TemplateRepo templetRepo;
-	
+
 	@GetMapping("/CreateTemplate")
-	private String Ctemplate(HttpSession session, Model model)
-	{
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-		if (loggedInUser == null) {
-			return "redirect:/";
-		}
-		model.addAttribute("fname", loggedInUser.getFirstName());
-		
+	private String Ctemplate() {
 		return "CreateTemplate";
 	}
 
 	@PostMapping("/saveFile")
-	public String saveFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes,HttpSession session) {
-	    try {
-	        templateService.saveFile(file);
-	        redirectAttributes.addFlashAttribute("message", "File uploaded successfully!");
-	    } catch (IOException e) {
-	        redirectAttributes.addFlashAttribute("error", e.getMessage()); 
-	    }
-	   
-	    return "redirect:/CreateTemplate";
+	public String saveFile(@RequestParam("file") MultipartFile file, HttpSession session) {
+
+		try {
+			Template template = templateService.saveFile(file);
+			return "redirect:/CreateTemplate";
+		} catch (Exception e) {
+			return "redirect:/CreateTemplate?error=" + e.getMessage();
+		}
 	}
 
-	 public boolean fileExists(String fileName) {
-	        return templetRepo.findByTemplateName(fileName).isPresent();
-	    }
-	
+	public boolean fileExists(String fileName) {
+		return templetRepo.findByTemplateName(fileName).isPresent();
+	}
+
 	@GetMapping("/ViewTemplate")
 	public String viewFile(@RequestParam(value = "keyword", required = false) String keyword,
-	        @RequestParam(value = "statusFilter", required = false) String statusFilter,
-	        @RequestParam(value = "page", defaultValue = "0") int page,
-	        Model model, HttpSession session)
-	{
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-		if (loggedInUser == null) {
+			@RequestParam(value = "statusFilter", required = false) String statusFilter,
+			@RequestParam(value = "page", defaultValue = "0") int page, Model model, HttpSession session) {
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
+
+		if (admin == null) {
 			return "redirect:/";
 		}
-		model.addAttribute("fname", loggedInUser.getFirstName());
-List<Template> template;
+		model.addAttribute("fname", admin.getFirstName());
 
-	    
-	    if (keyword != null) keyword = keyword.trim();
+		List<Template> template;
 
-	    
-	   if (keyword != null && !keyword.isEmpty()) {
-		   template = templateService.searchSubByKeyword(keyword);
-	    
-	    } else {
-	    	template = templateService.getTemplates();
-	    }
+		if (keyword != null)
+			keyword = keyword.trim();
 
-	    model.addAttribute("template", template);
-	    model.addAttribute("keyword", keyword);
-	    
-		 int pageSize = 5; 
+		if (keyword != null && !keyword.isEmpty()) {
+			template = templateService.searchSubByKeyword(keyword);
 
-		    Page<Template> TemplatePage = templateService.getPaginatedTemplate(page, pageSize, keyword, statusFilter);
+		} else {
+			template = templateService.getTemplates();
+		}
 
-		    model.addAttribute("Template", TemplatePage.getContent());
-		    model.addAttribute("currentPage", page);
-		    model.addAttribute("totalPages", TemplatePage.getTotalPages());
+		model.addAttribute("template", template);
+		model.addAttribute("keyword", keyword);
+
+		int pageSize = 5;
+
+		Page<Template> TemplatePage = templateService.getPaginatedTemplate(page, pageSize, keyword, statusFilter);
+
+		model.addAttribute("Template", TemplatePage.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", TemplatePage.getTotalPages());
 		return "ViewTemplate";
 	}
-	
+
 	@PostMapping("/deleteSelectedFile")
-	public String deleteSelectedFile(@RequestParam("selectedIds") List<Long> templateIds, RedirectAttributes redirectAttributes) {
-	    if (templateIds != null && !templateIds.isEmpty()) {
-	        templateService.deleteTemplatesByIds(templateIds);
-	        redirectAttributes.addFlashAttribute("message", "Templates deleted successfully.");
-	    } else {
-	        redirectAttributes.addFlashAttribute("error", "No templates selected.");
-	    }
-	    return "redirect:/ViewTemplate";
+	public String deleteSelectedFile(@RequestParam("selectedIds") List<Long> templateIds,
+			RedirectAttributes redirectAttributes) {
+		if (templateIds != null && !templateIds.isEmpty()) {
+			templateService.deleteTemplatesByIds(templateIds);
+			redirectAttributes.addFlashAttribute("message", "Templates deleted successfully.");
+		} else {
+			redirectAttributes.addFlashAttribute("error", "No templates selected.");
+		}
+		return "redirect:/ViewTemplate";
 	}
 
 	@GetMapping("/downloadMultiple")
 	public ResponseEntity<byte[]> downloadMultipleFiles(@RequestParam List<Long> ids) {
-	    try {
-	        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-	        ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
+		try {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream);
 
-	        for (Long id : ids) {
-	            Optional<Template> optionalTemplate = templateService.getFileById(id);
-	            if (optionalTemplate.isPresent()) {
-	                Template template = optionalTemplate.get();
-	                Path filePath = Paths.get(template.getFilePath());
+			for (Long id : ids) {
+				Optional<Template> optionalTemplate = templateService.getFileById(id);
+				if (optionalTemplate.isPresent()) {
+					String fileName = optionalTemplate.get().getTemplateName();
+					Path filePath = Paths.get(
+							"F:/agri_project/HOMESTEADERINDIA-Spring-Boot-Java-Project-master/dop-main/dop-main/src/main/resources/static/templates/")
+							.resolve(fileName).normalize();
 
-	                if (Files.exists(filePath)) {
-	                    zipOutputStream.putNextEntry(new ZipEntry(template.getTemplateName()));
-	                    Files.copy(filePath, zipOutputStream);
-	                    zipOutputStream.closeEntry();
-	                }
-	            }
-	        }
+					if (Files.exists(filePath)) {
+						zipOutputStream.putNextEntry(new ZipEntry(fileName));
+						Files.copy(filePath, zipOutputStream);
+						zipOutputStream.closeEntry();
+					}
+				}
+			}
 
-	        zipOutputStream.close();
-	        byte[] zipBytes = byteArrayOutputStream.toByteArray();
+			zipOutputStream.close();
+			byte[] zipBytes = byteArrayOutputStream.toByteArray();
 
-	        return ResponseEntity.ok()
-	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"selected_files.zip\"")
-	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-	                .body(zipBytes);
+			return ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"selected_files.zip\"")
+					.contentType(MediaType.APPLICATION_OCTET_STREAM).body(zipBytes);
 
-	    } catch (IOException e) {
-	        return ResponseEntity.internalServerError().body(("Error while downloading: " + e.getMessage()).getBytes());
-	    }
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body(("Error while downloading: " + e.getMessage()).getBytes());
+		}
 	}
 
-	  @PostMapping("/deleteFile/{id}")
-	    public String deleteTemplate(@PathVariable Long id) {
-	        templateService.deleteTemplate(id);
-	        return "redirect:/ViewTemplate";
-	    }
-	  
-	  @GetMapping("/download/{id}")
-	  public ResponseEntity<Object> downloadFile(@PathVariable Long id, HttpSession session) {
-	      try {
-	        
-	          Template template = templateService.getFileById(id)
-	                  .orElseThrow(() -> new RuntimeException("File not found in database."));
+	@PostMapping("/deleteFile/{id}")
+	public String deleteTemplate(@PathVariable Long id) {
+		templateService.deleteTemplate(id);
+		return "redirect:/ViewTemplate";
+	}
 
-	          
-	          String username = getCurrentUsername(session);
-	          template.setUpdatedBy(username);
-	          template.setUpdatedOn(new java.sql.Date(System.currentTimeMillis())); 
-	          templateService.updateTemplate(template);
+	@GetMapping("/download/{id}")
+	public ResponseEntity<Object> downloadFile(@PathVariable Long id) {
+		try {
+			Optional<Template> optionalTemplate = templateService.getFileById(id);
 
-	         
-	          Path filePath = Paths.get(template.getFilePath()).normalize();
-	          if (!Files.exists(filePath)) {
-	              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found at specified path.");
-	          }
+			if (optionalTemplate.isEmpty()) {
+				return ResponseEntity.notFound().build();
+			}
 
-	    
-	          byte[] content = Files.readAllBytes(filePath);
+			// Get the file name from the database
+			String fileName = optionalTemplate.get().getTemplateName();
+			Path filePath = Paths.get(
+					"F:/agri_project/HOMESTEADERINDIA-Spring-Boot-Java-Project-master/dop-main/dop-main/src/main/resources/static/templates/")
+					.resolve(fileName).normalize();
 
-	         
-	          return ResponseEntity.ok()
-	                  .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + template.getTemplateName() + "\"")
-	                  .contentType(MediaType.APPLICATION_OCTET_STREAM)
-	                  .body(content);
+			// Ensure file exists before reading
+			if (!Files.exists(filePath)) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + fileName);
+			}
 
-	      } catch (IOException e) {
-	          return ResponseEntity.internalServerError().body("Error while downloading file: " + e.getMessage());
-	      }
-	  }
-		
-	  private String getCurrentUsername(HttpSession session) {
-		  User loggedInUser = (User) session.getAttribute("loggedInUser");
-		  return (loggedInUser != null) ? loggedInUser.getFirstName() + " " + loggedInUser.getLastName() : "UnknownUser";
+			byte[] content = Files.readAllBytes(filePath);
 
-	  }
+			return ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+					.contentType(MediaType.APPLICATION_OCTET_STREAM).body(content);
+
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("Error while downloading: " + e.getMessage());
+		}
+	}
 }

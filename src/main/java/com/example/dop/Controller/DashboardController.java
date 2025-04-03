@@ -5,7 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.example.dop.Model.User;
+import com.example.dop.Model.Admin;
 import com.example.dop.Service.AdminService;
 import com.example.dop.Service.UserService;
 
@@ -25,9 +25,9 @@ public class DashboardController {
 
 	@GetMapping("/dashboard")
 	public String showDashboard(HttpSession session, Model model) {
-		User user = (User) session.getAttribute("loggedInUser");
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (user == null) {
+		if (admin == null) {
 			return "redirect:/";
 		}
 
@@ -38,8 +38,8 @@ public class DashboardController {
 		model.addAttribute("totalAdmins", totalAdmins);
 		model.addAttribute("totalUsers", totalUsers);
 //		model.addAttribute("totalPages", totalPages);
-		model.addAttribute("fname", user.getFirstName());
-		model.addAttribute("email", user.getUserEmailId());
+		model.addAttribute("fname", admin.getFirstName());
+		model.addAttribute("email", admin.getEmail());
 		model.addAttribute("currentPage", "dashboard");
 		return "dashboard";
 	}

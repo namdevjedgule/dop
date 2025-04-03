@@ -1,0 +1,9 @@
+firstName,lastName,email,companyName,roleName,activityName
+John,Doe,john.doe@example.com,CompanyA,Developer,Software Development
+Jane,Smith,jane.smith@example.com,CompanyB,Manager,Project Management
+Sam,Wilson,sam.wilson@example.com,CompanyC,Designer,UI/UX Design
+Emily,Johnson,emily.johnson@example.com,CompanyD,Tester,Quality Assurance
+Michael,Brown,michael.brown@example.com,CompanyA,Developer,Backend Development
+Sarah,Lee,sarah.lee@example.com,CompanyB,Manager,Team Leadership
+David,Martinez,david.martinez@example.com,CompanyC,Designer,Graphic Design
+Sophia,Garcia,sophia.garcia@example.com,CompanyD,Tester,Automation Testing

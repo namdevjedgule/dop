@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.dop.Model.Admin;
 import com.example.dop.Model.Step;
 import com.example.dop.Model.User;
 import com.example.dop.Service.StepService;
@@ -44,14 +45,14 @@ public class StepController {
 	@GetMapping("/add")
 	public String showAddStepPage(@RequestParam(value = "stepId", required = false) Long stepId, Model model,
 			HttpSession session) {
-		User user = (User) session.getAttribute("loggedInUser");
+		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (user == null) {
+		if (admin == null) {
 			return "redirect:/";
 		}
+		model.addAttribute("fname", admin.getFirstName());
 
 		model.addAttribute("currentPage", "stepAdd");
-		model.addAttribute("fname", user.getFirstName());
 
 		if (stepId != null) {
 			Step step = stepService.getStepById(stepId);

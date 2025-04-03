@@ -9,12 +9,14 @@ import org.springframework.data.repository.query.Param;
 import com.example.dop.Model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-	Optional<User> findByUserEmailId(String email);
 
 	@Query(value = "CALL sp_user_login(:email)", nativeQuery = true)
 	User loginUser(@Param("email") String email);
 
-	boolean existsByUserEmailId(String email);
+	boolean existsByEmail(String email);
+
+	Optional<User> findByEmail(String email);
 
 //	Optional<User> findByUserName(String userName);
+
 }

@@ -55,11 +55,11 @@
                         </thead>
                         <tbody id="userTableBody">
                             <tr class="border border-gray-300" th:each="user : ${users}"
-                                th:data-user-id="${user.userId}">
+                                th:data-user-id="${user.id}">
                                 <td class="p-2 text-center border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
                                 <td class="p-2 border border-gray-300">
                                     <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
-                                    <span class="block text-sm text-gray-600" th:text="${user.userEmailId}"></span>
+                                    <span class="block text-sm text-gray-600" th:text="${user.email}"></span>
                                 </td>
                                 <td class="p-2 text-gray-600 border border-gray-300">
                                     Member Since: <span
@@ -76,7 +76,7 @@
                                     </span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span th:id="'status-' + ${user.userId}"
+                                    <span th:id="'status-' + ${user.id}"
                                         class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center"
                                         th:classappend="${user.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
                                         style="width: 80px; height: 32px;">
@@ -207,19 +207,19 @@
         function editUser(button) {
             let row = button.closest("tr");
             let userId = row.getAttribute("data-user-id");
-            if (!userId) {
+            if (!id) {
                 Swal.fire("Error", "User ID not found!", "error");
                 return;
             }
 
-            window.location.href = `/users/add?userId=` + userId;
+            window.location.href = `/users/add?userId=` + id;
         }
 
         function deleteUser(button) {
             let row = button.closest("tr");
-            let userId = row.getAttribute("data-user-id");
+            let id = row.getAttribute("data-user-id");
 
-            if (!userId) {
+            if (!id) {
                 Swal.fire("Error", "User ID not found!", "error");
                 return;
             }
@@ -234,7 +234,7 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    fetch(`/users/delete/${userId}`, {
+                    fetch(`/users/delete/${id}`, {
                         method: "DELETE",
                         headers: { "Content-Type": "application/json" }
                     })
@@ -255,12 +255,12 @@
             });
         }
 
-        function toggleUserStatus(element, userId) {
+        function toggleUserStatus(element, id) {
             let row = element.closest("tr");
-            let statusElement = document.getElementById(`status-${userId}`);
+            let statusElement = document.getElementById(`status-${id}`);
 
             if (!statusElement) {
-                console.error(`Status element not found for category ID: ${userId}`);
+                console.error(`Status element not found for category ID: ${id}`);
                 return;
             }
 

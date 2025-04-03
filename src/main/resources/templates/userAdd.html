@@ -40,7 +40,7 @@
                             <div class="flex items-center space-x-4">
                                 <label class="text-sm font-semibold text-gray-700 w-40">EMAIL ADDRESS <span
                                         class="text-red-500">*</span></label>
-                                <input type="email" id="userEmailId"
+                                <input type="email" id="email"
                                     class="mt-1 block flex-1 px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
                                     placeholder="Enter Email Address">
                             </div>
@@ -100,8 +100,8 @@
                 let userId = document.getElementById("userId").value;
                 let firstName = document.getElementById("firstName").value.trim();
                 let lastName = document.getElementById("lastName").value.trim();
-                let userEmailId = document.getElementById("userEmailId").value.trim();
-                let userPassword = document.getElementById("password").value.trim();
+                let email = document.getElementById("email").value.trim();
+                let password = document.getElementById("password").value.trim();
 
                 let nameRegex = /^[A-Za-z]+$/;
                 let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -111,12 +111,12 @@
                 if (!firstName.match(nameRegex)) return showToast("Invalid Input", "First Name should contain only letters.", "error");
                 if (!lastName) return showToast("Missing Field", "Last Name is required!", "warning");
                 if (!lastName.match(nameRegex)) return showToast("Invalid Input", "Last Name should contain only letters.", "error");
-                if (!userEmailId) return showToast("Missing Field", "Email is required!", "warning");
-                if (!emailRegex.test(userEmailId)) return showToast("Invalid Email", "Enter a valid email address.", "error");
-                if (!userPassword) return showToast("Missing Field", "Password is required!", "warning");
-                if (!userPassword.match(passwordRegex)) return showToast("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");
+                if (!email) return showToast("Missing Field", "Email is required!", "warning");
+                if (!emailRegex.test(email)) return showToast("Invalid Email", "Enter a valid email address.", "error");
+                if (!password) return showToast("Missing Field", "Password is required!", "warning");
+                if (!password.match(passwordRegex)) return showToast("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");
 
-                let userData = { firstName, lastName, userEmailId, userPassword };
+                let userData = { firstName, lastName, email, password };
                 console.log("User Data Sent:", userData);
 
                 try {

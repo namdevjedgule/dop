@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.dop.Model.RoleMaster;
 import com.example.dop.Model.User;
+import com.example.dop.Repository.RoleMasterRepository;
 import com.example.dop.Repository.UserRepository;
 
 @Service
@@ -19,13 +21,25 @@ public class UserService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@Autowired
+	private RoleMasterRepository roleMasterRepository;
+
 	public User saveUser(User user) {
-		if (userRepository.existsByUserEmailId(user.getUserEmailId())) {
+		if (userRepository.existsByEmail(user.getEmail())) {
 			throw new RuntimeException("Email already exists");
 		}
 
-		user.setUserPassword(passwordEncoder.encode(user.getUserPassword()));
+		System.out.println("DEBUG: Received password - " + user.getPassword());
 
+		if (user.getPassword() == null || user.getPassword().isEmpty()) {
+			throw new RuntimeException("Password cannot be null or empty");
+		}
+
+		RoleMaster userRole = roleMasterRepository.findByRoleName("User")
+				.orElseThrow(() -> new RuntimeException("Role 'User' not found"));
+
+		user.setRole(userRole);
+		user.setPassword(passwordEncoder.encode(user.getPassword())); // Error occurs here if password is null
 		user.setMemberSince(LocalDateTime.now());
 		user.setLastLogin(LocalDateTime.now());
 		user.setStatus("Active");
@@ -44,7 +58,7 @@ public class UserService {
 			throw new RuntimeException("Invalid email or password");
 		}
 
-		if (!passwordEncoder.matches(password, user.getUserPassword())) {
+		if (!passwordEncoder.matches(password, user.getPassword())) {
 			throw new RuntimeException("Invalid email or password");
 		}
 
@@ -56,7 +70,11 @@ public class UserService {
 	}
 
 	public Optional<User> getUserByEmail(String email) {
-		return userRepository.findByUserEmailId(email);
+		return userRepository.findByEmail(email);
+	}
+
+	public boolean checkIfEmailExists(String email) {
+		return userRepository.existsByEmail(email);
 	}
 
 	public List<User> getAllUsers() {
@@ -105,21 +123,13 @@ public class UserService {
 
 		user.setFirstName(userDetails.getFirstName());
 		user.setLastName(userDetails.getLastName());
-		user.setUserEmailId(userDetails.getUserEmailId());
+		user.setEmail(userDetails.getEmail());
 
-		if (!userDetails.getUserPassword().isEmpty()) {
-			user.setUserPassword(passwordEncoder.encode(userDetails.getUserPassword()));
+		if (!userDetails.getPassword().isEmpty()) {
+			user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
 		}
 
 		return userRepository.save(user);
 	}
-
-	
-
-//	public User findById(Long id) {
-//	    System.out.println("Fetching user with ID: " + id);
-//	    return userRepository.findById(id).orElseThrow(() -> 
-//	        new RuntimeException("User not found in database."));
-//	}
 
 }

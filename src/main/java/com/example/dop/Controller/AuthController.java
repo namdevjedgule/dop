@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.dop.Model.User;
+import com.example.dop.Model.Admin;
+import com.example.dop.Repository.AdminRepo;
 import com.example.dop.Repository.UserRepository;
+import com.example.dop.Service.AdminService;
 import com.example.dop.Service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -26,9 +28,14 @@ public class AuthController {
 
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private AdminService adminService;
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private AdminRepo adminRepo;
 
 	@GetMapping("/")
 	public String showLoginPage() {
@@ -37,7 +44,7 @@ public class AuthController {
 
 	@PostMapping("/checkdata")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> checkLogin(@RequestBody Map<String, String> loginData,
+	public ResponseEntity<Map<String, Object>> checkAdminLogin(@RequestBody Map<String, String> loginData,
 			HttpSession session) {
 		String email = loginData.get("email");
 		String password = loginData.get("password");
@@ -45,7 +52,7 @@ public class AuthController {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		Map<String, Object> response = new HashMap<>();
 
-		Integer loginAttempts = (Integer) session.getAttribute("loginAttempts");
+		Integer loginAttempts = (Integer) session.getAttribute("adminLoginAttempts");
 		if (loginAttempts == null)
 			loginAttempts = 0;
 
@@ -55,21 +62,21 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
 
-		Optional<User> userOptional = userRepository.findByUserEmailId(email);
+		Optional<Admin> adminOptional = adminRepo.findByEmail(email);
 
-		if (userOptional.isPresent()) {
-			User user = userOptional.get();
-			if (passwordEncoder.matches(password, user.getUserPassword())) {
-				session.setAttribute("userId", user.getUserId()); // Store userId in session
-				session.setAttribute("loggedInUser", user);
-				session.setAttribute("loginAttempts", 0);
+		if (adminOptional.isPresent()) {
+			Admin admin = adminOptional.get();
+			if (passwordEncoder.matches(password, admin.getPassword())) {
+				session.setAttribute("adminId", admin.getId()); // Store adminId in session
+				session.setAttribute("loggedInAdmin", admin);
+				session.setAttribute("adminLoginAttempts", 0);
 				response.put("success", true);
-				response.put("message", "Login successful!");
+				response.put("message", "Admin login successful!");
 				return ResponseEntity.ok(response);
 			}
 		}
 
-		session.setAttribute("loginAttempts", loginAttempts + 1);
+		session.setAttribute("adminLoginAttempts", loginAttempts + 1);
 		response.put("success", false);
 		response.put("message", "Invalid email or password.");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
