@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div th:if="${error}" id="error-message" class="text-sm text-red-600 font-semibold hidden"
+                        th:text="${error}"></div>
+                    <div th:if="${message}" class="text-sm text-green-600 font-semibold" th:text="${message}"></div>
+
+                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">CREATE TEMPLATE</h1>
+
+                    <form id="addTemplate" novalidate enctype="multipart/form-data" action="/saveFile" method="post">
+                        <input type="hidden" id="templateId">
+                        <div class="w-full bg-white p-4 rounded-lg shadow-md">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="mt-2">
+                                    <label class="block text-sm font-semibold text-gray-700">
+                                        UPLOAD FILE <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="file" id="uploadFile" accept=".csv"
+                                        class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                        onchange="validateFile()" name="file" />
+                                    <p id="fileError" class="text-sm text-red-500 mt-1 hidden">
+                                        Invalid file. Allowed: CSV (Max: 5MB).
+                                    </p>
+                                </div>
+
+                                <div class="bg-gray-100 border-l-4 border-blue-500 p-4 mt-4">
+                                    <p class="text-blue-700 font-semibold">Instruction for upload master template:</p>
+                                    <ul class="text-sm text-red-600 list-disc pl-5 mt-2">
+                                        <li>Template file name should be meaningful and without spaces.</li>
+                                        <li>Template headers should not have spaces.</li>
+                                        <li>Template headers should not contain special characters.</li>
+                                        <li>Template file should only contain header information.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 flex justify-end gap-4">
+                                <button type="submit"
+                                    class="bg-teal-500 text-white px-4 py-2 rounded shadow-md hover:bg-teal-600">
+                                    Upload
+                                </button>
+                                <button type="button" onclick="handleCancel()"
+                                    class="bg-red-500 text-white px-4 py-2 rounded shadow-md hover:bg-red-600">
+                                    Cancel
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message) {
+            alert(message); // Regular JavaScript alert box
+        }
+
+        function validateFile() {
+            const fileInput = document.getElementById('uploadFile');
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const fileNameRegex = /^[a-zA-Z0-9._-]+\.csv$/; 
+
+            if (fileInput.files.length === 0) {
+                showAlert("Please upload a file.");
+                return false;
+            }
+
+            const file = fileInput.files[0];
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showAlert("Invalid File: Only CSV files are allowed.");
+                fileInput.value = "";
+                return false;
+            }
+
+            if (file.size > maxSize) {
+                showAlert("File Too Large: Maximum file size allowed is 5MB.");
+                fileInput.value = "";
+                return false;
+            }
+
+            if (!file.name.match(fileNameRegex)) {
+                showAlert("Invalid File Name: File name should not contain spaces or special characters.");
+                fileInput.value = "";
+                return false;
+            }
+
+            return validateCSVContent(file, fileInput);
+        }
+
+        function validateCSVContent(file, fileInput) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    const rows = content.trim().split("\n");
+
+                    if (rows.length !== 1) {
+                        showAlert("Invalid CSV Format: The file should only contain headers.");
+                        fileInput.value = ""; 
+                        resolve(false);
+                        return;
+                    }
+
+                    const headers = rows[0].split(",");
+                    const headerRegex = /^[a-zA-Z0-9_-]+$/;
+
+                    for (let header of headers) {
+                        if (!header.match(headerRegex)) {
+                            showAlert("Invalid Header: Headers should not contain spaces or special characters.");
+                            fileInput.value = ""; 
+                            resolve(false);
+                            return;
+                        }
+                    }
+
+                    alert("CSV file validated successfully.");
+                    resolve(true);
+                };
+
+                reader.readAsText(file);
+            });
+        }
+
+        document.getElementById("addTemplate").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const isValid = await validateFile();
+            if (!isValid) {
+                return;
+            }
+
+            this.submit();
+        });
+
+        function handleCancel() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const templateId = urlParams.get('templateId');
+
+            if (templateId) {
+                window.location.href = 'ViewTemplate';
+            } else {
+                window.location.reload();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var errorMessage = document.getElementById("error-message");
+            if (errorMessage && errorMessage.innerText.trim() !== "") {
+                showAlert(errorMessage.innerText);
+            }
+        });
+
+    </script>
+
+</body>
+</html>
