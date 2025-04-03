@@ -14,7 +14,6 @@ public class Template
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long templateId;
 	private String templateName;
-	private String description;
 	private String createdBy;
 	private Date createdOn;
 	private String updatedBy;
@@ -31,12 +30,7 @@ public class Template
 	public void setTemplateName(String templateName) {
 		this.templateName = templateName;
 	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
+
 	public String getCreatedBy() {
 		return createdBy;
 	}
