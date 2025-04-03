@@ -220,7 +220,7 @@
     const nextBtn = document.getElementById("nextBtn");
 
     function showPage(page) {
-        const rows = [...adminTable.querySelectorAll("tr")]; // Convert to array
+        const rows = [...adminTable.querySelectorAll("tr")]; 
         const totalRows = rows.length;
         const totalPages = Math.ceil(totalRows / rowsPerPage);
 
@@ -286,7 +286,7 @@
         const reader = new FileReader();
         reader.onload = function () {
             document.getElementById('profile-preview').src = reader.result;
-            document.getElementById('profile-table-img').src = reader.result; // Update table image
+            document.getElementById('profile-table-img').src = reader.result;
         };
         reader.readAsDataURL(event.target.files[0]);
     }
@@ -359,7 +359,7 @@
         let statusSpan = element.querySelector("span");
         let loader = element.querySelector(".loader");
         
-        // Disable button and show loader
+
         element.classList.add("opacity-50", "pointer-events-none");
         loader.classList.remove("hidden");
 
@@ -367,10 +367,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update the status text dynamically
+                  
                     statusSpan.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
 
-                    // Update styling dynamically
                     let statusElement = element.closest("tr").querySelector("td span");
                     statusElement.textContent = newStatus;
                     statusElement.className = newStatus === "Active" 
@@ -382,7 +381,7 @@
             })
             .catch(error => console.error("Error updating status:", error))
             .finally(() => {
-                // Re-enable button and hide loader
+                
                 element.classList.remove("opacity-50", "pointer-events-none");
                 loader.classList.add("hidden");
             });

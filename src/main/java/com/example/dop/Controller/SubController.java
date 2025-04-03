@@ -46,6 +46,7 @@ public class SubController
 			return "redirect:/";
 		}
 		model.addAttribute("fname", loggedInUser.getFirstName());
+		
 	    List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
 	    model.addAttribute("subNameMasters", subNameMasters);
 	    model.addAttribute("subscription", new Subscription());

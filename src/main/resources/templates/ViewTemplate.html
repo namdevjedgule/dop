@@ -46,19 +46,18 @@
                     <!-- Search Form -->
                     <form method="get" action="/ViewTemplate" class="relative flex-1">
                         <input type="text" name="keyword" th:value="${keyword}" placeholder="Search Template..."
-                            class="border p-2 pr-10 rounded-md w-full focus:ring-2 focus:ring-teal-500 outline-none">
+                            class="border p-2 pr-10 rounded-md focus:ring-2 focus:ring-teal-500 outline-none">
                         <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                            <i class="ri-search-line"></i>
                         </button>
                     </form>
-
-                  
-
-                    <!-- Date Picker -->
-                    <input type="date" class="border p-2 rounded-md w-40 relative flex-1">
-
-                    <!-- Action Buttons -->
+    
+                   
                     <div class="flex gap-2">
+ 
+
+
+
+<div id="actionButtons" class="flex gap-2 hidden">
     <!-- Download Multiple -->
     <button onclick="confirmDownloadSelected()" class="bg-green-500 text-white p-2 rounded-md hover:opacity-80">
         <i class="ri-download-line"></i>
@@ -68,6 +67,7 @@
     <button onclick="confirmDeleteSelected(event)" class="bg-red-500 text-white p-2 rounded-md hover:opacity-80">
         <i class="ri-delete-bin-6-line"></i> 
     </button>
+</div>
 
     <!-- Refresh Page -->
     <button onclick="refreshPage()" class="bg-blue-500 text-white p-2 rounded-md hover:opacity-80" aria-label="Refresh Page">
@@ -96,29 +96,26 @@
                             
                             <tbody id="adminTable">
                                 <tr th:each="template : ${template}">
-                                    <td class="p-2"><input type="checkbox" name="selectedIds" th:value="${template.templateId}"></td>
+                                    <td class="p-2"><input type="checkbox" name="selectedIds" th:value="${template.templateId}" class="templateCheckbox" onchange="toggleActionButtons()"></td>
                                     <td class="p-2" th:text="${template.templateName}"></td>
                                     <td class="p-2" th:text="${template.createdOn}"></td>
                                     <td class="p-2" >
-                                    <a href="#" th:data-url="@{/download/{id}(id=${template.templateId})}"  
-                                    onclick="confirmDownload(event, this)" class="text-green-600 hover:bg-green-100">
-               <i class="ri-download-line mr-2"></i> Download</a> |
+                                    <a th:href="@{/download/{id}(id=${template.templateId})}" 
+   class="text-green-600 hover:bg-green-100">
+   <i class="ri-download-line mr-2"></i> Download
+</a> |
+
                                      <a href="#" th:data-url="@{/deleteFile/{id}(id=${template.templateId})}"
                            onclick="showPopup(event, this, 'Delete')"
                         	   class="text-red-600 hover:bg-red-100">
                             <i class="ri-delete-bin-6-line"></i> Delete
                         </a>
                                     </td>
-                                    
-                               
-
-       </tr>
+                                    </tr>
                             </tbody>
                         </table>
                         </form>
                     </div>
-                    
-                
 
                <div class="flex justify-center items-center mt-4 space-x-4">
     <!-- Left Arrow (Previous) -->
@@ -196,7 +193,7 @@
     const nextBtn = document.getElementById("nextBtn");
 
     function showPage(page) {
-        const rows = [...adminTable.querySelectorAll("tr")]; // Convert to array
+        const rows = [...adminTable.querySelectorAll("tr")]; 
         const totalRows = rows.length;
         const totalPages = Math.ceil(totalRows / rowsPerPage);
 
@@ -262,10 +259,11 @@
         const reader = new FileReader();
         reader.onload = function () {
             document.getElementById('profile-preview').src = reader.result;
-            document.getElementById('profile-table-img').src = reader.result; // Update table image
+            document.getElementById('profile-table-img').src = reader.result; 
         };
         reader.readAsDataURL(event.target.files[0]);
     }
+
     function refreshPage() {
         window.location.reload();
     }
@@ -279,7 +277,7 @@
         let selectedIds = getSelectedIds();
 
         if (selectedIds.length === 0) {
-            Swal.fire("No Selection", "Please select at least one template to download.", "warning");
+            showToast("No Selection", "Please select at least one template to download.", "warning");
             return;
         }
 
@@ -290,7 +288,10 @@
             showCancelButton: true,
             confirmButtonColor: "#28a745",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Download!"
+            confirmButtonText: "Yes, Download!",
+            customClass: {
+                popup: "small-swal"
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = `/downloadMultiple?ids=${selectedIds.join(',')}`;
@@ -304,7 +305,7 @@
         let selectedIds = getSelectedIds();
 
         if (selectedIds.length === 0) {
-            Swal.fire("No Selection", "Please select at least one template to delete.", "warning");
+            showToast("No Selection", "Please select at least one template to delete.", "warning");
             return false;
         }
 
@@ -315,7 +316,10 @@
             showCancelButton: true,
             confirmButtonColor: "#d33",
             cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!"
+            confirmButtonText: "Yes, delete it!",
+            customClass: {
+                popup: "small-swal"
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById("deleteSelectedIds").value = selectedIds.join(",");
@@ -325,7 +329,13 @@
 
         return false;
     }
-    
+    function confirmDownload(event, element) {
+        event.preventDefault();
+        const url = element.getAttribute("data-url");
+        if (confirm("Are you sure you want to download this file?")) {
+            window.location.href = url;
+        }
+    }
     function showPopup(event, element, actionType) {
         event.preventDefault();
 
@@ -334,12 +344,14 @@
                 title: "Confirm Download",
                 text: "Do you want to download this file?",
                 icon: "info",
+                position: "top",
                 confirmText: "Yes, Download!"
             },
             "Delete": {
                 title: "Confirm Delete",
                 text: "Are you sure? This action cannot be undone!",
                 icon: "warning",
+                position: "top",
                 confirmText: "Yes, Delete!"
             }
         };
@@ -351,7 +363,11 @@
             showCancelButton: true,
             confirmButtonColor: actionType === "Delete" ? "#d33" : "#3085d6",
             cancelButtonColor: "#6c757d",
-            confirmButtonText: messages[actionType].confirmText
+            position: "top",
+            confirmButtonText: messages[actionType].confirmText,
+            customClass: {
+                popup: "small-swal"
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 if (actionType === "Delete") {
@@ -366,25 +382,54 @@
             }
         });
     }
-    function confirmDownload(event, element) {
-        event.preventDefault();
-        let downloadUrl = element.getAttribute("data-url");
 
+    function showToast(title, message, icon) {
         Swal.fire({
-            title: "Are you sure?",
-            text: "Do you want to download this file?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, Download",
-            cancelButtonText: "Cancel"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = downloadUrl;
+            title: title,
+            text: message,
+            icon: icon,
+            confirmButtonColor: "#3085d6",
+            position: "top",
+            showConfirmButton: false,
+            timer: 1500,
+            toast: true,
+            timerProgressBar: true,
+            customClass: {
+                popup: "small-toast"
             }
         });
     }
+    function toggleActionButtons() {
+       
+        let checkboxes = document.querySelectorAll(".templateCheckbox");
+        let selectedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
+        
+       
+        let actionButtons = document.getElementById("actionButtons");
+
+        
+        if (selectedCount >= 2) {
+            actionButtons.classList.remove("hidden");
+        } else {
+            actionButtons.classList.add("hidden");
+        }
+    }
+
 </script>
 <style>
+.small-swal {
+    width: 500px !important; 
+    font-size: 20px !important;
+    padding: 8px !important; 
+    min-height: 200px !important;
+}
+
+.small-toast {
+    width: 700px !important; 
+    font-size: 18px !important;
+    padding: 6px !important;
+}
+
 .dropdown-menu {
     position: absolute;
     bottom: 100%; 

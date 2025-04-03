@@ -40,31 +40,40 @@ public class TemplateService {
 		templateRepo.save(c1);
 		
 	}
-	public Template saveFile(MultipartFile file) throws IOException {
-        if (!file.isEmpty()) {
-           
-            File directory = new File(UPLOAD_DIR);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
+	public Template saveFile(MultipartFile file) throws IOException 
+	{
+		
+	    if (!file.isEmpty()) {
+	        String originalFileName = file.getOriginalFilename();
 
-         
-            String originalFileName = file.getOriginalFilename();
-            Path filePath = Paths.get(UPLOAD_DIR + originalFileName);
+	       
+	        if (templateRepo.findByTemplateName(originalFileName).isPresent()) {
+	            throw new IOException("File with the same name already exists!");
+	        }
 
-           
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+	       
+	        File directory = new File(UPLOAD_DIR);
+	        if (!directory.exists()) {
+	            directory.mkdirs();
+	        }
 
-         
-            Template template = new Template();
-            template.setTemplateName(originalFileName); 
-            //template.setCreatedBy(createdBy);
-            template.setCreatedOn(new java.sql.Date(System.currentTimeMillis()));
+	        Path filePath = Paths.get(UPLOAD_DIR + originalFileName);
+	        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            return templateRepo.save(template);
-        }
-        return null;
-    }
+	        
+	        Template template = new Template();
+	        template.setTemplateName(originalFileName);
+	        template.setFilePath(filePath.toString());  
+	        template.setCreatedOn(new java.sql.Date(System.currentTimeMillis()));
+	        
+
+	        return templateRepo.save(template);
+	    }
+	    return null;
+	}
+
+
+	   
 	
 	public Page<Template> getPaginatedTemplate(int page, int pageSize, String keyword, String statusFilter) {
 		 Pageable pageable = PageRequest.of(page, pageSize);
@@ -114,6 +123,9 @@ public class TemplateService {
             System.err.println("⚠️ Malformed URL: " + e.getMessage());
             throw new Exception("Invalid file path", e);
         }
+    }
+    public void updateTemplate(Template template) {
+        templateRepo.save(template);
     }
 
 	

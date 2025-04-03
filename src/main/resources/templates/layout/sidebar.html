@@ -29,7 +29,7 @@
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
                             :class="{ 'bg-gray-700 text-white font-bold': ['adminList', 'adminAdd'].includes('${currentPage}') }">
                             <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-users text-yellow-400"></i> Admins
+                                <i class="fa-solid fa-user-shield text-gray-400"></i> Admins
                             </div>
                             <i class="fa-solid fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
@@ -106,11 +106,6 @@
                             </li>
                         </ul>
                     </li>
-
-
-
-            <!--         <li class="mb-2" x-data="{ open: false }"
-
 
                     <!-- <li class="mb-2" x-data="{ open: false }"
                         x-init="open = ['categoryList', 'categoryAdd'].includes('[[${currentPage}]]')">
@@ -195,65 +190,8 @@
                             </li>
                         </ul>
                     </li>
-<!--
-                    <li class="mb-2" x-data="{ open: false }"
 
-    x-init="open = ['planList', 'planAdd'].includes('[[${currentPage}]]')">
-    <button @click="open = !open"
-        class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
-        th:classappend="${currentPage == 'planList' || currentPage == 'planAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-clipboard-list text-gray-400"></i> Plans
-        </div>
-        <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
-    </button>
-    <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
-        <li class="mb-1">
-            <a th:href="@{/plans/list}"
-                class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
-                th:classappend="${currentPage == 'planList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
-                <i class="fa-solid fa-list text-white"></i> List
-            </a>
-        </li>
-        <li>
-            <a th:href="@{/plans/add}"
-                class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
-                th:classappend="${currentPage == 'planAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
-                <i class="fa-solid fa-plus text-teal-400"></i> Add
-            </a>
-        </li>
-    </ul>
-</li> -->
-<!--  
-<li class="mb-2" x-data="{ open: false }">
-    <button @click="open = !open"
-        class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-handshake text-gray-400"></i> Subscription
-        </div>
-        <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
-    </button>
-    <ul x-show="open" class="ml-6 mt-2 bg-gray-800 rounded p-2">
-        <li class="mb-1">
-            <a th:href="@{/subscription/list}"
-                class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
-                <i class="fa-solid fa-list text-white"></i> List
-            </a>
-        </li>
-        <li>
-            <a th:href="@{/subscription/add}"
-                class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-700">
-                <i class="fa-solid fa-plus text-teal-400"></i> Add
-            </a>
-        </li>
-    </ul>
-</li>
- <li class="mb-2">
-
-                        x-init="open = ['planList', 'planAdd'].includes('[[${currentPage}]]')">
->>>>>>> cc716c16794db2fcab9af7c284d1dc7b3b0e34de
-
-                      
+                    <li class="mb-2" x-data="{ open: false }"                  
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
                             th:classappend="${currentPage == 'planList' || currentPage == 'planAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
@@ -317,7 +255,7 @@
                      <li class="mb-2">
                         <a th:href="@{/ViewTemplate}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                             th:classappend="${currentPage == 'viewTemplate' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
-                            <i class="fa fa-file text-teal-500"></i> View Template
+                            <i class="fa fa-file-alt text-teal-500"></i> View Template
                         </a>
                     </li>
                     
@@ -333,7 +271,5 @@
             </nav>
         </aside>
     </div>
-
 </body>
-
 </html>

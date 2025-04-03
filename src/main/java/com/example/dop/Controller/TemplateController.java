@@ -1,8 +1,6 @@
 package com.example.dop.Controller;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,23 +19,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.dop.Model.Subscription;
 import com.example.dop.Model.Template;
 import com.example.dop.Model.User;
 import com.example.dop.Repository.TemplateRepo;
 import com.example.dop.Service.AdminService;
 import com.example.dop.Service.TemplateService;
 import com.example.dop.Service.UserService;
-
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -56,23 +49,29 @@ public class TemplateController
 	TemplateRepo templetRepo;
 	
 	@GetMapping("/CreateTemplate")
-	private String Ctemplate()
+	private String Ctemplate(HttpSession session, Model model)
 	{
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		if (loggedInUser == null) {
+			return "redirect:/";
+		}
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		
 		return "CreateTemplate";
 	}
 
 	@PostMapping("/saveFile")
-	public String saveFile(@RequestParam("file") MultipartFile file, HttpSession session) 
-	{
-		
+	public String saveFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes,HttpSession session) {
 	    try {
-	        Template template = templateService.saveFile(file);
-	        return "redirect:/CreateTemplate";
-	    } catch (Exception e) {
-	        return "redirect:/CreateTemplate?error=" + e.getMessage();
+	        templateService.saveFile(file);
+	        redirectAttributes.addFlashAttribute("message", "File uploaded successfully!");
+	    } catch (IOException e) {
+	        redirectAttributes.addFlashAttribute("error", e.getMessage()); 
 	    }
+	   
+	    return "redirect:/CreateTemplate";
 	}
-	
+
 	 public boolean fileExists(String fileName) {
 	        return templetRepo.findByTemplateName(fileName).isPresent();
 	    }
@@ -134,13 +133,11 @@ List<Template> template;
 	        for (Long id : ids) {
 	            Optional<Template> optionalTemplate = templateService.getFileById(id);
 	            if (optionalTemplate.isPresent()) {
-	                String fileName = optionalTemplate.get().getTemplateName();
-	                Path filePath = Paths.get("F:/agri_project/HOMESTEADERINDIA-Spring-Boot-Java-Project-master/dop-main/dop-main/src/main/resources/static/templates/")
-	                        .resolve(fileName)
-	                        .normalize();
+	                Template template = optionalTemplate.get();
+	                Path filePath = Paths.get(template.getFilePath());
 
 	                if (Files.exists(filePath)) {
-	                    zipOutputStream.putNextEntry(new ZipEntry(fileName));
+	                    zipOutputStream.putNextEntry(new ZipEntry(template.getTemplateName()));
 	                    Files.copy(filePath, zipOutputStream);
 	                    zipOutputStream.closeEntry();
 	                }
@@ -160,7 +157,6 @@ List<Template> template;
 	    }
 	}
 
-
 	  @PostMapping("/deleteFile/{id}")
 	    public String deleteTemplate(@PathVariable Long id) {
 	        templateService.deleteTemplate(id);
@@ -168,35 +164,41 @@ List<Template> template;
 	    }
 	  
 	  @GetMapping("/download/{id}")
-	  public ResponseEntity<Object> downloadFile(@PathVariable Long id) {
+	  public ResponseEntity<Object> downloadFile(@PathVariable Long id, HttpSession session) {
 	      try {
-	          Optional<Template> optionalTemplate = templateService.getFileById(id);
+	        
+	          Template template = templateService.getFileById(id)
+	                  .orElseThrow(() -> new RuntimeException("File not found in database."));
 
-	          if (optionalTemplate.isEmpty()) {
-	              return ResponseEntity.notFound().build();
-	          }
+	          
+	          String username = getCurrentUsername(session);
+	          template.setUpdatedBy(username);
+	          template.setUpdatedOn(new java.sql.Date(System.currentTimeMillis())); 
+	          templateService.updateTemplate(template);
 
-	          // Get the file name from the database
-	          String fileName = optionalTemplate.get().getTemplateName();
-	          Path filePath = Paths.get("F:/agri_project/HOMESTEADERINDIA-Spring-Boot-Java-Project-master/dop-main/dop-main/src/main/resources/static/templates/")
-	                  .resolve(fileName)
-	                  .normalize();
-
-	          // Ensure file exists before reading
+	         
+	          Path filePath = Paths.get(template.getFilePath()).normalize();
 	          if (!Files.exists(filePath)) {
-	              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + fileName);
+	              return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found at specified path.");
 	          }
 
+	    
 	          byte[] content = Files.readAllBytes(filePath);
 
+	         
 	          return ResponseEntity.ok()
-	                  .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+	                  .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + template.getTemplateName() + "\"")
 	                  .contentType(MediaType.APPLICATION_OCTET_STREAM)
 	                  .body(content);
 
 	      } catch (IOException e) {
-	          return ResponseEntity.internalServerError().body("Error while downloading: " + e.getMessage());
+	          return ResponseEntity.internalServerError().body("Error while downloading file: " + e.getMessage());
 	      }
 	  }
-}
+		
+	  private String getCurrentUsername(HttpSession session) {
+		  User loggedInUser = (User) session.getAttribute("loggedInUser");
+		  return (loggedInUser != null) ? loggedInUser.getFirstName() + " " + loggedInUser.getLastName() : "UnknownUser";
 
+	  }
+}
