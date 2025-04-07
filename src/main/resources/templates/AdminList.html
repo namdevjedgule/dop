@@ -1,442 +1,424 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<style>
-        /* Ensure dropdown menu does not overlap the button */
-        .action-menu {
-            z-index: 50; /* Ensure it appears above other elements */
-            display: none;
-            position: absolute;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            min-width: 150px;
-        }
 
-        .action-menu.show {
-            display: block;
-        }
-
-        .action-btn {
-            padding-bottom: 10px;
-        }
-        
-    </style>
 <body class="bg-[#e9f5f5]">
     <div class="flex flex-col min-h-screen">
         <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+
         <div class="flex flex-1 pt-20">
-            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h1 class="text-2xl font-bold text-teal-700 mb-6">ADMIN LIST</h1>
-                <!-- Search & Filter -->
-                <div class="flex flex-wrap gap-4 mb-4 items-center">
-                    
-                    <!-- Search Form -->
-                    <form method="get" action="/admin/list" class="relative flex-1">
-                        <input type="text" name="keyword" th:value="${keyword}" placeholder="Search Admins..."
-                            class="border p-2 pr-10 rounded-md w-full focus:ring-2 focus:ring-teal-500 outline-none">
-                        <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                            <i class="ri-search-line"></i>
-                        </button>
-                    </form>
-
-                    <!-- Status Filter -->
-                    <form method="get" action="/admin/list"  class="relative flex-1">
-                        <select name="statusFilter" class="p-2 border rounded-md w-full focus:ring-2 focus:ring-teal-500 outline-none" onchange="this.form.submit()">
-                            <option value="" th:selected="${statusFilter == null or statusFilter == ''}">All Status</option>
-                            <option value="Active" th:selected="${statusFilter == 'Active'}">Active</option>
-                            <option value="Inactive" th:selected="${statusFilter == 'Inactive'}">Inactive</option>
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow"
+                            onkeyup="searchAdmins()">
+                        <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
+                            <option value="all">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
                         </select>
-                    </form>
-
-                    <!-- Date Picker -->
-                    <input type="date" class="border p-2 rounded-md w-40 relative flex-1">
-
-                    <!-- Action Buttons -->
-                    <div class="flex gap-2">
-                        <a href="/admin/add" class="bg-green-500 text-white p-2 rounded-md hover:opacity-80">
-                            <i class="ri-add-line"></i>
-                        </a>
-                        <button type="submit" form="deleteForm" class="bg-red-500 text-white p-2 rounded-md hover:opacity-80">
-                            <i class="ri-delete-bin-6-line"></i>
-                        </button>
-                        <button onclick="refreshPage()" class="bg-blue-500 text-white p-2 rounded-md hover:opacity-80" aria-label="Refresh Page">
-                            <i class="ri-refresh-line"></i>
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="window.location.href='/admins/add'"
+                                class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
+                            <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
+                                    class="fa fa-sync"></i></button>
+                            <button onclick="deleteSelectedAdmins()" class="bg-red-500 text-white p-2 rounded"><i
+                                    class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <table id="adminTable" class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                        <thead>
+                            <tr class="bg-teal-600 text-white border border-gray-300">
+                                <th class="p-2 border border-gray-300">
+                                    <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
+                                </th>
+                                <th class="p-2 border border-gray-300">PROFILE</th>
+                                <th class="p-2 border border-gray-300">NAME/EMAIL</th>
+                                <th class="p-2 border border-gray-300">LAST LOGIN</th>
+                                <th class="p-2 border border-gray-300">MEMBER SINCE</th>
+                                <th class="p-2 border border-gray-300">STATUS</th>
+                                <th class="p-2 border border-gray-300">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody">
+                            <tr class="border border-gray-300" th:each="user : ${admins}" th:data-admin-id="${user.id}">
+                                <td class="p-2 border text-center border-gray-300"><input type="checkbox"
+                                        class="rowCheckbox"></td>
+                                <td class="p-2 border text-center border-gray-300">
+                                    <div class="flex justify-center items-center">
+                                        <img th:src="@{${user.profilePhoto}}" alt="Admin Image"
+                                            class="w-16 h-16 object-cover">
+                                    </div>
+                                </td>
+                                <td class="p-2 border border-gray-300">
+                                    <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
+                                    <span class="block text-sm text-gray-600" th:text="${user.email}"></span>
+                                </td>
+                                <td class="p-2 text-gray-600 border border-gray-300">
+                                    <span th:text="${#temporals.format(user.lastLogin, 'dd MMM, yyyy')}"></span>
+                                </td>
+                                <td class="p-2 text-gray-600 border border-gray-300">
+                                    <span th:text="${#temporals.format(user.memberSince, 'dd MMM, yyyy')}"></span>
+                                </td>
+                                <td class="p-2 text-center border border-gray-300">
+                                    <span th:id="'status-' + ${user.id}"
+                                        class="text-xs font-semibold px-3 py-1 rounded text-white inline-flex items-center justify-center"
+                                        th:classappend="${user.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
+                                        style="width: 80px; height: 32px;">
+                                        <i
+                                            th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span th:text="${user.status}" class="ml-1"></span>
+                                    </span>
+                                </td>
+                                <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
+                                    <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
+                                        style="width: 80px; height: 32px;" onclick="toggleMenu(event, this)">
+                                        Action
+                                    </button>
+                                    <div
+                                        class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
+                                        <ul class="text-left">
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                onclick="editAdmin(this)">
+                                                Edit
+                                            </li>
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                th:attr="onclick=|toggleAdminStatus(this, ${user.id})|"
+                                                th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                            </li>
+                                            <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
+                                                onclick="deleteAdmin(this)">
+                                                Delete
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="flex justify-between items-center mt-4">
+                        <button id="prevBtn" onclick="prevPage()"
+                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded">Page 1</span>
+                        <button id="nextBtn" onclick="nextPage()"
+                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
+                                class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
-
-                <!-- Table -->
-               <form id="deleteForm" method="post" th:action="@{/deleteSelected}" class="relative flex-1" onsubmit="return confirmDeleteSelected(event)">
-</form>
-                    
-                        <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
-                            <thead>
-                                 <tr class="bg-teal-600 text-white border border-gray-300">
-                                <th class="p-2 border border-gray-300">
-                                   <input type="checkbox" id="selectAll"></th>
-                                    <th class="p-2 text-center">PROFILE PHOTO</th>                                   
-                                    <th class="p-2 text-center">NAME</th>
-                                    <th class="p-2 text-center">EMAIL</th>
-                                    <th class="p-2 text-center">MEMBER SINCE</th>
-                                    <th class="p-2 text-center">STATUS</th>
-                                    <th class="p-2 text-center">ACTION</th>
-                                </tr>
-                            </thead>
-                            
-                            <tbody id="adminTable">
-                                <tr th:each="admin : ${admins}">
-                                    <td class="p-2"><input type="checkbox" name="selectedIds" th:value="${admin.aid}"></td>
-                                    <td class="p-2">
-                
-     <img th:src="@{${admin.profilePhoto}}" class="w-16 h-16 object-cover" alt="Admin Image"> 
-                                    <td class="p-2" th:text="${admin.afirstname} + ' ' + ${admin.alastname}" ></td>
-                                    <td class="p-2" th:text="${admin.aemail}"></td>
-                                    <td class="p-2" th:text="${admin.created_on}"></td>
-                                    <td class="p-2">
-                                        <span th:text="${admin.status}" 
-                                              th:class="${admin.status == 'Active' ? 'bg-green-500 text-white px-2 py-1 rounded' : 'bg-red-500 text-white px-2 py-1 rounded'}">
-                                        </span>
-                                    </td>
-                                <td class="p-2 text-center border border-gray-300 relative">
-    <button onclick="toggleDropdown(event, this)" class="dropdown-btn bg-gray-200 p-2 rounded px-4 py-2 focus:outline-none"  style="width: 80px; height: 32px;">
-        Action
-    </button>
-
-        <!-- Dropdown Menu -->
-        <div class="dropdown-menu absolute bottom-full right-0 mb-2 min-w-[150px] bg-white border rounded shadow-md hidden z-50">
-            <a th:href="@{/edit/{id}(id=${admin.aid})}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                <i class="ri-edit-box-line mr-2"></i> Edit
-            </a>
-         <a href="#" 
-   th:attr="onclick=|updateStatus(event, this, '${admin.aid}', '${admin.status == 'Active' ? 'Inactive' : 'Active'}')|"
-   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-    <i class="ri-refresh-line mr-2"></i>
-    <span th:text="${admin.status == 'Active' ? 'Deactivate' : 'Activate'}"></span>
-    <span class="loader hidden ml-2 w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></span>
-</a>
-
-
-
-             <a href="#" th:data-url="@{/delete/{id}(id=${admin.aid})}" onclick="confirmDelete(event, this)" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-100">
-               <i class="ri-delete-bin-6-line mr-2"></i> Delete</a>
+            </main>
         </div>
     </div>
-</td>
 
-       </tr>
-                            </tbody>
-                        </table>
-                        </form>
-                    </div>
-                    
-                
+    <script>
 
-               <div class="flex justify-center items-center mt-4 space-x-4">
-    <!-- Left Arrow (Previous) -->
-    <a th:if="${currentPage > 0}"
-       th:href="@{/admin/list(page=${currentPage - 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
-       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
-        <i class="ri-arrow-left-s-line"></i> <!-- Left Arrow Icon -->
-    </a>
+        function toggleCheckboxes(source) {
+            let checkboxes = document.querySelectorAll(".rowCheckbox");
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
 
-    <!-- Page Numbers -->
-    <span th:text="'Page ' + (${currentPage + 1}) + ' of ' + ${totalPages}" class="font-semibold"></span>
-
-    <!-- Right Arrow (Next) -->
-    <a th:if="${currentPage + 1 < totalPages}"
-       th:href="@{/admin/list(page=${currentPage + 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
-       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
-        <i class="ri-arrow-right-s-line"></i> <!-- Right Arrow Icon -->
-    </a>
-</div>
-</div>
-
-    </main>
-
-<script>
-    function refreshPage() {
-        window.location.reload();
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        let selectAllCheckbox = document.getElementById("selectAll");
-        selectAllCheckbox.addEventListener("change", function () {
-            let checkboxes = document.querySelectorAll("input[name='selectedIds']");
-            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-        });
-    });
-
-   
-    document.addEventListener("DOMContentLoaded", function () {
-        function toggleDropdown(event) {
-            event.preventDefault();
+        function toggleMenu(event, button) {
             event.stopPropagation();
-
-            let button = event.currentTarget;
-            let dropdown = button.nextElementSibling;
-
-           
-            document.querySelectorAll(".dropdown-menu").forEach(menu => {
-                if (menu !== dropdown) {
-                    menu.classList.remove("show");
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                if (menu !== button.nextElementSibling) {
+                    menu.classList.add("hidden");
                 }
             });
-
-            
-            dropdown.classList.toggle("show");
+            let menu = button.nextElementSibling;
+            menu.classList.toggle("hidden");
         }
-
-        document.querySelectorAll(".dropdown-btn").forEach(button => {
-            button.addEventListener("click", toggleDropdown);
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".action-menu") && !event.target.closest(".action-btn")) {
+                document.querySelectorAll(".action-menu").forEach(menu => {
+                    menu.classList.add("hidden");
+                });
+            }
         });
 
-       
-        document.addEventListener("click", function () {
-            document.querySelectorAll(".dropdown-menu").forEach(dropdown => {
-                dropdown.classList.remove("show");
+        function filterByStatus() {
+            let selectedStatus = document.getElementById("statusFilter").value;
+            let rows = document.querySelectorAll("#adminTableBody tr");
+
+            rows.forEach(row => {
+                let statusCell = row.querySelector("td:nth-child(6) span");
+                if (statusCell) {
+                    let statusText = statusCell.textContent.trim();
+                    row.style.display = (selectedStatus === "all" || statusText === selectedStatus) ? "table-row" : "none";
+                }
             });
-        });
-    });
-
-   
-    let currentPage = 1;
-    const rowsPerPage = 6;
-    const adminTable = document.getElementById("adminTable");
-    const pageNumElement = document.getElementById("pageNum");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
-
-    function showPage(page) {
-        const rows = [...adminTable.querySelectorAll("tr")]; 
-        const totalRows = rows.length;
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-       
-        rows.forEach(row => row.style.display = "none");
-
-      
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        rows.slice(start, end).forEach(row => (row.style.display = "table-row"));
-
-        pageNumElement.textContent = page;
-
-        prevBtn.disabled = page === 1;
-        nextBtn.disabled = page === totalPages;
-    }
-
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            showPage(currentPage);
         }
-    }
 
-    function nextPage() {
-        const totalRows = adminTable.querySelectorAll("tr").length;
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        
-        if (currentPage < totalPages) {
-            currentPage++;
-            showPage(currentPage);
+        function searchAdmins() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            document.querySelectorAll("#adminTableBody tr").forEach(row => {
+                let name = row.querySelector("td:nth-child(3) span:first-child").textContent.toLowerCase();
+                let email = row.querySelector("td:nth-child(3) span:last-child").textContent.toLowerCase();
+                row.style.display = (name.includes(input) || email.includes(input)) ? "table-row" : "none";
+            });
         }
-    }
 
-   
-    document.addEventListener("DOMContentLoaded", () => showPage(currentPage));
-    
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('toggle-btn');
+        function deleteSelectedAdmins() {
+            let selectedAdmins = [];
+            document.querySelectorAll(".rowCheckbox:checked").forEach(checkbox => {
+                let row = checkbox.closest("tr");
+                let adminId = row.getAttribute("data-admin-id");
+                if (adminId) selectedAdmins.push(adminId);
+            });
 
-    let activeDropdown = null;
-
-    toggleBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('w-16');
-        sidebar.classList.toggle('w-60');
-    });
-
-    function toggleDropdown(id) {
-        const dropdowns = document.querySelectorAll("ul[id$='-dropdown']");
-        dropdowns.forEach(dropdown => {
-            if (dropdown.id !== id) {
-                dropdown.classList.add("hidden");
+            if (selectedAdmins.length === 0) {
+                Swal.fire("No Selection", "Please select at least one admin to delete.", "warning");
+                return;
             }
-        });
 
-        const dropdown = document.getElementById(id);
-        dropdown.classList.toggle("hidden");
-
-        activeDropdown = dropdown.classList.contains("hidden") ? null : id;
-    }
-
-    function previewImage(event) {
-        const reader = new FileReader();
-        reader.onload = function () {
-            document.getElementById('profile-preview').src = reader.result;
-            document.getElementById('profile-table-img').src = reader.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
-    function confirmDelete(event, element) {
-        event.preventDefault();
-        const url = element.getAttribute("data-url");
-
-        Swal.fire({
-        	title:"<span class='text-gray-700 font-semibold'>Warning</span>",
-            text: "You won't be able to revert this!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!",
-            customClass: {
-                popup: "bg-[#e0f2f1] shadow-md",
-                title: "text-gray-800",
-                content: "text-gray-600",
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-        });
-    }
-    function confirmDeleteSelected(event) {
-        event.preventDefault(); 
-
-       
-        let selectedCheckboxes = document.querySelectorAll('input[name="selectedIds"]:checked');
-
-        if (selectedCheckboxes.length === 0) {
             Swal.fire({
-                title: "<span class='text-gray-700 font-semibold'>No Selection</span>",
-                text: "Please select at least one checkbox to delete.",
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
                 icon: "warning",
-                confirmButtonColor: "#3085d6",
-                confirmButtonText: "OK",
-                customClass: {
-                    popup: "bg-[#e0f2f1] shadow-md",
-                    title: "text-gray-800",
-                    content: "text-gray-600",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/admins/delete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ adminsIds: selectedAdmins })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Selected admins have been deleted.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Something went wrong!", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
                 }
             });
-            return false;
         }
 
-        
-        Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById("deleteForm").submit(); 
+        function editAdmin(button) {
+            let row = button.closest("tr");
+            let adminId = row.getAttribute("data-admin-id");
+            if (!adminId) {
+                Swal.fire("Error", "Admin ID not found!", "error");
+                return;
             }
-        });
 
-        return false;
-    }
-    
-    function updateStatus(event, element, adminId, newStatus) {
-        event.preventDefault();
-        
-        let statusSpan = element.querySelector("span");
-        let loader = element.querySelector(".loader");
-        
+            window.location.href = `/admins/add?adminId=` + adminId;
+        }
 
-        element.classList.add("opacity-50", "pointer-events-none");
-        loader.classList.remove("hidden");
+        function deactivateAdmin(button) {
+            let row = button.closest("tr");
+            let adminId = row.getAttribute("data-admin-id");
 
-        fetch(`/update-status/${adminId}/${newStatus}`, { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                  
-                    statusSpan.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+            if (!adminId) {
+                Swal.fire("Error", "Admin ID not found!", "error");
+                return;
+            }
 
-                    let statusElement = element.closest("tr").querySelector("td span");
-                    statusElement.textContent = newStatus;
-                    statusElement.className = newStatus === "Active" 
-                        ? "bg-green-500 text-white px-2 py-1 rounded"
-                        : "bg-red-500 text-white px-2 py-1 rounded";
-                } else {
-                    alert("Failed to update status.");
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to deactivate this admin?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, deactivate it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admins/deactivate/${adminId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deactivated!", "Admin has been deactivated.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to deactivate step.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
                 }
-            })
-            .catch(error => console.error("Error updating status:", error))
-            .finally(() => {
-                
-                element.classList.remove("opacity-50", "pointer-events-none");
-                loader.classList.add("hidden");
             });
-    }
+        }
 
 
-</script>
-<style>
-.dropdown-menu {
-    position: absolute;
-    bottom: 100%; 
-    left: 0;
-    min-width: 150px;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    display: none; 
-    opacity: 0; 
-    visibility: hidden; 
-    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
-}
+        function deleteAdmin(button) {
+            let row = button.closest("tr");
+            let adminId = row.getAttribute("data-admin-id");
 
-.dropdown-menu.show {
-    display: block;
-    opacity: 1;
-    visibility: visible;
-}
+            if (!adminId) {
+                Swal.fire("Error", "Admin ID not found!", "error");
+                return;
+            }
 
-.dropdown-menu a {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    font-size: 14px;
-    text-decoration: none;
-}
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This admin will be permanently deleted!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admins/delete/${adminId}`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Admin has been removed.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to delete admin.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function toggleAdminStatus(element, adminId) {
+            const statusContainer = document.getElementById(`status-${adminId}`);
+            const icon = statusContainer.querySelector("i");
+            const text = statusContainer.querySelector("span");
+
+            if (!statusContainer || !icon || !text) {
+                console.error("Status element or its children not found for admin ID:", adminId);
+                return;
+            }
+
+            fetch(`/admins/toggleStatus/${adminId}`, {
+                method: "POST"
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server responded with an error");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        const newStatus = data.newStatus;
+                        text.textContent = newStatus;
+
+                        if (newStatus === "Active") {
+                            statusContainer.classList.remove("bg-red-500");
+                            statusContainer.classList.add("bg-green-500");
+                            icon.classList.remove("fa-times-circle");
+                            icon.classList.add("fa-check-circle");
+                        } else {
+                            statusContainer.classList.remove("bg-green-500");
+                            statusContainer.classList.add("bg-red-500");
+                            icon.classList.remove("fa-check-circle");
+                            icon.classList.add("fa-times-circle");
+                        }
+
+                        const actionMenuItem = element;
+                        actionMenuItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+                    } else {
+                        Swal.fire("Error", data.message || "Failed to toggle status.", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire("Error", "Server error! Please try again later.", "error");
+                });
+        }
 
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid #ddd; 
+        function formatDate(inputDate) {
+            let dateObj = new Date(inputDate);
+            let options = { day: "2-digit", month: "short", year: "numeric" };
+            return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
+        }
 
-    text-align: center; 
-}
+        // function toggleAdminStatus(adminId) {
+        //     fetch(`/admins/toggleStatus/${adminId}`, {
+        //         method: "PUT",
+        //         headers: { "Content-Type": "application/json" }
+        //     })
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.status === "success") {
+        //                 Swal.fire("Updated!", "Admin status changed successfully.", "success")
+        //                     .then(() => location.reload());
+        //             } else {
+        //                 Swal.fire("Error", data.message || "Failed to update status.", "error");
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error("Error:", error);
+        //             Swal.fire("Error", "Server error! Please try again later.", "error");
+        //         });
+        // }
 
-th, td,tr{
-    padding: 12px 16px; 
-    border: 1px solid #ddd;
-  
-}
 
+        const rowsPerPage = 10;
+        let currentPage = 1;
 
+        function updatePagination() {
+            let rows = document.querySelectorAll("#adminTableBody tr");
+            let totalPages = Math.ceil(rows.length / rowsPerPage);
+            document.getElementById("pageIndicator").textContent = `Page ${currentPage} of ${totalPages}`;
 
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage === totalPages;
 
-</style>
+            rows.forEach((row, index) => {
+                row.style.display = (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) ? "table-row" : "none";
+            });
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        }
+
+        function nextPage() {
+            let rows = document.querySelectorAll("#adminTableBody tr");
+            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+                currentPage++;
+                updatePagination();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", updatePagination);
+
+    </script>
 </body>
+
 </html>

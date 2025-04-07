@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.dop.Model.Admin;
 import com.example.dop.Model.SubNameMaster;
 import com.example.dop.Model.Subscription;
 import com.example.dop.Model.User;
@@ -38,12 +37,13 @@ public class SubController {
 
 	@GetMapping("/add")
 	public String add(Model model, HttpSession session) {
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
 		List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
 		model.addAttribute("subNameMasters", subNameMasters);
@@ -56,12 +56,13 @@ public class SubController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "page", defaultValue = "0") int page, Model model, HttpSession session) {
 
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
 		List<Subscription> subs;
 

@@ -44,6 +44,7 @@ public class CategoryController {
 
 		model.addAttribute("currentPage", "categoryAdd");
 		model.addAttribute("fname", user.getFirstName());
+		model.addAttribute("picture", user.getProfilePhoto());
 
 		if (categoryId != null) {
 			Category category = categoryService.getCategoryById(categoryId);
@@ -69,6 +70,8 @@ public class CategoryController {
 			return "redirect:/";
 		}
 		model.addAttribute("fname", user.getFirstName());
+		model.addAttribute("picture", user.getProfilePhoto());
+
 		List<Category> categories = categoryService.getAllCategories();
 
 		if (categories.isEmpty()) {
@@ -150,7 +153,7 @@ public class CategoryController {
 			}
 
 			existingCategory.setCategoryName(updatedCategory.getCategoryName());
-			categoryService.saveCategory(existingCategory); 
+			categoryService.saveCategory(existingCategory);
 
 			return ResponseEntity.ok(Map.of("status", "success", "message", "Category updated successfully!"));
 		} catch (Exception e) {
@@ -165,7 +168,7 @@ public class CategoryController {
 		if (category != null) {
 			return ResponseEntity.ok(category);
 		} else {
-			return ResponseEntity.notFound().build(); 
+			return ResponseEntity.notFound().build();
 		}
 	}
 

@@ -30,22 +30,22 @@
                             <option value="Active">Active</option>
                             <option value="Inactive">Inactive</option>
                         </select>
-                        <input type="date" id="memberSinceFilter" class="p-2 border rounded" onchange="filterByMemberSince()">
                         <div class="flex gap-2">
                             <button onclick="window.location.href='/users/add'"
                                 class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
                             <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
                                     class="fa fa-sync"></i></button>
+                            <button onclick="deleteSelectedUsers()" class="bg-red-500 text-white p-2 rounded"><i
+                                    class="fa fa-trash"></i></button>
                         </div>
                     </div>
-
-
                     <table id="userTable" class="w-full border border-gray-300 border-collapse rounded shadow-md">
                         <thead>
                             <tr class="bg-teal-600 text-white border border-gray-300">
                                 <th class="p-2 border border-gray-300">
                                     <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
                                 </th>
+                                <th class="p-2 border border-gray-300">PROFILE</th>
                                 <th class="p-2 border border-gray-300">NAME/EMAIL</th>
                                 <th class="p-2 border border-gray-300">LAST LOGIN</th>
                                 <th class="p-2 border border-gray-300">SUBSCRIPTION</th>
@@ -54,9 +54,18 @@
                             </tr>
                         </thead>
                         <tbody id="userTableBody">
-                            <tr class="border border-gray-300" th:each="user : ${users}"
-                                th:data-user-id="${user.id}">
-                                <td class="p-2 text-center border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
+                            <!-- <tr th:if="${#lists.isEmpty(users)}">
+                                <td colspan="7" class="text-center text-gray-500 p-4">No users found.</td>
+                            </tr> -->
+                            <tr class="border border-gray-300" th:each="user : ${users}" th:data-user-id="${user.id}">
+                                <td class="p-2 text-center border border-gray-300"><input type="checkbox"
+                                        class="rowCheckbox"></td>
+                                <td class="p-2 border text-center border-gray-300">
+                                    <div class="flex justify-center items-center">
+                                        <img th:src="@{${user.profilePhoto}}" alt="User Image"
+                                            class="w-16 h-16 object-cover">
+                                    </div>
+                                </td>
                                 <td class="p-2 border border-gray-300">
                                     <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
                                     <span class="block text-sm text-gray-600" th:text="${user.email}"></span>
@@ -82,21 +91,22 @@
                                         style="width: 80px; height: 32px;">
                                         <i
                                             th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
-                                        <span th:text="${user.status}"></span>
+                                        <span th:text="${user.status}" class="ml-1"></span>
                                     </span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
                                     <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
-                                        onclick="toggleMenu(event, this)">
+                                        style="width: 80px; height: 32px;" onclick="toggleMenu(event, this)">
                                         Action
                                     </button>
                                     <div
                                         class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
                                         <ul class="text-left">
-                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer" onclick="editUser(this)">
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                onclick="editUser(this)">
                                                 Edit</li>
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
-                                                th:attr="onclick='toggleUserStatus(this, ' + ${user.userId} + ')'"
+                                                th:attr="onclick='toggleUserStatus(this, ' + ${user.id} + ')'"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
                                             </li>
                                             <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
@@ -110,11 +120,11 @@
                     <div class="flex justify-between items-center mt-4">
                         <button id="prevBtn" onclick="prevPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
-                            class="fas fa-arrow-left"></i></button>
+                                class="fas fa-arrow-left"></i></button>
                         <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded">Page 1</span>
                         <button id="nextBtn" onclick="nextPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
-                            class="fas fa-arrow-right"></i></button>
+                                class="fas fa-arrow-right"></i></button>
                     </div>
                 </div>
             </main>
@@ -123,6 +133,234 @@
 
     <script>
 
+        function toggleCheckboxes(source) {
+            let checkboxes = document.querySelectorAll(".rowCheckbox");
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+
+        function toggleMenu(event, button) {
+            event.stopPropagation();
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                if (menu !== button.nextElementSibling) {
+                    menu.classList.add("hidden");
+                }
+            });
+            let menu = button.nextElementSibling;
+            menu.classList.toggle("hidden");
+        }
+        document.addEventListener("click", function () {
+            if (!event.target.closest(".action-menu") && !event.target.closest(".action-btn")) {
+                document.querySelectorAll(".action-menu").forEach(menu => {
+                    menu.classList.add("hidden");
+                });
+            }
+        });
+
+        function filterByStatus() {
+            let selectedStatus = document.getElementById("statusFilter").value;
+            let rows = document.querySelectorAll("#userTableBody tr");
+
+            rows.forEach(row => {
+                let statusCell = row.querySelector("td:nth-child(6) span");
+                if (statusCell) {
+                    let statusText = statusCell.textContent.trim();
+                    row.style.display = (selectedStatus === "all" || statusText === selectedStatus) ? "table-row" : "none";
+                }
+            });
+        }
+
+
+        function searchUsers() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            document.querySelectorAll("#userTableBody tr").forEach(row => {
+                let name = row.querySelector("td:nth-child(3) span:first-child").textContent.toLowerCase();
+                let email = row.querySelector("td:nth-child(3) span:last-child").textContent.toLowerCase();
+                row.style.display = (name.includes(input) || email.includes(input)) ? "table-row" : "none";
+            });
+        }
+
+        function deleteSelectedUsers() {
+            let selectedUsers = [];
+            document.querySelectorAll(".rowCheckbox:checked").forEach(checkbox => {
+                let row = checkbox.closest("tr");
+                let userId = row.getAttribute("data-user-id");
+                if (userId) selectedUsers.push(userId);
+            });
+
+            if (selectedUsers.length === 0) {
+                Swal.fire("No Selection", "Please select at least one user to delete.", "warning");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/users/delete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userIds: selectedUsers })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Selected users have been deleted.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Something went wrong!", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function editUser(button) {
+            let row = button.closest("tr");
+            let userId = row.getAttribute("data-user-id");
+            if (!userId) {
+                Swal.fire("Error", "User ID not found!", "error");
+                return;
+            }
+            window.location.href = `/users/add?userId=` + userId;
+        }
+
+        function deactivateUser(button) {
+            let row = button.closest("tr");
+            let userId = row.getAttribute("data-user-id");
+
+            if (!userId) {
+                Swal.fire("Error", "User ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to deactivate this user?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, deactivate it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/deactivate/${userId}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deactivated!", "User has been deactivated.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to deactivate step.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function deleteUser(button) {
+            let row = button.closest("tr");
+            let userId = row.getAttribute("data-user-id");
+
+            if (!userId) {
+                Swal.fire("Error", "User ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This user will be permanently deleted!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/users/delete/${userId}`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", "Users has been removed.", "success")
+                                    .then(() => location.reload());
+                            } else {
+                                Swal.fire("Error", data.message || "Failed to delete user.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+
+
+        function toggleUserStatus(element, userId) {
+            let statusElement = document.getElementById(`status-${userId}`);
+
+            if (!statusElement) {
+                console.error(`Status element not found for user ID: ${userId}`);
+                return;
+            }
+
+            fetch(`/users/toggleStatus/${userId}`, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const newStatus = data.status; // assuming your response returns the updated status
+                        statusElement.textContent = newStatus;
+
+                        if (newStatus === "Active") {
+                            statusElement.classList.remove("bg-red-500");
+                            statusElement.classList.add("bg-green-500");
+                            statusElement.innerHTML = `<i class="fas fa-check-circle"></i> <span class="ml-1">${newStatus}</span>`;
+                        } else {
+                            statusElement.classList.remove("bg-green-500");
+                            statusElement.classList.add("bg-red-500");
+                            statusElement.innerHTML = `<i class="fas fa-times-circle"></i> <span class="ml-1">${newStatus}</span>`;
+                        }
+                    } else {
+                        Swal.fire("Error", data.message || "Failed to toggle status", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire("Error", "Server error! Please try again later.", "error");
+                });
+        }
+
+
+        function formatDate(inputDate) {
+            if (!inputDate) return "";
+
+            let dateObj = new Date(inputDate);
+            let options = { day: "2-digit", month: "short", year: "numeric" };
+            return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
+        }
+
         const rowsPerPage = 10;
         let currentPage = 1;
 
@@ -130,6 +368,9 @@
             let rows = document.querySelectorAll("#userTableBody tr");
             let totalPages = Math.ceil(rows.length / rowsPerPage);
             document.getElementById("pageIndicator").textContent = `Page ${currentPage} of ${totalPages}`;
+
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage === totalPages;
 
             rows.forEach((row, index) => {
                 row.style.display = (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) ? "table-row" : "none";
@@ -153,161 +394,6 @@
 
         document.addEventListener("DOMContentLoaded", updatePagination);
 
-        function toggleMenu(event, button) {
-            event.stopPropagation();
-            document.querySelectorAll(".action-menu").forEach(menu => {
-                if (menu !== button.nextElementSibling) {
-                    menu.classList.add("hidden");
-                }
-            });
-            let menu = button.nextElementSibling;
-            menu.classList.toggle("hidden");
-        }
-        document.addEventListener("click", function () {
-            document.querySelectorAll(".action-menu").forEach(menu => {
-                menu.classList.add("hidden");
-            });
-        });
-
-        function filterByStatus() {
-            let selectedStatus = document.getElementById("statusFilter").value;
-            let rows = document.querySelectorAll("tbody tr");
-            rows.forEach(row => {
-                let statusCell = row.querySelector("td:nth-child(5) span");
-                if (selectedStatus === "all" || statusCell.textContent.trim() === selectedStatus) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-        function toggleCheckboxes(source) {
-            let checkboxes = document.querySelectorAll(".rowCheckbox");
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = source.checked;
-            });
-        }
-
-        function searchUsers() {
-            let input = document.getElementById("searchInput").value.toLowerCase();
-            let rows = document.querySelectorAll("tbody tr");
-
-            rows.forEach(row => {
-                let name = row.querySelector("td:nth-child(2) span:first-child").textContent.toLowerCase();
-                let email = row.querySelector("td:nth-child(2) span:last-child").textContent.toLowerCase();
-
-                if (name.includes(input) || email.includes(input)) {
-                    row.style.display = "table-row";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        function editUser(button) {
-            let row = button.closest("tr");
-            let userId = row.getAttribute("data-user-id");
-            if (!id) {
-                Swal.fire("Error", "User ID not found!", "error");
-                return;
-            }
-
-            window.location.href = `/users/add?userId=` + id;
-        }
-
-        function deleteUser(button) {
-            let row = button.closest("tr");
-            let id = row.getAttribute("data-user-id");
-
-            if (!id) {
-                Swal.fire("Error", "User ID not found!", "error");
-                return;
-            }
-
-            Swal.fire({
-                title: "Are you sure?",
-                text: "This user will be permanently deleted!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, delete it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/users/delete/${id}`, {
-                        method: "DELETE",
-                        headers: { "Content-Type": "application/json" }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === "success") {
-                                Swal.fire("Deleted!", "Users has been removed.", "success")
-                                    .then(() => location.reload());
-                            } else {
-                                Swal.fire("Error", data.message || "Failed to delete user.", "error");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            Swal.fire("Error", "Server error! Please try again later.", "error");
-                        });
-                }
-            });
-        }
-
-        function toggleUserStatus(element, id) {
-            let row = element.closest("tr");
-            let statusElement = document.getElementById(`status-${id}`);
-
-            if (!statusElement) {
-                console.error(`Status element not found for category ID: ${id}`);
-                return;
-            }
-
-            fetch(`/users/toggleStatus/${userId}`, { method: "POST" })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        let newStatus = data.newStatus;
-                        statusElement.textContent = newStatus;
-                        statusElement.classList.toggle("bg-green-500", newStatus === "Active");
-                        statusElement.classList.toggle("bg-red-500", newStatus === "Inactive");
-
-                        let actionMenuItem = element;
-                        actionMenuItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
-                    } else {
-                        console.error("Failed to update user status.");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
-        }
-
-        function filterByMemberSince() {
-            let selectedDate = document.getElementById("memberSinceFilter").value;
-            let rows = document.querySelectorAll("#userTableBody tr");
-
-            rows.forEach(row => {
-                let memberSinceCell = row.querySelector("td:nth-child(3) span:first-child");
-
-                if (memberSinceCell) {
-                    let memberSinceText = memberSinceCell.textContent.trim();
-                    let formattedDate = formatDate(selectedDate);
-
-                    if (selectedDate === "" || memberSinceText === formattedDate) {
-                        row.style.display = "table-row";
-                    } else {
-                        row.style.display = "none";
-                    }
-                }
-            });
-        }
-        function formatDate(inputDate) {
-            if (!inputDate) return "";
-
-            let dateObj = new Date(inputDate);
-            let options = { day: "2-digit", month: "short", year: "numeric" };
-            return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
-        }
 
     </script>
 </body>

@@ -25,7 +25,7 @@ public class Subscription {
 	private Long days;
 	@ManyToOne
 	@JoinColumn(name = "created_by", nullable = false)
-	private Person createdBy;
+	private User createdBy;
 
 	private String status;
 
@@ -85,7 +85,7 @@ public class Subscription {
 		this.days = days;
 	}
 
-	public Person getCreatedBy() {
+	public User getCreatedBy() {
 		return createdBy;
 	}
 
@@ -100,10 +100,4 @@ public class Subscription {
 	public void setSubNameMaster(SubNameMaster subNameMaster) {
 		this.subNameMaster = subNameMaster;
 	}
-
-	public void setCreatedBy(String name) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

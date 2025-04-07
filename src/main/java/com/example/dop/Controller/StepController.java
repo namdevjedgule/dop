@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.dop.Model.Admin;
 import com.example.dop.Model.Step;
 import com.example.dop.Model.User;
 import com.example.dop.Service.StepService;
@@ -45,12 +44,13 @@ public class StepController {
 	@GetMapping("/add")
 	public String showAddStepPage(@RequestParam(value = "stepId", required = false) Long stepId, Model model,
 			HttpSession session) {
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
 		model.addAttribute("currentPage", "stepAdd");
 
@@ -72,12 +72,14 @@ public class StepController {
 
 	@GetMapping("/list")
 	public String showStepListPage(HttpSession session, Model model) {
-		User user = (User) session.getAttribute("loggedInUser");
-
-		if (user == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", user.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+
 		List<Step> steps = stepService.getAllSteps();
 
 		if (steps.isEmpty()) {

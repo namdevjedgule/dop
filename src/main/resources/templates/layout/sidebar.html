@@ -25,25 +25,29 @@
                     </li>
 
                     <li class="mb-2" x-data="{ open: false }"
-                        x-init="open = ['adminList', 'adminAdd'].includes('${currentPage}')">
+                        x-init="open = ['adminList', 'adminAdd'].includes('[[${currentPage}]]')">
+
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
-                            :class="{ 'bg-gray-700 text-white font-bold': ['adminList', 'adminAdd'].includes('${currentPage}') }">
+                            th:classappend="${currentPage == 'adminList' || currentPage == 'adminAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
+
                             <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-user-shield text-gray-400"></i> Admins
+                                <i class="fa-solid fa-user-shield text-gray-400"></i> Admin
                             </div>
-                            <i class="fa-solid fa-chevron-down" :class="{ 'rotate-180': open }"></i>
+
+                            <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
                         </button>
+
                         <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
                             <li class="mb-1">
-                                <a th:href="@{/admin/list}"
+                                <a th:href="@{/admins/list}"
                                     class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'adminList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
                             <li>
-                                <a th:href="@{/admin/add}"
+                                <a th:href="@{/admins/add}"
                                     class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'adminAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-plus text-teal-400"></i> Add
@@ -51,6 +55,8 @@
                             </li>
                         </ul>
                     </li>
+
+
                     <li class="mb-2" x-data="{ open: false }"
                         x-init="open = ['userList', 'userAdd'].includes('[[${currentPage}]]')">
 
@@ -59,7 +65,7 @@
                             th:classappend="${currentPage == 'userList' || currentPage == 'userAdd' ? 'bg-gray-700 text-white font-bold' : ''}">
 
                             <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-users text-yellow-400"></i> Users
+                                <i class="fa-solid fa-users text-yellow-400"></i> User
                             </div>
 
                             <i class="fa-solid fa-chevron-down" x-bind:class="{ 'rotate-180': open }"></i>
@@ -273,4 +279,5 @@
         </aside>
     </div>
 </body>
+
 </html>

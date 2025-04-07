@@ -1,5 +1,6 @@
 package com.example.dop.Controller;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,11 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.dop.Model.Admin;
-import com.example.dop.Repository.AdminRepo;
+import com.example.dop.Model.User;
 import com.example.dop.Repository.UserRepository;
-import com.example.dop.Service.AdminService;
-import com.example.dop.Service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -27,15 +25,7 @@ import jakarta.servlet.http.HttpSession;
 public class AuthController {
 
 	@Autowired
-	private UserService userService;
-	@Autowired
-	private AdminService adminService;
-
-	@Autowired
 	private UserRepository userRepository;
-
-	@Autowired
-	private AdminRepo adminRepo;
 
 	@GetMapping("/")
 	public String showLoginPage() {
@@ -53,8 +43,9 @@ public class AuthController {
 		Map<String, Object> response = new HashMap<>();
 
 		Integer loginAttempts = (Integer) session.getAttribute("adminLoginAttempts");
-		if (loginAttempts == null)
+		if (loginAttempts == null) {
 			loginAttempts = 0;
+		}
 
 		if (loginAttempts >= 5) {
 			response.put("success", false);
@@ -62,14 +53,19 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
 
-		Optional<Admin> adminOptional = adminRepo.findByEmail(email);
+		Optional<User> adminOptional = userRepository.findByEmailAndRoleRoleId(email, 1L); // Role ID 1 = Admin
 
 		if (adminOptional.isPresent()) {
-			Admin admin = adminOptional.get();
+			User admin = adminOptional.get();
 			if (passwordEncoder.matches(password, admin.getPassword())) {
-				session.setAttribute("adminId", admin.getId()); // Store adminId in session
+
+				admin.setLastLogin(LocalDateTime.now());
+				userRepository.save(admin);
+
+				session.setAttribute("adminId", admin.getId());
 				session.setAttribute("loggedInAdmin", admin);
 				session.setAttribute("adminLoginAttempts", 0);
+
 				response.put("success", true);
 				response.put("message", "Admin login successful!");
 				return ResponseEntity.ok(response);
@@ -88,5 +84,4 @@ public class AuthController {
 		redirectAttributes.addFlashAttribute("success", "You have been logged out.");
 		return "redirect:/";
 	}
-
 }

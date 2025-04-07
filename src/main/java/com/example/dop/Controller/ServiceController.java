@@ -10,11 +10,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.dop.Model.Admin;
 import com.example.dop.Model.ServiceEntity;
 import com.example.dop.Service.servicesService;
 
@@ -22,125 +26,125 @@ import com.example.dop.Service.servicesService;
 @RequestMapping("/service")
 public class ServiceController {
 
-    @Autowired
-    private servicesService serviceService;
+	@Autowired
+	private servicesService serviceService;
 
-    @GetMapping("/add")
-    public String addServicePage() {
-        return "ServiceAdd";
-    }
+	@GetMapping("/add")
+	public String addServicePage() {
 
-    @GetMapping("/list")
-    public String listServices(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "statusFilter", required = false) String statusFilter,
-            Model model) {
+		return "ServiceAdd";
+	}
 
-        List<ServiceEntity> services;
+	@GetMapping("/list")
+	public String listServices(@RequestParam(value = "keyword", required = false) String keyword,
+			@RequestParam(value = "statusFilter", required = false) String statusFilter, Model model) {
 
-        if (keyword != null && !keyword.trim().isEmpty() && statusFilter != null && !statusFilter.isEmpty()) {
-            services = serviceService.searchServiceByStatus(keyword.trim(), statusFilter);
-        } else if (keyword != null && !keyword.trim().isEmpty()) {
-            services = serviceService.searchService(keyword.trim(), keyword.trim());
-        } else if (statusFilter != null && !statusFilter.isEmpty()) {
-            services = serviceService.getServicesByStatus(statusFilter);
-        } else {
-            services = serviceService.getAllServices();
-        }
+		List<ServiceEntity> services;
 
-        model.addAttribute("services", services);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("statusFilter", statusFilter);
-        return "ServiceList";
-    }
+		if (keyword != null && !keyword.trim().isEmpty() && statusFilter != null && !statusFilter.isEmpty()) {
+			services = serviceService.searchServiceByStatus(keyword.trim(), statusFilter);
+		} else if (keyword != null && !keyword.trim().isEmpty()) {
+			services = serviceService.searchService(keyword.trim(), keyword.trim());
+		} else if (statusFilter != null && !statusFilter.isEmpty()) {
+			services = serviceService.getServicesByStatus(statusFilter);
+		} else {
+			services = serviceService.getAllServices();
+		}
 
-    private static final String UPLOAD_DIR = "src/main/resources/static/uploads/services";
+		model.addAttribute("services", services);
+		model.addAttribute("keyword", keyword);
+		model.addAttribute("statusFilter", statusFilter);
+		return "ServiceList";
+	}
 
-    @PostMapping("/saveService")
-    public String saveService(@ModelAttribute ServiceEntity service,
-                              @RequestParam("profileImage") MultipartFile file) {
-        if (!file.isEmpty()) {
-            try {
-                String uploadDir = System.getProperty("user.dir") + "/uploads/services/";
-                File dir = new File(uploadDir);
-                if (!dir.exists()) dir.mkdirs();
+	private static final String UPLOAD_DIR = "src/main/resources/static/uploads/services";
 
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                Path filePath = Paths.get(uploadDir, fileName);
+	@PostMapping("/saveService")
+	public String saveService(@ModelAttribute ServiceEntity service, @RequestParam("profileImage") MultipartFile file) {
+		if (!file.isEmpty()) {
+			try {
+				String uploadDir = System.getProperty("user.dir") + "/uploads/services/";
+				File dir = new File(uploadDir);
+				if (!dir.exists())
+					dir.mkdirs();
 
-                Files.write(filePath, file.getBytes());
-                service.setProfilePhoto("/uploads/services/" + fileName); // Store relative path
-            } catch (IOException e) {
-                e.printStackTrace();
-                return "redirect:/service/add?error=file_upload_failed";
-            }
-        }
+				String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+				Path filePath = Paths.get(uploadDir, fileName);
 
-        service.setStatus("Active");
-        serviceService.saveService(service);
-        return "redirect:/service/add?success";
-    }
+				Files.write(filePath, file.getBytes());
+				service.setProfilePhoto("/uploads/services/" + fileName); // Store relative path
+			} catch (IOException e) {
+				e.printStackTrace();
+				return "redirect:/service/add?error=file_upload_failed";
+			}
+		}
 
-    @PostMapping("/deleteSelectedService")
-    public String deleteSelected(@RequestParam(value = "selectedIds", required = false) List<Long> selectedIds,
-                                 RedirectAttributes redirectAttributes) {
-        if (selectedIds != null && !selectedIds.isEmpty()) {
-            serviceService.deleteServices(selectedIds);
-            redirectAttributes.addFlashAttribute("message", "Selected services deleted successfully.");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "No services selected for deletion.");
-        }
-        return "redirect:/service/list";
-    }
+		service.setStatus("Active");
+		serviceService.saveService(service);
+		return "redirect:/service/add?success";
+	}
 
-    @GetMapping("/editService/{id}")
-    public String editService(@PathVariable("id") Long id, Model model) {
-    	ServiceEntity service = serviceService.editService(id);
-        if (service == null) return "redirect:/service/list?error=ServiceNotFound";
-        model.addAttribute("service", service);
-        return "EditService";
-    }
+	@PostMapping("/deleteSelectedService")
+	public String deleteSelected(@RequestParam(value = "selectedIds", required = false) List<Long> selectedIds,
+			RedirectAttributes redirectAttributes) {
+		if (selectedIds != null && !selectedIds.isEmpty()) {
+			serviceService.deleteServices(selectedIds);
+			redirectAttributes.addFlashAttribute("message", "Selected services deleted successfully.");
+		} else {
+			redirectAttributes.addFlashAttribute("error", "No services selected for deletion.");
+		}
+		return "redirect:/service/list";
+	}
 
-    @GetMapping("/delete/{id}")
-    public String deleteService(@PathVariable("id") Long id) {
-        serviceService.deleteService(id);
-        return "redirect:/service/list";
-    }
-    @PostMapping("/UpdateService")
-    public String updateService(@ModelAttribute("ap") ServiceEntity ap) {
-        if (ap == null) {
-            System.out.println("🚨 ap is NULL! Form data is not being received.");
-            return "redirect:/service/list?error=FormNotSubmitted";
-        }
+	@GetMapping("/editService/{id}")
+	public String editService(@PathVariable("id") Long id, Model model) {
+		ServiceEntity service = serviceService.editService(id);
+		if (service == null)
+			return "redirect:/service/list?error=ServiceNotFound";
+		model.addAttribute("service", service);
+		return "EditService";
+	}
 
-        System.out.println("✅ Received data: " + ap);
-        
-        if (ap.getSid() == null) {
-            return "redirect:/service/list?error=InvalidServiceId";
-        }
+	@GetMapping("/delete/{id}")
+	public String deleteService(@PathVariable("id") Long id) {
+		serviceService.deleteService(id);
+		return "redirect:/service/list";
+	}
 
-        ServiceEntity existingService = serviceService.getServiceById(ap.getSid());
+	@PostMapping("/UpdateService")
+	public String updateService(@ModelAttribute("ap") ServiceEntity ap) {
+		if (ap == null) {
+			System.out.println("🚨 ap is NULL! Form data is not being received.");
+			return "redirect:/service/list?error=FormNotSubmitted";
+		}
 
-        if (existingService != null) { 
-            System.out.println("🔄 Updating Service ID: " + ap.getSid());
-            System.out.println("Old Name: " + existingService.getSname() + " -> New Name: " + ap.getSname());
+		System.out.println("✅ Received data: " + ap);
 
-            existingService.setSname(ap.getSname());
-            existingService.setCategory(ap.getCategory());
-            existingService.setAltTitle(ap.getAltTitle());
-            existingService.setIcon(ap.getIcon());
-            existingService.setDescription(ap.getDescription());
+		if (ap.getSid() == null) {
+			return "redirect:/service/list?error=InvalidServiceId";
+		}
 
-            existingService.setStatus(existingService.getStatus());
+		ServiceEntity existingService = serviceService.getServiceById(ap.getSid());
 
-            serviceService.saveService(existingService);
-        } else {
-            System.out.println("🚨 Service ID not found: " + ap.getSid());
-            return "redirect:/service/list?error=ServiceNotFound";
-        }
+		if (existingService != null) {
+			System.out.println("🔄 Updating Service ID: " + ap.getSid());
+			System.out.println("Old Name: " + existingService.getSname() + " -> New Name: " + ap.getSname());
 
-        return "redirect:/service/list?success=ServiceUpdated";
-    }
+			existingService.setSname(ap.getSname());
+			existingService.setCategory(ap.getCategory());
+			existingService.setAltTitle(ap.getAltTitle());
+			existingService.setIcon(ap.getIcon());
+			existingService.setDescription(ap.getDescription());
 
+			existingService.setStatus(existingService.getStatus());
+
+			serviceService.saveService(existingService);
+		} else {
+			System.out.println("🚨 Service ID not found: " + ap.getSid());
+			return "redirect:/service/list?error=ServiceNotFound";
+		}
+
+		return "redirect:/service/list?success=ServiceUpdated";
+	}
 
 }

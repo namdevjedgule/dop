@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.dop.Model.Admin;
 import com.example.dop.Model.Company;
 import com.example.dop.Model.User;
 import com.example.dop.Service.CompanyService;
@@ -27,12 +26,14 @@ public class CompanyController {
 
 	@GetMapping("/client/add")
 	public String add(HttpSession session, Model model) {
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+
 		return "companyAdd";
 	}
 
@@ -62,12 +63,13 @@ public class CompanyController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter, Model model,
 			@RequestParam(value = "page", defaultValue = "0") int page, HttpSession session) {
 
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
 		List<Company> company;
 

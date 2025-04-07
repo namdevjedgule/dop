@@ -1,20 +1,22 @@
-<header th:fragment="header" class="bg-teal-600 text-white p-2 flex justify-between items-center shadow-md fixed top-0 left-0 w-full z-40">
+<header th:fragment="header"
+    class="bg-teal-600 text-white p-2 flex justify-between items-center shadow-md fixed top-0 left-0 w-full z-40">
 
-    <button id="menu-btn"
-        @click="$dispatch('toggle-sidebar')"
+    <button id="menu-btn" @click="$dispatch('toggle-sidebar')"
         class="text-white text-3xl ml-4 focus:outline-none sm:hidden">
         ☰
     </button>
-    
+
     <div class="flex items-center">
         <img th:src="@{/images/in2in_global.jpg}" alt="Logo" class="w-22 h-16 ml-2 sm:ml-16">
     </div>
 
     <div x-data="{ open: false }" class="relative flex items-center space-x-2 mr-4 cursor-pointer">
-        
-        <img th:unless="${picture}" th:src="@{/images/user-icon.jpg}" 
-        class="w-10 h-10 rounded-full border border-white" alt="Default Avatar">
-   
+
+        <img th:if="${picture != null}" th:src="@{${picture}}" class="w-10 h-10 rounded-full border border-white"
+            alt="Profile Picture">
+        <img th:unless="${picture != null}" th:src="@{/images/user-icon.jpg}"
+            class="w-10 h-10 rounded-full border border-white" alt="Default Avatar">
+
 
         <div class="text-white">
             <p class="text-xs leading-none font-medium">WELCOME</p>

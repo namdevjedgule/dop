@@ -21,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.dop.Model.Admin;
 import com.example.dop.Model.Plan;
+import com.example.dop.Model.User;
 import com.example.dop.Service.PlanService;
 
 import jakarta.servlet.http.HttpSession;
@@ -38,12 +38,13 @@ public class PlanController {
 	@GetMapping("/add")
 	public String showAddPlanPage(@RequestParam(value = "planId", required = false) Long planId, Model model,
 			HttpSession session) {
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
 		model.addAttribute("currentPage", "planAdd");
 
@@ -65,12 +66,14 @@ public class PlanController {
 
 	@GetMapping("/list")
 	public String showPlanListPage(HttpSession session, Model model) {
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
-
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+
 		List<Plan> plans = planService.getAllPlans();
 
 		if (plans.isEmpty()) {

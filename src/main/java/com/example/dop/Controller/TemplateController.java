@@ -25,10 +25,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.dop.Model.Admin;
 import com.example.dop.Model.Template;
+import com.example.dop.Model.User;
 import com.example.dop.Repository.TemplateRepo;
-import com.example.dop.Service.AdminService;
 import com.example.dop.Service.TemplateService;
 import com.example.dop.Service.UserService;
 
@@ -40,28 +39,41 @@ public class TemplateController {
 	TemplateService templateService;
 
 	@Autowired
-	AdminService adminService;
-
-	@Autowired
 	UserService userService;
 
 	@Autowired
 	TemplateRepo templetRepo;
 
 	@GetMapping("/CreateTemplate")
-	private String Ctemplate() {
+	public String Ctemplate(HttpSession session, Model model) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
+			return "redirect:/";
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+
 		return "CreateTemplate";
 	}
 
 	@PostMapping("/saveFile")
-	public String saveFile(@RequestParam("file") MultipartFile file, HttpSession session) {
+	public String saveFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
+		String fileName = file.getOriginalFilename();
+
+		if (fileExists(fileName)) {
+			redirectAttributes.addFlashAttribute("error", "File already exists in the database.");
+			return "redirect:/CreateTemplate";
+		}
 
 		try {
-			Template template = templateService.saveFile(file);
-			return "redirect:/CreateTemplate";
+			templateService.saveFile(file);
+			redirectAttributes.addFlashAttribute("message", "File uploaded successfully.");
 		} catch (Exception e) {
-			return "redirect:/CreateTemplate?error=" + e.getMessage();
+			redirectAttributes.addFlashAttribute("error", "Error uploading file: " + e.getMessage());
 		}
+
+		return "redirect:/CreateTemplate";
 	}
 
 	public boolean fileExists(String fileName) {
@@ -72,12 +84,14 @@ public class TemplateController {
 	public String viewFile(@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "page", defaultValue = "0") int page, Model model, HttpSession session) {
-		Admin admin = (Admin) session.getAttribute("loggedInAdmin");
 
-		if (admin == null) {
+		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		if (loggedInUser == null)
 			return "redirect:/";
-		}
-		model.addAttribute("fname", admin.getFirstName());
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
 		List<Template> template;
 
@@ -126,9 +140,7 @@ public class TemplateController {
 				Optional<Template> optionalTemplate = templateService.getFileById(id);
 				if (optionalTemplate.isPresent()) {
 					String fileName = optionalTemplate.get().getTemplateName();
-					Path filePath = Paths.get(
-							"F:/agri_project/HOMESTEADERINDIA-Spring-Boot-Java-Project-master/dop-main/dop-main/src/main/resources/static/templates/")
-							.resolve(fileName).normalize();
+					Path filePath = Paths.get("src/main/resources/static/templates/").resolve(fileName).normalize();
 
 					if (Files.exists(filePath)) {
 						zipOutputStream.putNextEntry(new ZipEntry(fileName));
@@ -150,7 +162,7 @@ public class TemplateController {
 		}
 	}
 
-	@PostMapping("/deleteFile/{id}")
+	@GetMapping("/deleteFile/{id}")
 	public String deleteTemplate(@PathVariable Long id) {
 		templateService.deleteTemplate(id);
 		return "redirect:/ViewTemplate";
@@ -165,13 +177,9 @@ public class TemplateController {
 				return ResponseEntity.notFound().build();
 			}
 
-			// Get the file name from the database
 			String fileName = optionalTemplate.get().getTemplateName();
-			Path filePath = Paths.get(
-					"F:/agri_project/HOMESTEADERINDIA-Spring-Boot-Java-Project-master/dop-main/dop-main/src/main/resources/static/templates/")
-					.resolve(fileName).normalize();
+			Path filePath = Paths.get("src/main/resources/static/templates/").resolve(fileName).normalize();
 
-			// Ensure file exists before reading
 			if (!Files.exists(filePath)) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + fileName);
 			}
