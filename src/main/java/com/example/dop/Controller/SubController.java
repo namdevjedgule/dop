@@ -1,7 +1,6 @@
 package com.example.dop.Controller;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -94,37 +93,37 @@ public class SubController {
 
 	@PostMapping("/save")
 	public String saveSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
-		Long userId = (Long) session.getAttribute("userId");
+	    User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-		if (userId == null) {
-			System.out.println("User ID is null. Redirecting to login.");
-			return "redirect:/login";
-		}
+	    String createdByEmail = null;
 
-		System.out.println("User ID from session: " + userId);
+	    if (loggedInAdmin != null) {
+	        createdByEmail = loggedInAdmin.getEmail();
+	    } else if (loggedInUser != null) {
+	        createdByEmail = loggedInUser.getEmail();
+	    } else {
+	        System.out.println("No user or admin logged in. Redirecting to login.");
+	        return "redirect:/login";
+	    }
 
-		try {
-			User user = userService.getUserById(userId);
-			System.out.println("User found: " + user.getFirstName());
+	    try {
+	       	subscription.setCreatedBy(createdByEmail);
+	        subscription.setCreatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
+	        subscription.setStatus("Active");
 
-			subscription.setCreatedBy(user);
-			subscription.setStatus("Active");
-
-			subService.saveSubscription(subscription);
-			return "redirect:/subscription/add";
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "redirect:/error";
-		}
+	        subService.saveSubscription(subscription);
+	        return "redirect:/subscription/add";
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return "redirect:/error";
+	    }
 	}
+
 
 	@GetMapping("/edit/{id}")
 	public String editSubscription(@PathVariable("id") Long id, Model model, HttpSession session) {
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-		if (loggedInUser == null) {
-			return "redirect:/";
-		}
-		model.addAttribute("fname", loggedInUser.getFirstName());
+		
 
 		Subscription subscription = subService.findById(id);
 		List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
@@ -137,14 +136,35 @@ public class SubController {
 
 	@PostMapping("/update")
 	public String updateSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
-		Long userId = (Long) session.getAttribute("userId");
-		if (userId == null) {
-			return "redirect:/login";
-		}
-		User user = userService.getUserById(userId);
-		subscription.setCreatedBy(user);
-		subService.saveSubscription(subscription);
-		return "redirect:/subscription/list";
+	    User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+	    String updatedByEmail = null;
+
+	    if (loggedInAdmin != null) {
+	        updatedByEmail = loggedInAdmin.getEmail();
+	    } else if (loggedInUser != null) {
+	        updatedByEmail = loggedInUser.getEmail();
+	    } else {
+	        return "redirect:/login";
+	    }
+
+	    Subscription existing = subService.getById(subscription.getId());
+
+	    if (existing == null) {
+	        return "redirect:/error"; 
+	    }
+
+	
+	    subscription.setCreatedBy(existing.getCreatedBy());
+	    subscription.setCreatedOn(existing.getCreatedOn());
+
+	    subscription.setStatus("Active");
+	    subscription.setUpdatedBy(updatedByEmail);
+	    subscription.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
+
+	    subService.saveSubscription(subscription);
+	    return "redirect:/subscription/list";
 	}
 
 	@DeleteMapping("/delete/{id}")

@@ -1,9 +1,12 @@
 package com.example.dop.Model;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,7 +23,15 @@ public class Company
 	private String cemail;
 	private String cpassword;
 	private String status;
-	private LocalDate created_on;
+	private Timestamp createdOn;
+	@Column(name = "created_by")
+    private String createdBy;
+	 @Column(name = "updated_by")
+	    private String updatedBy;
+
+	    @Column(name = "updated_on")
+	    private Timestamp updatedOn;
+	
 	
 	public Long getCid() {
 		return cid;
@@ -65,12 +76,33 @@ public class Company
 	public void setstatus(String status) {
 		this.status = status;
 	}
-	public LocalDate getCreated_on() {
-		return created_on;
+	
+	
+	public Timestamp getCreatedOn() {
+		return createdOn;
 	}
-	public void setCreated_on(LocalDate created_on) {
-		this.created_on = created_on;
+	public void setCreatedOn(Timestamp createdOn) {
+		this.createdOn = createdOn;
 	}
+	public Timestamp getUpdatedOn() {
+		return updatedOn;
+	}
+	public void setUpdatedOn(Timestamp updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+	public String getCreatedBy() {
+		return createdBy;
+	}
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+	
 	
 	
 	

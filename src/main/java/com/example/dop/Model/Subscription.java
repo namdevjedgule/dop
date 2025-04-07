@@ -1,5 +1,6 @@
 package com.example.dop.Model;
 
+import java.sql.Timestamp;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,18 +15,22 @@ public class Subscription {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@ManyToOne
-	@JoinColumn(name = "sub_name_master_id", referencedColumnName = "id") // Ensure correct mapping
+	@JoinColumn(name = "sub_name_master_id", referencedColumnName = "id") 
 	private SubNameMaster subNameMaster;
 
-	private String code;
 	private Long price;
 	private String project;
 	@Column(name = "row_count")
 	private String rowCount;
 	private Long days;
-	@ManyToOne
-	@JoinColumn(name = "created_by", nullable = false)
-	private User createdBy;
+	
+	private String createdBy;
+	
+	private String updatedBy;
+	
+	private Timestamp updatedOn;
+	
+	private Timestamp createdOn;
 
 	private String status;
 
@@ -45,13 +50,6 @@ public class Subscription {
 		this.id = id;
 	}
 
-	public String getCode() {
-		return code;
-	}
-
-	public void setCode(String code) {
-		this.code = code;
-	}
 
 	public Long getPrice() {
 		return price;
@@ -85,11 +83,13 @@ public class Subscription {
 		this.days = days;
 	}
 
-	public User getCreatedBy() {
+	
+
+	public String getCreatedBy() {
 		return createdBy;
 	}
 
-	public void setCreatedBy(User createdBy) {
+	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
 	}
 
@@ -100,4 +100,31 @@ public class Subscription {
 	public void setSubNameMaster(SubNameMaster subNameMaster) {
 		this.subNameMaster = subNameMaster;
 	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Timestamp getUpdatedOn() {
+		return updatedOn;
+	}
+
+	public void setUpdatedOn(Timestamp updatedOn) {
+		this.updatedOn = updatedOn;
+	}
+
+	public Timestamp getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Timestamp createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	
+	
 }

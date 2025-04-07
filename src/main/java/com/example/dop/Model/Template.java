@@ -1,7 +1,6 @@
 package com.example.dop.Model;
 
-import java.sql.Date;
-
+import java.sql.Timestamp;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,9 +14,9 @@ public class Template
 	private Long templateId;
 	private String templateName;
 	private String createdBy;
-	private Date createdOn;
+	private Timestamp createdOn;
 	private String updatedBy;
-	private Date updatedOn;
+	private Timestamp updatedOn;
 	private String filePath;
 	
 	public String getFilePath() {
@@ -45,25 +44,25 @@ public class Template
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
 	}
-	public Date getCreatedOn() {
-		return createdOn;
-	}
-	public void setCreatedOn(Date createdOn) {
-		this.createdOn = createdOn;
-	}
+	
 	public String getUpdatedBy() {
 		return updatedBy;
 	}
 	public void setUpdatedBy(String updatedBy) {
 		this.updatedBy = updatedBy;
 	}
-	public Date getUpdatedOn() {
+	public Timestamp getCreatedOn() {
+		return createdOn;
+	}
+	public void setCreatedOn(Timestamp createdOn) {
+		this.createdOn = createdOn;
+	}
+	public Timestamp getUpdatedOn() {
 		return updatedOn;
 	}
-	public void setUpdatedOn(Date updatedOn) {
+	public void setUpdatedOn(Timestamp updatedOn) {
 		this.updatedOn = updatedOn;
 	}
-	
 	
 
 }

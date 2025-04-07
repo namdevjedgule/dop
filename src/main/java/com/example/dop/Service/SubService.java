@@ -95,6 +95,10 @@ public class SubService
 
 	            return subRepo.findAll(pageable);
 	    }
+
+	    public Subscription getById(Long id) {
+	        return subRepo.findById(id).orElse(null);
+	    }
 }
 
 

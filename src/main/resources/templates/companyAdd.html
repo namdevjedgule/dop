@@ -16,17 +16,17 @@
             <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD Company</h1>
+                    <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD COMPANY</h1>
                     
                     <form action="/saveCompany" method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
                         <div class="flex gap-6">
                             <div class="flex-1 grid grid-cols-2 gap-4">
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Company Name <span class="text-red-500">*</span></label>
+                                    <label class="w-30 font-medium">COMPANY NAME <span class="text-red-500">*</span></label>
                                     <input type="text" id="companyName" placeholder="Enter Company Name" class="flex-1 p-2 border rounded" name="CompanyName">
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Activity <span class="text-red-500">*</span></label>
+                                    <label class="w-32 font-medium">ACTIVITY <span class="text-red-500">*</span></label>
                                     <select id="activity" name="Activity" class="flex-1 p-2 border rounded">
                                         <option value="" disabled selected>Select Activity</option>
                                         <option value="file-management">File Management</option>
@@ -36,11 +36,11 @@
                                 </div>
 
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Email Address <span class="text-red-500">*</span></label>
+                                    <label class="w-30 font-medium">EMAIL ADDRESS <span class="text-red-500">*</span></label>
                                     <input type="email" id="email" placeholder="Enter Email Address" class="flex-1 p-2 border rounded" name="cemail">
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">Password <span class="text-red-500">*</span></label>
+                                    <label class="w-32 font-medium">PASSWORD <span class="text-red-500">*</span></label>
                                     <input type="password" id="password" placeholder="Enter Password" class="flex-1 p-2 border rounded" name="cpassword">
                                 </div>
                             </div>

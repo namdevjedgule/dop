@@ -1,5 +1,6 @@
 package com.example.dop.Controller;
 
+import java.sql.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,11 +39,38 @@ public class CompanyController {
 	}
 
 	@PostMapping("/saveCompany")
-	public String save(@ModelAttribute("c1") Company c1) {
-		c1.setStatus("Active");
-		companyService.saveCompany(c1);
-		return "redirect:/client/add";
-	}
+	public String save(@ModelAttribute("c1") Company c1, HttpSession session) {
+		 User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
+		    User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+		    String createdByEmail = null;
+
+		    if (loggedInAdmin != null) {
+		        createdByEmail = loggedInAdmin.getEmail();
+		    } else if (loggedInUser != null) {
+		        createdByEmail = loggedInUser.getEmail();
+		    } else {
+		        System.out.println("No user or admin logged in. Redirecting to login.");
+		        return "redirect:/login";
+		    }
+		    
+		    try {
+		       	c1.setCreatedBy(createdByEmail);
+		       	System.out.println("CreatedBy (before save): " + c1.getCreatedBy());
+
+		        c1.setCreatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
+		       c1.setStatus("Active");
+
+		       companyService.saveCompany(c1);
+		        return "redirect:/client/add";
+		    } catch (Exception e) {
+		        e.printStackTrace();
+		        return "redirect:/error";
+		    }
+		}
+
+	    
+
 
 //	@PostMapping("/deleteSelected1")
 //    public String deleteSelected(@RequestParam(value = "selectedIds", required = false) List<Long> selectedIds,
@@ -104,11 +132,7 @@ public class CompanyController {
 	@GetMapping("/editcompany/{id}")
 	public String EditCompany(@PathVariable("id") Long id, Model model, HttpSession session) {
 
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-		if (loggedInUser == null) {
-			return "redirect:/";
-		}
-		model.addAttribute("fname", loggedInUser.getFirstName());
+		
 		Company c1 = companyService.editcompany(id);
 
 		if (c1 == null) {
@@ -120,31 +144,43 @@ public class CompanyController {
 	}
 
 	@PostMapping("/UpdateCompany")
-	public String updateCompany(@ModelAttribute("ap") Company ap) {
-		if (ap.getCid() == null) {
-			return "redirect:/client/list?error=InvalidCompanyId";
-		}
+	public String updateCompany(@ModelAttribute("ap") Company ap, HttpSession session) {
+	    User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-		Company existingCompany = companyService.getCompanyById(ap.getCid());
+	    String updatedByEmail = null;
 
-		if (existingCompany != null) {
+	    if (loggedInAdmin != null) {
+	        updatedByEmail = loggedInAdmin.getEmail();
+	    } else if (loggedInUser != null) {
+	        updatedByEmail = loggedInUser.getEmail();
+	    } else {
+	        return "redirect:/login";
+	    }
 
-			String existingStatus = existingCompany.getStatus();
+	    if (ap.getCid() == null) {
+	        return "redirect:/client/list?error=InvalidCompanyId";
+	    }
 
-			existingCompany.setCompanyName(ap.getCompanyName());
-			existingCompany.setActivity(ap.getActivity());
-			existingCompany.setCemail(ap.getCemail());
+	    Company existingCompany = companyService.getCompanyById(ap.getCid());
 
-			if (ap.getCpassword() != null && !ap.getCpassword().trim().isEmpty()) {
-				existingCompany.setCpassword(ap.getCpassword());
-			}
+	    if (existingCompany != null) {
+	        existingCompany.setCompanyName(ap.getCompanyName());
+	        existingCompany.setActivity(ap.getActivity());
+	        existingCompany.setCemail(ap.getCemail());
 
-			existingCompany.setStatus(existingStatus);
+	        if (ap.getCpassword() != null && !ap.getCpassword().trim().isEmpty()) {
+	            existingCompany.setCpassword(ap.getCpassword());
+	        }
 
-			companyService.saveCompany(existingCompany);
-		}
+	        // Keep status and created fields unchanged
+	        existingCompany.setUpdatedBy(updatedByEmail);
+	        existingCompany.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
 
-		return "redirect:/client/list?success=CompanyUpdated";
+	        companyService.saveCompany(existingCompany);
+	    }
+
+	    return "redirect:/client/list?success=CompanyUpdated";
 	}
 
 	@PostMapping("/deleteSelectedCompany")

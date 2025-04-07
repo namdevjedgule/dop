@@ -1,11 +1,7 @@
 package com.example.dop.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,8 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import com.example.dop.Model.Company;
 import com.example.dop.Repository.CompanyRepo;
-
-
 
 @Service
 public class CompanyService {
@@ -24,7 +18,7 @@ public class CompanyService {
 
 	public void saveCompany(Company c1)
 	{
-		c1.setCreated_on(LocalDate.now());
+		
 		companyRepo.save(c1);
 		
 	}

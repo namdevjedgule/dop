@@ -58,25 +58,32 @@ public class TemplateController {
 	}
 
 	@PostMapping("/saveFile")
-	public String saveFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
-		String fileName = file.getOriginalFilename();
+	public String saveFile(@RequestParam("file") MultipartFile file,
+	                       RedirectAttributes redirectAttributes,
+	                       HttpSession session) {
+	    String fileName = file.getOriginalFilename();
 
-		if (fileExists(fileName)) {
-			redirectAttributes.addFlashAttribute("error", "File already exists in the database.");
-			return "redirect:/CreateTemplate";
-		}
+	    if (fileExists(fileName)) {
+	        redirectAttributes.addFlashAttribute("error", "File already exists in the database.");
+	        return "redirect:/CreateTemplate";
+	    }
 
-		try {
-			templateService.saveFile(file);
-			redirectAttributes.addFlashAttribute("message", "File uploaded successfully.");
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Error uploading file: " + e.getMessage());
-		}
+	    try {
+	    	User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
+	    	String createdBy = (loggedInAdmin != null) ? loggedInAdmin.getEmail() : "System";
 
-		return "redirect:/CreateTemplate";
+	    	templateService.saveFile(file, createdBy);
+	    	redirectAttributes.addFlashAttribute("message", "File uploaded successfully.");
+	    } catch (Exception e) {
+	    	redirectAttributes.addFlashAttribute("error", "Error uploading file: " + e.getMessage());
+	    }
+
+
+	    return "redirect:/CreateTemplate";
 	}
 
-	public boolean fileExists(String fileName) {
+
+	private boolean fileExists(String fileName) {
 		return templetRepo.findByTemplateName(fileName).isPresent();
 	}
 
@@ -169,7 +176,7 @@ public class TemplateController {
 	}
 
 	@GetMapping("/download/{id}")
-	public ResponseEntity<Object> downloadFile(@PathVariable Long id) {
+	public ResponseEntity<Object> downloadFile(@PathVariable Long id, HttpSession session) {
 		try {
 			Optional<Template> optionalTemplate = templateService.getFileById(id);
 
@@ -177,21 +184,38 @@ public class TemplateController {
 				return ResponseEntity.notFound().build();
 			}
 
-			String fileName = optionalTemplate.get().getTemplateName();
+			Template template = optionalTemplate.get();
+			String fileName = template.getTemplateName();
 			Path filePath = Paths.get("src/main/resources/static/templates/").resolve(fileName).normalize();
 
 			if (!Files.exists(filePath)) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + fileName);
 			}
 
-			byte[] content = Files.readAllBytes(filePath);
+			
+			User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
+			User loggedInUser = (User) session.getAttribute("loggedInUser");
 
+			String updatedBy = "System";
+			if (loggedInAdmin != null) {
+				updatedBy = loggedInAdmin.getEmail();
+			} else if (loggedInUser != null) {
+				updatedBy = loggedInUser.getEmail();
+			}
+
+			
+			templateService.updateDownloadInfo(template, updatedBy);
+
+		
+			byte[] content = Files.readAllBytes(filePath);
 			return ResponseEntity.ok()
 					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-					.contentType(MediaType.APPLICATION_OCTET_STREAM).body(content);
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(content);
 
 		} catch (IOException e) {
 			return ResponseEntity.internalServerError().body("Error while downloading: " + e.getMessage());
 		}
 	}
+
 }

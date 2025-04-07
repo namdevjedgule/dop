@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,36 +34,42 @@ public class TemplateService {
 	@Autowired
 	TemplateRepo templateRepo;
 
-	public void saveFile(Template c1) {
-		templateRepo.save(c1);
+	public Template saveFile(MultipartFile file, String createdBy) throws IOException {
+		if (file.isEmpty()) {
+			throw new IOException("Uploaded file is empty.");
+		}
 
+		String originalFileName = file.getOriginalFilename();
+
+		
+		if (templateRepo.findByTemplateName(originalFileName).isPresent()) {
+			throw new IOException("File with the same name already exists!");
+		}
+
+		
+		File directory = new File(UPLOAD_DIR);
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
+
+		
+		Path filePath = Paths.get(UPLOAD_DIR + originalFileName);
+		Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+		
+		Template template = new Template();
+		template.setTemplateName(originalFileName);
+		template.setFilePath(filePath.toString());
+		template.setCreatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
+		template.setCreatedBy(createdBy);
+
+		return templateRepo.save(template);
 	}
 
-	public Template saveFile(MultipartFile file) throws IOException {
-
-		if (!file.isEmpty()) {
-			String originalFileName = file.getOriginalFilename();
-
-			if (templateRepo.findByTemplateName(originalFileName).isPresent()) {
-				throw new IOException("File with the same name already exists!");
-			}
-
-			File directory = new File(UPLOAD_DIR);
-			if (!directory.exists()) {
-				directory.mkdirs();
-			}
-
-			Path filePath = Paths.get(UPLOAD_DIR + originalFileName);
-			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-			Template template = new Template();
-			template.setTemplateName(originalFileName);
-			template.setFilePath(filePath.toString());
-			template.setCreatedOn(new java.sql.Date(System.currentTimeMillis()));
-
-			return templateRepo.save(template);
-		}
-		return null;
+	public void updateDownloadInfo(Template template, String updatedBy) {
+		template.setUpdatedBy(updatedBy);
+		template.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));;
+		templateRepo.save(template);
 	}
 
 	public Page<Template> getPaginatedTemplate(int page, int pageSize, String keyword, String statusFilter) {
@@ -117,7 +124,9 @@ public class TemplateService {
 		}
 	}
 
-	public void updateTemplate(Template template) {
+	public void updateTemplate(Template template) 
+	{
+		template.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
 		templateRepo.save(template);
 	}
 
