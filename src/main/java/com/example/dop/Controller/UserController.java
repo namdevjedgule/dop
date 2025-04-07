@@ -47,9 +47,15 @@ public class UserController {
 	}
 
 	private String loadAddPage(Long userId, HttpSession session, Model model, int roleId) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
-		if (loggedInUser == null)
+		User loggedInUser = (User) session.getAttribute("user");
+		if (loggedInUser == null) {
 			return "redirect:/";
+		}
+
+		String role = loggedInUser.getRole().getRoleName();
+		if (!"Admin".equalsIgnoreCase(role)) {
+			return "redirect:/access-denied";
+		}
 
 		model.addAttribute("fname", loggedInUser.getFirstName());
 		model.addAttribute("email", loggedInUser.getEmail());
@@ -71,7 +77,7 @@ public class UserController {
 
 	@GetMapping("/admins/list")
 	public String showAdminListPage(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
@@ -92,7 +98,7 @@ public class UserController {
 
 	@GetMapping("/users/list")
 	public String showUserListPage(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 

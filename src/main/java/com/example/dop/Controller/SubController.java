@@ -36,7 +36,7 @@ public class SubController {
 
 	@GetMapping("/add")
 	public String add(Model model, HttpSession session) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
@@ -55,7 +55,7 @@ public class SubController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "page", defaultValue = "0") int page, Model model, HttpSession session) {
 
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 

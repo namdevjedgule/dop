@@ -27,7 +27,7 @@ public class CompanyController {
 
 	@GetMapping("/client/add")
 	public String add(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
@@ -91,7 +91,7 @@ public class CompanyController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter, Model model,
 			@RequestParam(value = "page", defaultValue = "0") int page, HttpSession session) {
 
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 

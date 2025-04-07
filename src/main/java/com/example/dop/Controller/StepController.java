@@ -44,7 +44,7 @@ public class StepController {
 	@GetMapping("/add")
 	public String showAddStepPage(@RequestParam(value = "stepId", required = false) Long stepId, Model model,
 			HttpSession session) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
@@ -72,7 +72,7 @@ public class StepController {
 
 	@GetMapping("/list")
 	public String showStepListPage(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 

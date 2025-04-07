@@ -46,7 +46,7 @@ public class TemplateController {
 
 	@GetMapping("/CreateTemplate")
 	public String Ctemplate(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
@@ -92,7 +92,7 @@ public class TemplateController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "page", defaultValue = "0") int page, Model model, HttpSession session) {
 
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 

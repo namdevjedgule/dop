@@ -36,7 +36,7 @@ public class CategoryController {
 	@GetMapping("/add")
 	public String showAddCategoryPage(@RequestParam(value = "categoryId", required = false) Long categoryId,
 			Model model, HttpSession session) {
-		User user = (User) session.getAttribute("loggedInUser");
+		User user = (User) session.getAttribute("user");
 
 		if (user == null) {
 			return "redirect:/";
@@ -64,7 +64,7 @@ public class CategoryController {
 
 	@GetMapping("/list")
 	public String showCategoryListPage(HttpSession session, Model model) {
-		User user = (User) session.getAttribute("loggedInUser");
+		User user = (User) session.getAttribute("user");
 
 		if (user == null) {
 			return "redirect:/";

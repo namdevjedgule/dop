@@ -38,7 +38,7 @@ public class PlanController {
 	@GetMapping("/add")
 	public String showAddPlanPage(@RequestParam(value = "planId", required = false) Long planId, Model model,
 			HttpSession session) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
@@ -66,7 +66,7 @@ public class PlanController {
 
 	@GetMapping("/list")
 	public String showPlanListPage(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 

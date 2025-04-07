@@ -34,7 +34,7 @@ public class AuthController {
 
 	@PostMapping("/checkdata")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> checkAdminLogin(@RequestBody Map<String, String> loginData,
+	public ResponseEntity<Map<String, Object>> checkLogin(@RequestBody Map<String, String> loginData,
 			HttpSession session) {
 		String email = loginData.get("email");
 		String password = loginData.get("password");
@@ -42,7 +42,7 @@ public class AuthController {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		Map<String, Object> response = new HashMap<>();
 
-		Integer loginAttempts = (Integer) session.getAttribute("adminLoginAttempts");
+		Integer loginAttempts = (Integer) session.getAttribute("loginAttempts");
 		if (loginAttempts == null) {
 			loginAttempts = 0;
 		}
@@ -53,26 +53,31 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
 
-		Optional<User> adminOptional = userRepository.findByEmailAndRoleRoleId(email, 1L); // Role ID 1 = Admin
+		Optional<User> userOptional = userRepository.findByEmail(email);
 
-		if (adminOptional.isPresent()) {
-			User admin = adminOptional.get();
-			if (passwordEncoder.matches(password, admin.getPassword())) {
+		if (userOptional.isPresent()) {
+			User user = userOptional.get();
 
-				admin.setLastLogin(LocalDateTime.now());
-				userRepository.save(admin);
+			if (passwordEncoder.matches(password, user.getPassword())) {
 
-				session.setAttribute("adminId", admin.getId());
-				session.setAttribute("loggedInAdmin", admin);
-				session.setAttribute("adminLoginAttempts", 0);
+				user.setLastLogin(LocalDateTime.now());
+				userRepository.save(user);
+
+				session.setAttribute("userId", user.getId());
+				session.setAttribute("user", user);
+				session.setAttribute("loginAttempts", 0);
+
+				String role = user.getRole().getRoleName();
+				session.setAttribute("userRole", role);
 
 				response.put("success", true);
-				response.put("message", "Admin login successful!");
+				response.put("message", role + " login successful!");
+				response.put("role", role);
 				return ResponseEntity.ok(response);
 			}
 		}
 
-		session.setAttribute("adminLoginAttempts", loginAttempts + 1);
+		session.setAttribute("loginAttempts", loginAttempts + 1);
 		response.put("success", false);
 		response.put("message", "Invalid email or password.");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);

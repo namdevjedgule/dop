@@ -18,13 +18,14 @@ public class DashboardController {
 
 	@GetMapping("/dashboard")
 	public String showDashboard(HttpSession session, Model model) {
-		User loggedInUser = (User) session.getAttribute("loggedInAdmin");
+		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
 		model.addAttribute("fname", loggedInUser.getFirstName());
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+		model.addAttribute("userRole", session.getAttribute("userRole"));
 
 		long totalAdmins = userService.countAdmins();
 		long totalUsers = userService.countUsers();
