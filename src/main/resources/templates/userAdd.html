@@ -78,7 +78,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-6 flex justify-end space-x-4">
-                                    <button type="submit"
+                                    <button type="submit" id="saveBtn"
                                         class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">
                                         Save
                                     </button>
@@ -152,6 +152,8 @@
 
             if (userId) {
                 document.getElementById("formTitle").textContent = "EDIT USER";
+                document.getElementById("saveBtn").textContent = "Update";
+
                 try {
                     let response = await fetch(`/users/${userId}`);
                     if (!response.ok) throw new Error("Failed to fetch user details");
@@ -196,6 +198,19 @@
                 if (!lastName.match(nameRegex)) return showToast("Invalid Input", "Last Name should contain only letters.", "error");
                 if (!email) return showToast("Missing Field", "Email is required!", "warning");
                 if (!emailRegex.test(email)) return showToast("Invalid Email", "Enter a valid email address.", "error");
+
+                try {
+                    let checkUrl = `/check-email?email=${encodeURIComponent(email)}${userId ? `&userId=${userId}` : ''}`;
+                    let checkRes = await fetch(checkUrl);
+                    let checkData = await checkRes.json();
+
+                    if (checkData.exists) {
+                        return showToast("Email Exists", "This email is already exists.", "error");
+                    }
+                } catch (checkErr) {
+                    console.error("Email check error:", checkErr);
+                    return showToast("Error", "Failed to validate email. Try again later.", "error");
+                }
 
                 if (!userId && !password) return showToast("Missing Field", "Password is required!", "warning");
                 if (password && !password.match(passwordRegex)) return showToast("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");

@@ -54,10 +54,10 @@
                             </tr>
                         </thead>
                         <tbody id="userTableBody">
-                            <!-- <tr th:if="${#lists.isEmpty(users)}">
+                            <tr th:if="${#lists.isEmpty(users)}">
                                 <td colspan="7" class="text-center text-gray-500 p-4">No users found.</td>
-                            </tr> -->
-                            <tr class="border border-gray-300" th:each="user : ${users}" th:data-user-id="${user.id}">
+                            </tr>
+                            <tr class="border border-gray-300" th:each="user : ${users}" th:attr="data-user-id=${user.id}, data-role=${user.role.roleName}">
                                 <td class="p-2 text-center border border-gray-300"><input type="checkbox"
                                         class="rowCheckbox"></td>
                                 <td class="p-2 border text-center border-gray-300">
@@ -106,7 +106,7 @@
                                                 onclick="editUser(this)">
                                                 Edit</li>
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
-                                                th:attr="onclick='toggleUserStatus(this, ' + ${user.id} + ')'"
+                                                th:attr="onclick=|toggleUserStatus(this, '${user.id}', '${user.role.roleName}')|"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
                                             </li>
                                             <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
@@ -121,7 +121,7 @@
                         <button id="prevBtn" onclick="prevPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
                                 class="fas fa-arrow-left"></i></button>
-                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded">Page 1</span>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded font-semibold">Page 1</span>
                         <button id="nextBtn" onclick="nextPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
                                 class="fas fa-arrow-right"></i></button>
@@ -205,7 +205,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch("/users/delete", {
-                        method: "POST",
+                        method: "DELETE",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ userIds: selectedUsers })
                     })
@@ -236,46 +236,6 @@
             window.location.href = `/users/add?userId=` + userId;
         }
 
-        function deactivateUser(button) {
-            let row = button.closest("tr");
-            let userId = row.getAttribute("data-user-id");
-
-            if (!userId) {
-                Swal.fire("Error", "User ID not found!", "error");
-                return;
-            }
-
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to deactivate this user?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, deactivate it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/users/deactivate/${userId}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === "success") {
-                                Swal.fire("Deactivated!", "User has been deactivated.", "success")
-                                    .then(() => location.reload());
-                            } else {
-                                Swal.fire("Error", data.message || "Failed to deactivate step.", "error");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            Swal.fire("Error", "Server error! Please try again later.", "error");
-                        });
-                }
-            });
-        }
-
         function deleteUser(button) {
             let row = button.closest("tr");
             let userId = row.getAttribute("data-user-id");
@@ -301,11 +261,13 @@
                     })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.status === "success") {
-                                Swal.fire("Deleted!", "Users has been removed.", "success")
+                            if (data.message) {
+                                Swal.fire("Deleted!", data.message, "success")
                                     .then(() => location.reload());
+                            } else if (data.error) {
+                                Swal.fire("Error", data.error, "error");
                             } else {
-                                Swal.fire("Error", data.message || "Failed to delete user.", "error");
+                                Swal.fire("Error", "Failed to delete user.", "error");
                             }
                         })
                         .catch(error => {
@@ -319,31 +281,41 @@
 
 
         function toggleUserStatus(element, userId) {
-            let statusElement = document.getElementById(`status-${userId}`);
+            const statusContainer = document.getElementById(`status-${userId}`);
+            const icon = statusContainer.querySelector("i");
+            const text = statusContainer.querySelector("span");
 
-            if (!statusElement) {
-                console.error(`Status element not found for user ID: ${userId}`);
+            if (!statusContainer || !icon || !text) {
+                console.error("Status element or its children not found for user ID:", userId);
                 return;
             }
 
-            fetch(`/users/toggleStatus/${userId}`, { method: "POST" })
+            fetch(`/users/toggleStatus/${userId}`, {
+                method: "POST"
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        const newStatus = data.status; // assuming your response returns the updated status
-                        statusElement.textContent = newStatus;
+                        const newStatus = data.newStatus;
+                        text.textContent = newStatus;
 
                         if (newStatus === "Active") {
-                            statusElement.classList.remove("bg-red-500");
-                            statusElement.classList.add("bg-green-500");
-                            statusElement.innerHTML = `<i class="fas fa-check-circle"></i> <span class="ml-1">${newStatus}</span>`;
+                            statusContainer.classList.remove("bg-red-500");
+                            statusContainer.classList.add("bg-green-500");
+                            icon.className = "fas fa-check-circle";
                         } else {
-                            statusElement.classList.remove("bg-green-500");
-                            statusElement.classList.add("bg-red-500");
-                            statusElement.innerHTML = `<i class="fas fa-times-circle"></i> <span class="ml-1">${newStatus}</span>`;
+                            statusContainer.classList.remove("bg-green-500");
+                            statusContainer.classList.add("bg-red-500");
+                            icon.className = "fas fa-times-circle";
                         }
+
+                        const actionMenu = element.closest(".action-menu");
+                        const toggleItem = actionMenu.querySelector("li:nth-child(2)");
+                        toggleItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+
+                        closeActionMenus();
                     } else {
-                        Swal.fire("Error", data.message || "Failed to toggle status", "error");
+                        Swal.fire("Error", data.message || "Failed to toggle status.", "error");
                     }
                 })
                 .catch(error => {
@@ -394,6 +366,11 @@
 
         document.addEventListener("DOMContentLoaded", updatePagination);
 
+        function closeActionMenus() {
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                menu.classList.add("hidden");
+            });
+        }
 
     </script>
 </body>

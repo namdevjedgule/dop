@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Date;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.dop.Model.Template;
+import com.example.dop.Model.User;
 import com.example.dop.Repository.TemplateRepo;
 
 import jakarta.annotation.Resource;
@@ -41,22 +42,18 @@ public class TemplateService {
 
 		String originalFileName = file.getOriginalFilename();
 
-		
 		if (templateRepo.findByTemplateName(originalFileName).isPresent()) {
 			throw new IOException("File with the same name already exists!");
 		}
 
-		
 		File directory = new File(UPLOAD_DIR);
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
 
-		
 		Path filePath = Paths.get(UPLOAD_DIR + originalFileName);
 		Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-		
 		Template template = new Template();
 		template.setTemplateName(originalFileName);
 		template.setFilePath(filePath.toString());
@@ -68,7 +65,8 @@ public class TemplateService {
 
 	public void updateDownloadInfo(Template template, String updatedBy) {
 		template.setUpdatedBy(updatedBy);
-		template.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));;
+		template.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
+		;
 		templateRepo.save(template);
 	}
 
@@ -87,16 +85,63 @@ public class TemplateService {
 		return templateRepo.findAll();
 	}
 
-	public void deleteTemplatesByIds(List<Long> templateIds) {
-		templateRepo.deleteAllById(templateIds);
+//	public void deleteTemplatesByIds(List<Long> templateIds) {
+//		templateRepo.deleteAllById(templateIds);
+//	}
+
+	public void deleteTemplatesByIds(List<Long> templateIds, User loggedInUser) {
+		for (Long id : templateIds) {
+			Template template = templateRepo.findById(id).orElseThrow(() -> new RuntimeException("Template not found"));
+
+			String roleName = loggedInUser.getRole().getRoleName();
+			String createdBy = template.getCreatedBy();
+
+			if ("SuperAdmin".equalsIgnoreCase(roleName)) {
+				templateRepo.deleteById(id);
+			} else if ("Admin".equalsIgnoreCase(roleName) && createdBy.equals(loggedInUser.getEmail())) {
+				templateRepo.deleteById(id);
+			} else {
+				throw new RuntimeException("You don't have permission to delete one or more of these templates.");
+			}
+		}
 	}
 
 	public boolean fileExists(String fileName) {
 		return templateRepo.findByTemplateName(fileName).isPresent();
 	}
 
-	public void deleteTemplate(Long id) {
-		templateRepo.deleteById(id);
+//	public void deleteTemplate(Long id, User loggedInUser) {
+//
+//		Template template = templateRepo.findById(id).orElseThrow(() -> new RuntimeException("Template not found"));
+//
+//		String roleName = loggedInUser.getRole().getRoleName();
+//		String createdBy = template.getCreatedBy();
+//
+//		if ("SuperAdmin".equalsIgnoreCase(roleName)) {
+//			templateRepo.deleteById(id);
+//		} else if ("Admin".equalsIgnoreCase(roleName) && createdBy.equals(loggedInUser.getEmail())) {
+//			templateRepo.deleteById(id);
+//		} else {
+//			throw new RuntimeException("You don't have permission to delete this template.");
+//		}
+//	}
+
+	public String deleteTemplate(Long id, User loggedInUser) throws IllegalAccessException {
+
+		Template template = templateRepo.findById(id).orElseThrow(() -> new RuntimeException("Template not found"));
+
+		String roleName = loggedInUser.getRole().getRoleName();
+		String createdBy = template.getCreatedBy();
+
+		if ("SuperAdmin".equalsIgnoreCase(roleName)) {
+			templateRepo.deleteById(id);
+			return "Template deleted successfully by SuperAdmin.";
+		} else if ("Admin".equalsIgnoreCase(roleName) && createdBy.equals(loggedInUser.getEmail())) {
+			templateRepo.deleteById(id);
+			return "Template deleted successfully by Admin.";
+		} else {
+			throw new IllegalAccessException("You don't have permission to delete this template.");
+		}
 	}
 
 	public Optional<Template> getFileById(Long id) {
@@ -124,10 +169,40 @@ public class TemplateService {
 		}
 	}
 
-	public void updateTemplate(Template template) 
-	{
+	public void updateTemplate(Template template) {
 		template.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
 		templateRepo.save(template);
 	}
 
+	public List<Template> getTemplatesForUser(User currentUser) {
+		String roleName = currentUser.getRole().getRoleName();
+		String email = currentUser.getEmail();
+
+		if ("SuperAdmin".equalsIgnoreCase(roleName)) {
+			return templateRepo.findAll();
+		} else if ("Admin".equalsIgnoreCase(roleName)) {
+			return templateRepo.findByCreatedBy(email);
+		} else {
+			return Collections.emptyList();
+		}
+	}
+
+//	public String deleteTemplateById(Long templateId, User currentUser) throws IllegalAccessException {
+//		Optional<Template> optionalTemplate = templateRepo.findById(templateId);
+//
+//		if (!optionalTemplate.isPresent()) {
+//			throw new IllegalArgumentException("Template not found.");
+//		}
+//
+//		Template template = optionalTemplate.get();
+//
+//		if (currentUser.getRole().getRoleId() == 1) {
+//			if (!template.getCreatedBy().getId().equals(currentUser.getId())) {
+//				throw new IllegalAccessException("Admin cannot delete templates created by a SuperAdmin.");
+//			}
+//		}
+//
+//		templateRepo.delete(template);
+//		return "Template deleted successfully.";
+//	}
 }

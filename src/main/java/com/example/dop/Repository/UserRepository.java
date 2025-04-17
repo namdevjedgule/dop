@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.example.dop.Model.RoleMaster;
@@ -27,5 +28,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	List<User> findByRoleRoleIdAndStatus(Long roleId, String status);
 
 	List<User> findByRoleRoleIdAndFirstNameContainingIgnoreCase(Long roleId, String firstName);
+
+	@Query("SELECT u FROM User u WHERE u.role.roleId IN (3, 1)")
+	List<User> findAllAdminsAndSuperAdmins();
+
+	Optional<User> findByEmailIgnoreCase(String email);
+
+	List<User> findByCreatedBy(String createdBy);
 
 }

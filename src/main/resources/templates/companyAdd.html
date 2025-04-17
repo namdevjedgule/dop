@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,47 +10,63 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body class="bg-[#e9f5f5]">
     <div class="flex flex-col min-h-screen">
         <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
         <div class="flex flex-1 pt-20">
-            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40" th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-teal-700 mb-6">ADD COMPANY</h1>
-                    
-                    <form action="/saveCompany" method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
-                        <div class="flex gap-6">
-                            <div class="flex-1 grid grid-cols-2 gap-4">
-                                <div class="flex items-center gap-2">
-                                    <label class="w-30 font-medium">COMPANY NAME <span class="text-red-500">*</span></label>
-                                    <input type="text" id="companyName" placeholder="Enter Company Name" class="flex-1 p-2 border rounded" name="CompanyName">
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">ACTIVITY <span class="text-red-500">*</span></label>
-                                    <select id="activity" name="Activity" class="flex-1 p-2 border rounded">
-                                        <option value="" disabled selected>Select Activity</option>
-                                        <option value="file-management">File Management</option>
-                                        <option value="analytics">Analytics</option>
-                                        <option value="other">Other</option>
-                                    </select>
-                                </div>
+                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">ADD COMPANY</h1>
 
-                                <div class="flex items-center gap-2">
-                                    <label class="w-30 font-medium">EMAIL ADDRESS <span class="text-red-500">*</span></label>
-                                    <input type="email" id="email" placeholder="Enter Email Address" class="flex-1 p-2 border rounded" name="cemail">
+                    <form id="addCompany" novalidate>
+                        <input type="hidden" id="companyId" name="companyId">
+                        <div class="flex gap-6">
+                            <div class="w-full bg-white p-4 rounded-lg shadow-md">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">COMPANY NAME <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="text" id="companyName" name="companyName"
+                                            placeholder="Enter Company Name"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">ACTIVITY <span
+                                                class="text-red-500">*</span></label>
+                                        <select id="activitySelect"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            <option value="">Select Activity</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">EMAIL ADDRESS <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="email" id="email" name="email" placeholder="Enter Email Address"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">PASSWORD <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="password" id="password" name="password"
+                                            placeholder="Enter Password"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <label class="w-32 font-medium">PASSWORD <span class="text-red-500">*</span></label>
-                                    <input type="password" id="password" placeholder="Enter Password" class="flex-1 p-2 border rounded" name="cpassword">
+                                <div class="mt-6 flex justify-end space-x-4">
+                                    <button type="submit" id="saveBtn"
+                                        class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">
+                                        Save
+                                    </button>
+                                    <button type="button"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md"
+                                        onclick="handleCancel()">
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="flex justify-end gap-4 mt-6">
-                            <button type="submit" class="bg-teal-500 text-white px-4 py-2 rounded shadow-md hover:bg-teal-600">Save</button>
-                            <button type="button" onclick="confirmCancel()" class="bg-red-500 text-white px-4 py-2 rounded shadow-md hover:bg-red-600">Cancel</button>
                         </div>
                     </form>
                 </div>
@@ -58,111 +75,149 @@
     </div>
 
     <script>
-        function confirmCancel() {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Your changes will not be saved!",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, cancel",
-                cancelButtonText: "Keep editing",
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "/companyAdd"; 
+
+        async function loadActivityDropdowns() {
+            try {
+                const response = await fetch("http://localhost:8080/activities/all");
+                if (!response.ok) {
+                    throw new Error("Error fetching activities");
                 }
+                const data = await response.json();
+                console.log(data);
+
+                const activitySelect = document.getElementById("activitySelect");
+                activitySelect.innerHTML = '<option value="">Select Activity</option>';
+
+                data.forEach(activity => {
+                    const option = document.createElement("option");
+                    option.value = activity.activityId;
+                    option.textContent = activity.activityName;
+                    activitySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error loading activity dropdown:", error);
+                showPopup("Error", "Unable to load activities. Please try again later.", "error");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            await loadActivityDropdowns();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyId = urlParams.get("companyId");
+
+            if (companyId) {
+                document.getElementById("formTitle").textContent = "EDIT COMPANY";
+                document.getElementById("saveBtn").textContent = "Update";
+               
+                try {
+                    const response = await fetch(`/companies/${companyId}`);
+                    if (!response.ok) throw new Error("Failed to fetch company details");
+
+                    const company = await response.json();
+
+                    document.getElementById("companyId").value = company.companyId || '';
+                    document.getElementById("companyName").value = company.companyName || '';
+                    document.getElementById("activitySelect").value = company.activity?.activityId || '';
+                    document.getElementById("email").value = company.cemail || '';
+
+
+                } catch (error) {
+                    console.error("Error fetching company:", error);
+                    showToast("Error", "Failed to load company data!", "error");
+                }
+            }
+
+
+            document.getElementById("addCompany").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                let companyId = document.getElementById("companyId").value || null;
+                let companyName = document.getElementById("companyName").value.trim();
+                let activityId = document.getElementById("activitySelect").value;
+                let email = document.getElementById("email").value.trim();
+                let password = document.getElementById("password").value.trim();
+
+                let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+                if (!companyName) return showToast("Missing Field", "Company Name is required!", "warning");
+                if (!activityId) return showToast("Missing Field", "Please select an activity!", "warning");
+                if (!email || !emailRegex.test(email)) return showToast("Invalid Email", "Enter a valid email address.", "error");
+
+                try {
+                    let checkUrl = `/check-email?email=${encodeURIComponent(email)}${companyId ? `&companyId=${companyId}` : ''}`;
+                    let checkRes = await fetch(checkUrl);
+                    let checkData = await checkRes.json();
+                    if (checkData.exists) return showToast("Email Exists", "This email already exists.", "error");
+                } catch (err) {
+                    console.error("Email check error:", err);
+                    return showToast("Error", "Email validation failed.", "error");
+                }
+
+                if (!companyId && !password) return showToast("Missing Field", "Password is required!", "warning");
+                if (password && !password.match(passwordRegex)) {
+                    return showToast("Weak Password", "Password must have at least 8 characters, one uppercase letter, one number, and one special character.", "error");
+                }
+
+                let formData = new FormData();
+                if (companyId) formData.append("companyId", companyId);
+                formData.append("companyName", companyName);
+                formData.append("activity.activityId", activityId);
+                formData.append("cemail", email);
+                if (password) formData.append("cpassword", password);
+
+                let method = companyId ? "PUT" : "POST";
+                let url = companyId ? `/companies/update/${companyId}` : "/companies/saveCompany";
+
+                try {
+                    let response = await fetch(url, {
+                        method: method,
+                        body: formData
+                    });
+
+                    let data = await response.json();
+                    console.log(data);
+
+                    if (response.ok) {
+                        showToast("Success", companyId ? "Company updated successfully!" : "Company added successfully!", "success");
+                        setTimeout(() => {
+                            window.location.href = "/companies/list";
+                        }, 1500);
+                    } else {
+                        showToast("Error", data.message || "Something went wrong!", "error");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    showToast("Error", "Server error! Please try again later.", "error");
+                }
+            });
+        });
+
+        function showToast(title, message, icon) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: icon,
+                confirmButtonColor: "#3085d6",
+                position: "top",
+                showConfirmButton: false,
+                timer: 1500,
+                toast: true,
+                timerProgressBar: true
             });
         }
 
-        function validateForm(event) {
-            event.preventDefault(); // Prevent default submission
-
-            const companyName = document.getElementById("companyName").value.trim();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const activity = document.getElementById("activity").value;
-
-            const nameRegex = /^[A-Za-z\s]+$/;  // Allows spaces in company name
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/; 
-            const minPasswordLength = 6; 
-
-            if (companyName === "" || email === "" || password === "" || activity === "") {
-                Swal.fire({
-                	 icon: "warning",
-                     title: "<span class='text-gray-700 font-semibold'>Missing Field</span>",
-                     text: "All fields are required!",
-                     toast: true,
-                     position: "top-middle",
-                     showConfirmButton: false,
-                     timer: 3000,
-                     timerProgressBar: true,
-                     customClass: {
-                         popup: "bg-[#e0f2f1] shadow-md",
-                         title: "text-gray-800",
-                         content: "text-gray-600",
-                     }
-                });
-                return false;
+        function handleCancel() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyId = urlParams.get('companyId');
+            if (companyId) {
+                window.location.href = '/companies/list';
+            } else {
+                window.location.reload();
             }
-
-           
-            if (!emailRegex.test(email)) {
-                Swal.fire({
-                	icon: "warning",
-                    title: "<span class='text-gray-700 font-semibold'>Invalid Email</span>",
-                    text: "Email must be in format abc@gmail.com",
-                    toast: true,
-                    position: "top-center",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    customClass: {
-                        popup: "bg-[#e0f2f1] shadow-md",
-                        title: "text-gray-800",
-                        content: "text-gray-600",
-                    }
-                });
-                return false;
-            }
-
-            if (password.length < minPasswordLength) {
-                Swal.fire({
-                	icon: "warning",
-                    title: "<span class='text-gray-700 font-semibold'>Weak Password</span>",
-                    text: "Password must be at least 6 characters long",
-                    toast: true,
-                    position: "top-center",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    customClass: {
-                        popup: "bg-[#e0f2f1] shadow-md",
-                        title: "text-gray-800",
-                        content: "text-gray-600",
-                    }
-                });
-                return false;
-            }
-
-            Swal.fire({
-                icon: "success",
-                title: "Success",
-                text: "Form Submitted Successfully!",
-                position: "top-center",
-                showConfirmButton: false,
-                timer: 3000,
-                customClass: {
-                    popup: "bg-[#e0f2f1] shadow-md",
-                    title: "text-gray-800",
-                    content: "text-gray-600",
-                }
-            }).then(() => {
-                document.querySelector("form").submit(); 
-            });
-
-            return false;
         }
     </script>
-
 </body>
+
 </html>

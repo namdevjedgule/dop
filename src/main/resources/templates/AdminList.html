@@ -54,7 +54,8 @@
                             </tr>
                         </thead>
                         <tbody id="adminTableBody">
-                            <tr class="border border-gray-300" th:each="user : ${admins}" th:data-admin-id="${user.id}">
+                            <tr class="border border-gray-300" th:each="user : ${admins}"
+                                th:attr="data-admin-id=${user.id}, data-role=${user.role.roleName}">
                                 <td class="p-2 border text-center border-gray-300"><input type="checkbox"
                                         class="rowCheckbox"></td>
                                 <td class="p-2 border text-center border-gray-300">
@@ -96,7 +97,7 @@
                                                 Edit
                                             </li>
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
-                                                th:attr="onclick=|toggleAdminStatus(this, ${user.id})|"
+                                                th:attr="onclick=|toggleAdminStatus(this, '${user.id}', '${user.role.roleName}')|"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
                                             </li>
                                             <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
@@ -113,7 +114,7 @@
                         <button id="prevBtn" onclick="prevPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
                                 class="fas fa-arrow-left"></i></button>
-                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded">Page 1</span>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded font-semibold">Page 1</span>
                         <button id="nextBtn" onclick="nextPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
                                 class="fas fa-arrow-right"></i></button>
@@ -196,9 +197,9 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch("/admins/delete", {
-                        method: "POST",
+                        method: "DELETE",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ adminsIds: selectedAdmins })
+                        body: JSON.stringify({ userIds: selectedAdmins })
                     })
                         .then(response => response.json())
                         .then(data => {
@@ -220,54 +221,28 @@
         function editAdmin(button) {
             let row = button.closest("tr");
             let adminId = row.getAttribute("data-admin-id");
+            let role = row.getAttribute("data-role");
+
+            closeActionMenus();
+
             if (!adminId) {
                 Swal.fire("Error", "Admin ID not found!", "error");
+                return;
+            }
+
+            if (role === "SuperAdmin") {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Not Allowed',
+                    text: 'Super Admin cannot be edited!',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
             window.location.href = `/admins/add?adminId=` + adminId;
         }
-
-        function deactivateAdmin(button) {
-            let row = button.closest("tr");
-            let adminId = row.getAttribute("data-admin-id");
-
-            if (!adminId) {
-                Swal.fire("Error", "Admin ID not found!", "error");
-                return;
-            }
-
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to deactivate this admin?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, deactivate it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/admins/deactivate/${adminId}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === "success") {
-                                Swal.fire("Deactivated!", "Admin has been deactivated.", "success")
-                                    .then(() => location.reload());
-                            } else {
-                                Swal.fire("Error", data.message || "Failed to deactivate step.", "error");
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            Swal.fire("Error", "Server error! Please try again later.", "error");
-                        });
-                }
-            });
-        }
-
 
         function deleteAdmin(button) {
             let row = button.closest("tr");
@@ -295,10 +270,14 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.status === "success") {
-                                Swal.fire("Deleted!", "Admin has been removed.", "success")
+                                Swal.fire("Deleted!", data.message, "success")
                                     .then(() => location.reload());
+                            } else if (data.status === "warning") {
+                                Swal.fire("Warning", data.message, "warning");
+                            } else if (data.status === "error") {
+                                Swal.fire("Error", data.message, "error");
                             } else {
-                                Swal.fire("Error", data.message || "Failed to delete admin.", "error");
+                                Swal.fire("Error", "Failed to delete admin.", "error");
                             }
                         })
                         .catch(error => {
@@ -322,13 +301,18 @@
             fetch(`/admins/toggleStatus/${adminId}`, {
                 method: "POST"
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Server responded with an error");
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
+                    if (data.warning) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Warning',
+                            text: data.message || "Action not allowed.",
+                            confirmButtonColor: "#7367F0"
+                        });
+                        return;
+                    }
+
                     if (data.success) {
                         const newStatus = data.newStatus;
                         text.textContent = newStatus;
@@ -336,17 +320,18 @@
                         if (newStatus === "Active") {
                             statusContainer.classList.remove("bg-red-500");
                             statusContainer.classList.add("bg-green-500");
-                            icon.classList.remove("fa-times-circle");
-                            icon.classList.add("fa-check-circle");
+                            icon.className = "fas fa-check-circle";
                         } else {
                             statusContainer.classList.remove("bg-green-500");
                             statusContainer.classList.add("bg-red-500");
-                            icon.classList.remove("fa-check-circle");
-                            icon.classList.add("fa-times-circle");
+                            icon.className = "fas fa-times-circle";
                         }
 
-                        const actionMenuItem = element;
-                        actionMenuItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+                        const actionMenu = element.closest(".action-menu");
+                        const toggleItem = actionMenu.querySelector("li:nth-child(2)");
+                        toggleItem.textContent = newStatus === "Active" ? "Deactivate" : "Activate";
+
+                        closeActionMenus();
                     } else {
                         Swal.fire("Error", data.message || "Failed to toggle status.", "error");
                     }
@@ -357,32 +342,11 @@
                 });
         }
 
-
         function formatDate(inputDate) {
             let dateObj = new Date(inputDate);
             let options = { day: "2-digit", month: "short", year: "numeric" };
             return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
         }
-
-        // function toggleAdminStatus(adminId) {
-        //     fetch(`/admins/toggleStatus/${adminId}`, {
-        //         method: "PUT",
-        //         headers: { "Content-Type": "application/json" }
-        //     })
-        //         .then(response => response.json())
-        //         .then(data => {
-        //             if (data.status === "success") {
-        //                 Swal.fire("Updated!", "Admin status changed successfully.", "success")
-        //                     .then(() => location.reload());
-        //             } else {
-        //                 Swal.fire("Error", data.message || "Failed to update status.", "error");
-        //             }
-        //         })
-        //         .catch(error => {
-        //             console.error("Error:", error);
-        //             Swal.fire("Error", "Server error! Please try again later.", "error");
-        //         });
-        // }
 
 
         const rowsPerPage = 10;
@@ -417,6 +381,13 @@
         }
 
         document.addEventListener("DOMContentLoaded", updatePagination);
+
+        function closeActionMenus() {
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                menu.classList.add("hidden");
+            });
+        }
+
 
     </script>
 </body>

@@ -12,17 +12,26 @@
 
 <body>
     <div th:fragment="sidebar">
-        <aside class="bg-black text-gray-300 w-60 h-screen p-4 fixed top-16 left-0 mt-3 text-sm overflow-y-auto max-h-screen">
+        <aside
+            class="bg-black text-gray-300 w-60 h-screen p-4 fixed top-16 left-0 mt-3 text-sm overflow-y-auto max-h-screen">
             <nav>
                 <ul>
-                    <li class="mb-2">
+                    <li class="mb-2" th:if="${session.user != null and session.user.role.roleName == 'SuperAdmin'}">
                         <a th:href="@{/dashboard}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                             th:classappend="${currentPage == 'dashboard' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                             <i class="fa-solid fa-tachometer-alt text-teal-500"></i> Dashboard
                         </a>
                     </li>
+                    <li class="mb-2"
+                        th:if="${session.user != null and (session.user.role.roleName == 'Admin' or session.user.role.roleName == 'User')}">
+                        <a th:href="@{/profile}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            th:classappend="${currentPage == 'profile' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
+                            <i class="fa-solid fa-user text-teal-500"></i> Profile
+                        </a>
+                    </li>
 
                     <li class="mb-2" x-data="{ open: false }"
+                        th:if="${session.user != null and session.user.role.roleName == 'SuperAdmin'}"
                         x-init="open = ['adminList', 'adminAdd'].includes('[[${currentPage}]]')">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
@@ -34,13 +43,15 @@
                         </button>
                         <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
                             <li class="mb-1">
-                                <a th:href="@{/admins/list}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                <a th:href="@{/admins/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'adminList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
-                            <li th:if="${session.user != null and session.user.role != null and session.user.role.roleName == 'Admin'}">
-                                <a th:href="@{/admins/add}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            <li>
+                                <a th:href="@{/admins/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'adminAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-plus text-teal-400"></i> Add
                                 </a>
@@ -49,6 +60,7 @@
                     </li>
 
                     <li class="mb-2" x-data="{ open: false }"
+                        th:if="${session.user != null and (session.user.role.roleName == 'Admin' or session.user.role.roleName == 'SuperAdmin')}"
                         x-init="open = ['userList', 'userAdd'].includes('[[${currentPage}]]')">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
@@ -60,13 +72,15 @@
                         </button>
                         <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
                             <li class="mb-1">
-                                <a th:href="@{/users/list}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                <a th:href="@{/users/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'userList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
-                            <li th:if="${session.user != null and session.user.role != null and session.user.role.roleName == 'Admin'}">
-                                <a th:href="@{/users/add}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                            <li>
+                                <a th:href="@{/users/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'userAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-plus text-teal-400"></i> Add
                                 </a>
@@ -74,7 +88,7 @@
                         </ul>
                     </li>
 
-                    <li class="mb-2" x-data="{ open: false }"
+                    <li class="mb-2" x-data="{ open: false }" th:if="${session.user != null}"
                         x-init="open = ['companyList', 'companyAdd'].includes('[[${currentPage}]]')">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
@@ -86,13 +100,15 @@
                         </button>
                         <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
                             <li class="mb-1">
-                                <a th:href="@{/client/list}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                <a th:href="@{/companies/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'companyList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
                             <li>
-                                <a th:href="@{/client/add}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                <a th:href="@{/companies/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'companyAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-plus text-teal-400"></i> Add
                                 </a>
@@ -100,7 +116,7 @@
                         </ul>
                     </li>
 
-                    <li class="mb-2" x-data="{ open: false }"
+                    <li class="mb-2" x-data="{ open: false }" th:if="${session.user != null}"
                         x-init="open = ['subscriptionList', 'subscriptionAdd'].includes('[[${currentPage}]]')">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full p-2 rounded cursor-pointer hover:bg-gray-600"
@@ -112,13 +128,15 @@
                         </button>
                         <ul x-show="open" x-cloak class="ml-6 mt-2 bg-gray-800 rounded p-2">
                             <li class="mb-1">
-                                <a th:href="@{/subscription/list}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                <a th:href="@{/subscriptions/list}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'subscriptionList' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
                             <li>
-                                <a th:href="@{/subscription/add}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                                <a th:href="@{/subscriptions/add}"
+                                    class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'subscriptionAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                                     <i class="fa-solid fa-plus text-teal-400"></i> Add
                                 </a>
@@ -126,22 +144,25 @@
                         </ul>
                     </li>
 
-                    <li class="mb-2" th:if="${session.user != null and session.user.role != null and session.user.role.roleName == 'Admin'}">
-                        <a th:href="@{/CreateTemplate}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                    <li class="mb-2"
+                        th:if="${session.user != null and (session.user.role.roleName == 'Admin' or session.user.role.roleName == 'SuperAdmin')}">
+                        <a th:href="@{/templates/add}"
+                            class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                             th:classappend="${currentPage == 'createTemplate' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                             <i class="fa fa-plus text-gray-500"></i> Upload Template
                         </a>
                     </li>
 
-                    <li class="mb-2">
-                        <a th:href="@{/ViewTemplate}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
+                    <li class="mb-2" th:if="${session.user != null}">
+                        <a th:href="@{/templates/list}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                             th:classappend="${currentPage == 'viewTemplate' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">
                             <i class="fa fa-file-alt text-teal-500"></i> Download Template
                         </a>
                     </li>
 
                     <li class="mb-2">
-                        <a th:href="@{/logout}" class="flex items-center gap-3 p-2 rounded cursor-pointer w-full hover:bg-gray-600">
+                        <a th:href="@{/logout}"
+                            class="flex items-center gap-3 p-2 rounded cursor-pointer w-full hover:bg-gray-600">
                             <i class="fa-solid fa-sign-out-alt text-blue-400"></i> Logout
                         </a>
                     </li>

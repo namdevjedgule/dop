@@ -1,38 +1,53 @@
 package com.example.dop.Model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Company {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long cid;
+	private Long companyId;
+
 	private String companyName;
-	private String activity;
+
+	@ManyToOne
+	@JoinColumn(name = "activity_id")
+	@JsonIgnoreProperties("companyList")
+	private ActivityMaster activity;
+
 	private String cemail;
+
 	private String cpassword;
+
 	private String status;
-	private Timestamp createdOn;
+
+	private LocalDateTime createdOn;
+
 	@Column(name = "created_by")
 	private String createdBy;
+
 	@Column(name = "updated_by")
 	private String updatedBy;
 
 	@Column(name = "updated_on")
-	private Timestamp updatedOn;
+	private LocalDateTime updatedOn;
 
-	public Long getCid() {
-		return cid;
+	public Long getCompanyId() {
+		return companyId;
 	}
 
-	public void setCid(Long cid) {
-		this.cid = cid;
+	public void setCompanyId(Long companyId) {
+		this.companyId = companyId;
 	}
 
 	public String getCompanyName() {
@@ -51,11 +66,11 @@ public class Company {
 		this.status = status;
 	}
 
-	public String getActivity() {
+	public ActivityMaster getActivity() {
 		return activity;
 	}
 
-	public void setActivity(String activity) {
+	public void setActivity(ActivityMaster activity) {
 		this.activity = activity;
 	}
 
@@ -64,7 +79,7 @@ public class Company {
 	}
 
 	public void setCemail(String cemail) {
-		this.cemail = cemail;
+		this.cemail = (cemail != null) ? cemail.toLowerCase() : null;
 	}
 
 	public String getCpassword() {
@@ -75,27 +90,19 @@ public class Company {
 		this.cpassword = cpassword;
 	}
 
-	public String getstatus() {
-		return status;
-	}
-
-	public void setstatus(String status) {
-		this.status = status;
-	}
-
-	public Timestamp getCreatedOn() {
+	public LocalDateTime getCreatedOn() {
 		return createdOn;
 	}
 
-	public void setCreatedOn(Timestamp createdOn) {
+	public void setCreatedOn(LocalDateTime createdOn) {
 		this.createdOn = createdOn;
 	}
 
-	public Timestamp getUpdatedOn() {
+	public LocalDateTime getUpdatedOn() {
 		return updatedOn;
 	}
 
-	public void setUpdatedOn(Timestamp updatedOn) {
+	public void setUpdatedOn(LocalDateTime updatedOn) {
 		this.updatedOn = updatedOn;
 	}
 

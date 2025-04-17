@@ -1,8 +1,10 @@
 package com.example.dop.Controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,30 +14,36 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.dop.Model.SubNameMaster;
 import com.example.dop.Model.Subscription;
 import com.example.dop.Model.User;
+import com.example.dop.Repository.SubNameMasterRepository;
+import com.example.dop.Repository.SubRepo;
 import com.example.dop.Service.SubService;
 import com.example.dop.Service.UserService;
 
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/subscription")
+@RequestMapping("/subscriptions")
 public class SubController {
 
 	@Autowired
-	SubService subService;
+	private SubService subService;
 
 	@Autowired
-	UserService userService;
+	private UserService userService;
+
+	@Autowired
+	private SubRepo subRepo;
+
+	@Autowired
+	private SubNameMasterRepository subNameMasterRepository;
 
 	@GetMapping("/add")
-	public String add(Model model, HttpSession session) {
+	public String showAddSubscriptionPage(Model model, HttpSession session) {
 		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
@@ -43,17 +51,13 @@ public class SubController {
 		model.addAttribute("fname", loggedInUser.getFirstName());
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+		model.addAttribute("currentPage", "subscriptionAdd");
 
-		List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
-		model.addAttribute("subNameMasters", subNameMasters);
-		model.addAttribute("subscription", new Subscription());
-		return "SubscriptionAdd";
+		return "subscriptionAdd";
 	}
 
 	@GetMapping("/list")
-	public String listSubscriptions(@RequestParam(value = "keyword", required = false) String keyword,
-			@RequestParam(value = "statusFilter", required = false) String statusFilter,
-			@RequestParam(value = "page", defaultValue = "0") int page, Model model, HttpSession session) {
+	public String showSubscriptionListPage(HttpSession session, Model model) {
 
 		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
@@ -63,136 +67,103 @@ public class SubController {
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
-		List<Subscription> subs;
+//		List<Subscription> subscriptions = subService.getSubscriptionsForUser(loggedInUser);
+		List<Subscription> subscriptions = subService.getAllSubscriptions();
 
-		if (keyword != null)
-			keyword = keyword.trim();
+		model.addAttribute("subscriptions", subscriptions);
+		model.addAttribute("currentPage", "subscriptionList");
 
-		if (keyword != null && !keyword.isEmpty()) {
-			subs = subService.searchSubByKeyword(keyword);
-		} else if (statusFilter != null && !statusFilter.isEmpty()) {
-			subs = subService.getSubByStatus(statusFilter);
-		} else {
-			subs = subService.getSubcriptions();
+		return "subscriptionList";
+	}
+
+	@PostMapping("/saveSubscription")
+	public ResponseEntity<?> saveSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
+		try {
+			User loggedInUser = (User) session.getAttribute("user");
+			String createdBy = loggedInUser != null ? loggedInUser.getEmail() : "System";
+
+			subscription.setCreatedBy(createdBy);
+			subscription.setCreatedOn(LocalDateTime.now());
+			subscription.setStatus("Active");
+
+			Subscription savedSubscription = subService.saveSubscription(subscription);
+
+			return ResponseEntity.ok(
+					Map.of("status", "success", "message", "Company saved successfully", "company", savedSubscription));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
 		}
-
-		model.addAttribute("subs", subs);
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("statusFilter", statusFilter);
-		int pageSize = 5;
-
-		Page<Subscription> subscriptionPage = subService.getPaginatedSubscriptions(page, pageSize, keyword,
-				statusFilter);
-
-		model.addAttribute("subscriptions", subscriptionPage.getContent());
-		model.addAttribute("currentPage", page);
-		model.addAttribute("totalPages", subscriptionPage.getTotalPages());
-
-		return "SubscriptionList";
 	}
 
-	@PostMapping("/save")
-	public String saveSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
-	    User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
-	    User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-	    String createdByEmail = null;
-
-	    if (loggedInAdmin != null) {
-	        createdByEmail = loggedInAdmin.getEmail();
-	    } else if (loggedInUser != null) {
-	        createdByEmail = loggedInUser.getEmail();
-	    } else {
-	        System.out.println("No user or admin logged in. Redirecting to login.");
-	        return "redirect:/login";
-	    }
-
-	    try {
-	       	subscription.setCreatedBy(createdByEmail);
-	        subscription.setCreatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
-	        subscription.setStatus("Active");
-
-	        subService.saveSubscription(subscription);
-	        return "redirect:/subscription/add";
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return "redirect:/error";
-	    }
+	@GetMapping("/{id}")
+	public ResponseEntity<Subscription> getSubscriptionById(@PathVariable Long id) {
+		Subscription subscription = subRepo.findById(id)
+				.orElseThrow(() -> new RuntimeException("Subscription not found with id: " + id));
+		return ResponseEntity.ok(subscription);
 	}
 
+	@PutMapping("/update/{id}")
+	public ResponseEntity<Map<String, Object>> updateSubscription(@PathVariable Long id,
+			@ModelAttribute Subscription updatedSubscription, HttpSession session) {
+		try {
+			User loggedInUser = (User) session.getAttribute("user");
+			if (loggedInUser == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(Map.of("status", "error", "message", "Unauthorized update"));
+			}
 
-	@GetMapping("/edit/{id}")
-	public String editSubscription(@PathVariable("id") Long id, Model model, HttpSession session) {
-		
+			Subscription existingSubscription = subService.findById(id);
+			if (existingSubscription == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(Map.of("status", "error", "message", "Subscription not found"));
+			}
 
-		Subscription subscription = subService.findById(id);
-		List<SubNameMaster> subNameMasters = subService.getAllSubNameMasters();
+			String updatedBy = loggedInUser.getEmail();
+			Subscription savedSubscription = subService.updateSubscription(id, updatedSubscription, updatedBy);
 
-		model.addAttribute("subscription", subscription);
-		model.addAttribute("subNameMasters", subNameMasters);
+			return ResponseEntity.ok(Map.of("status", "success", "message", "Subscription updated successfully!",
+					"subscription", savedSubscription));
 
-		return "EditSubscription";
-	}
-
-	@PostMapping("/update")
-	public String updateSubscription(@ModelAttribute Subscription subscription, HttpSession session) {
-	    User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
-	    User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-	    String updatedByEmail = null;
-
-	    if (loggedInAdmin != null) {
-	        updatedByEmail = loggedInAdmin.getEmail();
-	    } else if (loggedInUser != null) {
-	        updatedByEmail = loggedInUser.getEmail();
-	    } else {
-	        return "redirect:/login";
-	    }
-
-	    Subscription existing = subService.getById(subscription.getId());
-
-	    if (existing == null) {
-	        return "redirect:/error"; 
-	    }
-
-	
-	    subscription.setCreatedBy(existing.getCreatedBy());
-	    subscription.setCreatedOn(existing.getCreatedOn());
-
-	    subscription.setStatus("Active");
-	    subscription.setUpdatedBy(updatedByEmail);
-	    subscription.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
-
-	    subService.saveSubscription(subscription);
-	    return "redirect:/subscription/list";
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
+		}
 	}
 
 	@DeleteMapping("/delete/{id}")
-	@ResponseBody
-	public ResponseEntity<String> deleteSubscription(@PathVariable("id") Long id) {
+	public ResponseEntity<Map<String, String>> deleteSubscription(@PathVariable Long id, HttpSession session) {
 		try {
+			User loggedInUser = (User) session.getAttribute("user");
+			Subscription subscriptionToDelete = subService.findById(id);
+
 			subService.deleteSubscription(id);
-			return ResponseEntity.ok("Subscription deleted successfully");
+
+			return ResponseEntity.ok(Map.of("status", "success", "message", "Subscription deleted successfully"));
+
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting subscription");
+			return ResponseEntity
+					.ok(Map.of("status", "error", "message", "An error occurred while deleting the subscription"));
 		}
 	}
 
-	@PostMapping("/toggle-status/{id}")
-	@ResponseBody
-	public ResponseEntity<String> toggleSubscriptionStatus(@PathVariable("id") Long id) {
-		try {
-			Subscription sub = subService.findById(id);
-			if (sub != null) {
-				sub.setStatus(sub.getStatus().equals("Active") ? "Inactive" : "Active");
-				subService.save(sub);
-				return ResponseEntity.ok("Subscription status updated successfully");
-			} else {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Subscription not found");
-			}
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating status");
+	@PostMapping({ "/toggleStatus/{id}" })
+	public ResponseEntity<Map<String, Object>> toggleSubscriptionStatus(@PathVariable Long id) {
+		Subscription subscription = subService.getSubscriptionById(id);
+
+		if (subscription == null) {
+			return ResponseEntity.status(404).body(Map.of("success", false, "message", "Subscription not found"));
 		}
+
+//		if ("Super Admin".equals(subscription.getCreatedBy())) {
+//			return ResponseEntity.ok(Map.of("success", false, "warning", true, "message",
+//					"Super Admin created Subscription cannot be deactivated."));
+//		}
+
+		Subscription updatedSubscription = subService.toggleSubscriptionStatus(id);
+
+		return ResponseEntity.ok(Map.of("success", true, "newStatus", updatedSubscription.getStatus()));
 	}
 
 }

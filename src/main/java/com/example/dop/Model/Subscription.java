@@ -1,6 +1,9 @@
 package com.example.dop.Model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,9 +16,11 @@ import jakarta.persistence.ManyToOne;
 public class Subscription {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long subscriptionId;
+
 	@ManyToOne
-	@JoinColumn(name = "sub_name_master_id", referencedColumnName = "id") 
+	@JoinColumn(name = "sub_name_master_id")
+	@JsonIgnoreProperties("subscriptionList")
 	private SubNameMaster subNameMaster;
 
 	private Long price;
@@ -23,14 +28,14 @@ public class Subscription {
 	@Column(name = "row_count")
 	private String rowCount;
 	private Long days;
-	
+
 	private String createdBy;
-	
+
 	private String updatedBy;
-	
-	private Timestamp updatedOn;
-	
-	private Timestamp createdOn;
+
+	private LocalDateTime updatedOn;
+
+	private LocalDateTime createdOn;
 
 	private String status;
 
@@ -42,14 +47,13 @@ public class Subscription {
 		this.status = status;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getSubscriptionId() {
+		return subscriptionId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setSubscriptionId(Long subscriptionId) {
+		this.subscriptionId = subscriptionId;
 	}
-
 
 	public Long getPrice() {
 		return price;
@@ -83,8 +87,6 @@ public class Subscription {
 		this.days = days;
 	}
 
-	
-
 	public String getCreatedBy() {
 		return createdBy;
 	}
@@ -109,22 +111,20 @@ public class Subscription {
 		this.updatedBy = updatedBy;
 	}
 
-	public Timestamp getUpdatedOn() {
+	public LocalDateTime getUpdatedOn() {
 		return updatedOn;
 	}
 
-	public void setUpdatedOn(Timestamp updatedOn) {
+	public void setUpdatedOn(LocalDateTime updatedOn) {
 		this.updatedOn = updatedOn;
 	}
 
-	public Timestamp getCreatedOn() {
+	public LocalDateTime getCreatedOn() {
 		return createdOn;
 	}
 
-	public void setCreatedOn(Timestamp createdOn) {
+	public void setCreatedOn(LocalDateTime createdOn) {
 		this.createdOn = createdOn;
 	}
 
-	
-	
 }

@@ -1,96 +1,63 @@
 package com.example.dop.Controller;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.dop.Model.ActivityMaster;
 import com.example.dop.Model.Company;
 import com.example.dop.Model.User;
+import com.example.dop.Repository.ActivityMasterRepository;
+import com.example.dop.Repository.CompanyRepo;
 import com.example.dop.Service.CompanyService;
 
 import jakarta.servlet.http.HttpSession;
 
 @Controller
+@RequestMapping("/companies")
 public class CompanyController {
-	@Autowired
-	CompanyService companyService;
 
-	@GetMapping("/client/add")
-	public String add(HttpSession session, Model model) {
+	@Autowired
+	private CompanyService companyService;
+
+	@Autowired
+	private CompanyRepo companyRepo;
+
+	@Autowired
+	private ActivityMasterRepository activityMasterRepository;
+
+	@GetMapping("/add")
+	public String showAddCompanyPage(HttpSession session, Model model) {
 		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
 
+		List<ActivityMaster> activities = activityMasterRepository.findAll();
+		model.addAttribute("activities", activities);
 		model.addAttribute("fname", loggedInUser.getFirstName());
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+		model.addAttribute("currentPage", "companyAdd");
 
 		return "companyAdd";
 	}
 
-	@PostMapping("/saveCompany")
-	public String save(@ModelAttribute("c1") Company c1, HttpSession session) {
-		 User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
-		    User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-		    String createdByEmail = null;
-
-		    if (loggedInAdmin != null) {
-		        createdByEmail = loggedInAdmin.getEmail();
-		    } else if (loggedInUser != null) {
-		        createdByEmail = loggedInUser.getEmail();
-		    } else {
-		        System.out.println("No user or admin logged in. Redirecting to login.");
-		        return "redirect:/login";
-		    }
-		    
-		    try {
-		       	c1.setCreatedBy(createdByEmail);
-		       	System.out.println("CreatedBy (before save): " + c1.getCreatedBy());
-
-		        c1.setCreatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
-		       c1.setStatus("Active");
-
-		       companyService.saveCompany(c1);
-		        return "redirect:/client/add";
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		        return "redirect:/error";
-		    }
-		}
-
-	    
-
-
-//	@PostMapping("/deleteSelected1")
-//    public String deleteSelected(@RequestParam(value = "selectedIds", required = false) List<Long> selectedIds,
-//                                 RedirectAttributes redirectAttributes) {
-//        if (selectedIds != null && !selectedIds.isEmpty()) {
-//        	companyService.deletecompanies(selectedIds);
-//            redirectAttributes.addFlashAttribute("message", "Selected admins deleted successfully.");
-//        } else {
-//            redirectAttributes.addFlashAttribute("error", "No admins selected for deletion.");
-//        }
-//        
-//        return "redirect:/client/list";
-//    }
-//    
-
-	@GetMapping("/client/list")
-	public String listCompany(@RequestParam(value = "keyword", required = false) String keyword,
-			@RequestParam(value = "statusFilter", required = false) String statusFilter, Model model,
-			@RequestParam(value = "page", defaultValue = "0") int page, HttpSession session) {
-
+	@GetMapping("/list")
+	public String showCompanyListPage(HttpSession session, Model model) {
 		User loggedInUser = (User) session.getAttribute("user");
 		if (loggedInUser == null)
 			return "redirect:/";
@@ -99,117 +66,164 @@ public class CompanyController {
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
-		List<Company> company;
+		List<Company> companies;
 
-		if (keyword != null)
-			keyword = keyword.trim();
-
-		if (keyword != null && !keyword.isEmpty() && statusFilter != null && !statusFilter.isEmpty()) {
-			company = companyService.searchcompanyByStatus(keyword, statusFilter);
-		} else if (keyword != null && !keyword.isEmpty()) {
-			company = companyService.searchCompanies(keyword);
-		} else if (statusFilter != null && !statusFilter.isEmpty()) {
-
-			company = companyService.getcompanyByStatus(statusFilter);
+		if (loggedInUser.getRole().getRoleId() == 3L) {
+			companies = companyService.getAllCompanies();
 		} else {
-			company = companyService.getCompanies();
+			companies = companyService.getCompaniesCreatedByUser(loggedInUser.getEmail());
 		}
-		int pageSize = 5;
 
-		Page<Company> companyPage = companyService.getPaginatedCompanies(page, pageSize, keyword, statusFilter);
-
-		model.addAttribute("company", companyPage.getContent());
-		model.addAttribute("currentPage", page);
-		model.addAttribute("totalPages", companyPage.getTotalPages());
-
-		model.addAttribute("company", company);
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("statusFilter", statusFilter);
-
+		model.addAttribute("companies", companies);
+		model.addAttribute("currentPage", "companyList");
 		return "companyList";
 	}
 
-	@GetMapping("/editcompany/{id}")
-	public String EditCompany(@PathVariable("id") Long id, Model model, HttpSession session) {
-
-		
-		Company c1 = companyService.editcompany(id);
-
-		if (c1 == null) {
-			return "redirect:/companyList?error=CompanyNotFound";
-		}
-
-		model.addAttribute("ap", c1);
-		return "EditCompany";
-	}
-
-	@PostMapping("/UpdateCompany")
-	public String updateCompany(@ModelAttribute("ap") Company ap, HttpSession session) {
-	    User loggedInAdmin = (User) session.getAttribute("loggedInAdmin");
-	    User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-	    String updatedByEmail = null;
-
-	    if (loggedInAdmin != null) {
-	        updatedByEmail = loggedInAdmin.getEmail();
-	    } else if (loggedInUser != null) {
-	        updatedByEmail = loggedInUser.getEmail();
-	    } else {
-	        return "redirect:/login";
-	    }
-
-	    if (ap.getCid() == null) {
-	        return "redirect:/client/list?error=InvalidCompanyId";
-	    }
-
-	    Company existingCompany = companyService.getCompanyById(ap.getCid());
-
-	    if (existingCompany != null) {
-	        existingCompany.setCompanyName(ap.getCompanyName());
-	        existingCompany.setActivity(ap.getActivity());
-	        existingCompany.setCemail(ap.getCemail());
-
-	        if (ap.getCpassword() != null && !ap.getCpassword().trim().isEmpty()) {
-	            existingCompany.setCpassword(ap.getCpassword());
-	        }
-
-	        // Keep status and created fields unchanged
-	        existingCompany.setUpdatedBy(updatedByEmail);
-	        existingCompany.setUpdatedOn(new java.sql.Timestamp(System.currentTimeMillis()));
-
-	        companyService.saveCompany(existingCompany);
-	    }
-
-	    return "redirect:/client/list?success=CompanyUpdated";
-	}
-
-	@PostMapping("/deleteSelectedCompany")
-	public String deleteSelectedCompany(@RequestParam(value = "selectedIds", required = false) List<Long> selectedIds,
-			RedirectAttributes redirectAttributes) {
-		if (selectedIds != null && !selectedIds.isEmpty()) {
-			companyService.deletecompanies(selectedIds);
-			redirectAttributes.addFlashAttribute("successMessage", "Selected companies deleted successfully.");
-		} else {
-			redirectAttributes.addFlashAttribute("errorMessage", "No companies selected for deletion.");
-		}
-		return "redirect:/client/list";
-	}
-
-	@GetMapping("/client/deleteCompany/{id}")
-	public String deleteCompany(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+	@PostMapping("/saveCompany")
+	public ResponseEntity<?> saveCompany(@ModelAttribute Company company, HttpSession session) {
 		try {
-			companyService.deleteCompanyById(id);
-			redirectAttributes.addFlashAttribute("success", "Company deleted successfully!");
+			User loggedInUser = (User) session.getAttribute("user");
+			String createdBy = loggedInUser != null ? loggedInUser.getEmail() : "System";
+
+			company.setCreatedBy(createdBy);
+			company.setCreatedOn(LocalDateTime.now());
+			company.setStatus("Active");
+
+			Company savedCompany = companyService.saveCompany(company);
+
+			return ResponseEntity
+					.ok(Map.of("status", "success", "message", "Company saved successfully", "company", savedCompany));
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", "Error deleting company!");
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
 		}
-		return "redirect:/client/list";
 	}
 
-	@GetMapping("/toggleStatus/{id}")
-	public String toggleCompanyStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-		companyService.toggleCompanyStatus(id);
-		redirectAttributes.addFlashAttribute("message", "Company status updated successfully!");
-		return "redirect:/client/list";
+	@GetMapping("/{id}")
+	public ResponseEntity<Company> getCompanyById(@PathVariable Long id) {
+		Company company = companyRepo.findById(id)
+				.orElseThrow(() -> new RuntimeException("Company not found with id: " + id));
+		return ResponseEntity.ok(company);
 	}
+
+	@PutMapping("/update/{id}")
+	public ResponseEntity<Map<String, Object>> updateCompany(@PathVariable Long id,
+			@ModelAttribute Company updatedCompany, HttpSession session) {
+
+		try {
+			User loggedInUser = (User) session.getAttribute("user");
+			if (loggedInUser == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(Map.of("status", "error", "message", "Unauthorized update"));
+			}
+
+			Company existingCompany = companyService.getCompanyById(id);
+			if (existingCompany == null) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(Map.of("status", "error", "message", "Company not found"));
+			}
+
+			String updatedBy = loggedInUser.getEmail();
+			Company savedCompany = companyService.updateCompany(id, updatedCompany, updatedBy);
+
+			return ResponseEntity.ok(
+					Map.of("status", "success", "message", "Company updated successfully!", "company", savedCompany));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("status", "error", "message", e.getMessage()));
+		}
+	}
+
+	// @GetMapping("/edit/{id}")
+	// public String EditCompany(@PathVariable("id") Long id, Model model,
+	// HttpSession session) {
+	// Company c1 = companyService.editcompany(id);
+	// if (c1 == null) {
+	// return "redirect:/companies/list?error=CompanyNotFound";
+	// }
+
+	// model.addAttribute("ap", c1);
+	// return "EditCompany";
+	// }
+
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<Map<String, String>> deleteCompany(@PathVariable Long id, HttpSession session) {
+		try {
+			User loggedInUser = (User) session.getAttribute("user");
+			Company companyToDelete = companyService.getCompanyById(id);
+
+			if (companyToDelete == null) {
+				return ResponseEntity.ok(Map.of("status", "error", "message", "Company not found"));
+			}
+
+			if ("Super Admin".equalsIgnoreCase(companyToDelete.getCreatedBy())) {
+				return ResponseEntity
+						.ok(Map.of("status", "warning", "message", "Cannot delete company created by Super Admin"));
+			}
+
+			companyService.deleteCompany(id);
+
+			return ResponseEntity.ok(Map.of("status", "success", "message", "Company deleted successfully"));
+
+		} catch (Exception e) {
+			return ResponseEntity
+					.ok(Map.of("status", "error", "message", "An error occurred while deleting the company"));
+		}
+	}
+
+	@DeleteMapping({ "/delete" })
+	public ResponseEntity<Map<String, String>> deleteSelectedCompanies(@RequestBody Map<String, List<Long>> payload,
+			HttpSession session) {
+		try {
+			User loggedInUser = (User) session.getAttribute("user");
+			List<Long> companyIds = payload.get("companyIds");
+
+			if (companyIds == null || companyIds.isEmpty()) {
+				return ResponseEntity.badRequest().body(Map.of("warning", "No companies selected for deletion."));
+			}
+
+			for (Long id : companyIds) {
+				Company companyToDelete = companyService.getCompanyById(id);
+				if (companyToDelete == null) {
+					continue;
+				}
+
+				if (loggedInUser != null && !companyToDelete.getCreatedBy().equals(loggedInUser.getEmail())
+						&& loggedInUser.getRole().getRoleId() != 3L) {
+					return ResponseEntity.badRequest()
+							.body(Map.of("warning", "You can only delete companies created by you."));
+				}
+
+				companyService.deleteCompany(id);
+			}
+
+			return ResponseEntity
+					.ok(Map.of("status", "success", "message", "Selected companies deleted successfully."));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("error", "Something went wrong while deleting companies."));
+		}
+	}
+
+	@PostMapping({ "/toggleStatus/{id}" })
+	public ResponseEntity<Map<String, Object>> toggleCompanyStatus(@PathVariable Long id) {
+		Company company = companyService.getCompanyById(id);
+
+		if (company == null) {
+			return ResponseEntity.status(404).body(Map.of("success", false, "message", "Company not found"));
+		}
+
+		if ("Super Admin".equals(company.getCreatedBy())) {
+			return ResponseEntity.ok(Map.of("success", false, "warning", true, "message",
+					"Super Admin created companies cannot be deactivated."));
+		}
+
+		Company updatedCompany = companyService.toggleCompanyStatus(id);
+
+		return ResponseEntity.ok(Map.of("success", true, "newStatus", updatedCompany.getStatus()));
+	}
+
 }

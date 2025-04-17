@@ -2,6 +2,8 @@ package com.example.dop.Model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -24,6 +26,10 @@ public class User {
 	@JoinColumn(name = "role_id", referencedColumnName = "role_id", nullable = false, foreignKey = @ForeignKey(name = "FK_users_role"))
 	private RoleMaster role;
 
+	@ManyToOne
+	@JoinColumn(name = "designation_id")
+	private Designation designation;
+
 	@Column(name = "first_name", nullable = false, length = 100)
 	private String firstName;
 
@@ -36,10 +42,18 @@ public class User {
 	@Column(name = "password", nullable = false, length = 255)
 	private String password;
 
+	@Column(name = "phone_no")
+	private String phoneNumber;
+
+	@ManyToOne
+	@JoinColumn(name = "company_id")
+	@JsonIgnore
+	private Company company;
+
 	@Column(name = "profile_photo", length = 512)
 	private String profilePhoto;
 
-	private Integer active;
+	private Boolean active;
 
 	@Column(name = "createdby", length = 255)
 	private String createdBy;
@@ -48,6 +62,14 @@ public class User {
 
 	@Column(name = "updatedby", length = 255)
 	private String updatedBy;
+
+	@ManyToOne
+	@JoinColumn(name = "country_id")
+	private Country country;
+
+	@ManyToOne
+	@JoinColumn(name = "about_us_id")
+	private AboutUs aboutUs;
 
 	private LocalDateTime updatedDate;
 
@@ -67,6 +89,14 @@ public class User {
 
 	public RoleMaster getRole() {
 		return role;
+	}
+
+	public Designation getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(Designation designation) {
+		this.designation = designation;
 	}
 
 	public void setRole(RoleMaster role) {
@@ -105,6 +135,22 @@ public class User {
 		this.password = password;
 	}
 
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
+	}
+
 	public String getProfilePhoto() {
 		return profilePhoto;
 	}
@@ -113,11 +159,11 @@ public class User {
 		this.profilePhoto = profilePhoto;
 	}
 
-	public Integer getActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(Integer active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
@@ -175,6 +221,26 @@ public class User {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public Country getCountry() {
+		return country;
+	}
+
+	public void setCountry(Country country) {
+		this.country = country;
+	}
+
+	public AboutUs getAboutUs() {
+		return aboutUs;
+	}
+
+	public void setAboutUs(AboutUs aboutUs) {
+		this.aboutUs = aboutUs;
+	}
+
+	public String getFullName() {
+		return firstName + " " + lastName;
 	}
 
 }

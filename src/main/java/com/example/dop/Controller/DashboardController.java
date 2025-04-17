@@ -37,4 +37,22 @@ public class DashboardController {
 		return "dashboard";
 	}
 
+	@GetMapping("/profile")
+	public String showProfile(HttpSession session, Model model) {
+		User loggedInUser = (User) session.getAttribute("user");
+		if (loggedInUser == null)
+			return "redirect:/";
+
+		model.addAttribute("fname", loggedInUser.getFirstName());
+		model.addAttribute("email", loggedInUser.getEmail());
+//		model.addAttribute("role", loggedInUser.getRole() != null ? loggedInUser.getRole().getRoleName() : "N/A");
+		model.addAttribute("status", loggedInUser.getStatus());
+		model.addAttribute("createdBy", loggedInUser.getCreatedBy());
+		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+		model.addAttribute("userRole", session.getAttribute("userRole"));
+
+		model.addAttribute("currentPage", "profile");
+		return "profile";
+	}
+
 }

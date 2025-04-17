@@ -4,35 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User List</title>
+    <title>Subscription List</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
 
-    
-    <style>
-        /* Ensure dropdown menu does not overlap the button */
-        .action-menu {
-            z-index: 50; /* Ensure it appears above other elements */
-            display: none;
-            position: absolute;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            min-width: 150px;
-        }
-
-        .action-menu.show {
-            display: block;
-        }
-
-        .action-btn {
-            padding-bottom: 10px;
-        }
-    </style>
 </head>
 
 <body class="bg-[#e9f5f5]">
@@ -46,169 +24,298 @@
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h1 class="text-2xl font-bold text-teal-700 mb-6">SUBSCRIPTIONS LIST</h1>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <form method="get" action="/subscription/list" class="p-2 border rounded flex-grow">
-                        <input type="text" name="keyword" th:value="${keyword}" placeholder="Search"
-                           >
-                        <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                     
-                        </button>
-                        
-                    </form>
-                    
-                       <form method="get" action="/subscription/list" class="p-2 border rounded flex-grow">
-                        <select name="statusFilter"  onchange="this.form.submit()">
-                            <option value="" th:selected="${statusFilter == null or statusFilter == ''}">All Status</option>
-                            <option value="Active" th:selected="${statusFilter == 'Active'}">Active</option>
-                            <option value="Inactive" th:selected="${statusFilter == 'Inactive'}">Inactive</option>
+                    <div class="flex flex-wrap gap-4 mb-4 items-center">
+                        <input type="text" id="searchInput" placeholder="Search" class="p-2 border rounded flex-grow"
+                            onkeyup="searchSubscriptions()">
+                        <select id="statusFilter" class="p-2 border rounded flex-grow" onchange="filterByStatus()">
+                            <option value="all">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
                         </select>
-                    </form>
                         <div class="flex gap-2">
-                            <button onclick="window.location.href='/subscription/add'"
+                            <button onclick="window.location.href='/subscriptions/add'"
                                 class="bg-green-500 text-white p-2 rounded"><i class="fa fa-plus"></i></button>
                             <button onclick="location.reload()" class="bg-teal-500 text-white p-2 rounded"><i
                                     class="fa fa-sync"></i></button>
                         </div>
                     </div>
-
-                    <table class="w-full border border-gray-300 border-collapse rounded shadow-md">
+                    <table id="subscriptionTable"
+                        class="w-full border border-gray-300 border-collapse rounded shadow-md">
                         <thead>
                             <tr class="bg-teal-600 text-white border border-gray-300">
                                 <th class="p-2 border border-gray-300">
                                     <input type="checkbox" id="selectAll" onclick="toggleCheckboxes(this)">
                                 </th>
                                 <th class="p-2 border border-gray-300">NAME</th>
-                             
                                 <th class="p-2 border border-gray-300">PRICE</th>
                                 <th class="p-2 border border-gray-300">PROJECT AUTHORIZED</th>
-                                <th class="p-2 border border-gray-300">ROWS</th>
+                                <th class="p-2 border border-gray-300">FILE ROWS</th>
                                 <th class="p-2 border border-gray-300">STATUS</th>
                                 <th class="p-2 border border-gray-300">ACTION</th>
                             </tr>
                         </thead>
-                         <tbody>
-                            <tr class="border border-gray-300" th:each="sub : ${subs}" th:data-sub-id="${sub.id}">
-                                <td class="p-2 border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
-                                <td class="p-2 border border-gray-300" th:text="${sub.subNameMaster.subName}"></td>
-                                <td class="p-2 text-center border border-gray-300" th:text="${sub.price}"></td>
-                                <td class="p-2 text-center border border-gray-300" th:text="${sub.project}"></td>
-                                <td class="p-2 text-center border border-gray-300" th:text="${sub.rowCount}"></td>
+                        <tbody id="subscriptionTableBody">
+                            <tr class="border border-gray-300" th:each="subscription : ${subscriptions}"
+                                th:attr="data-subscription-id=${subscription.subscriptionId}">
+                                <td class="p-2 text-center border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${subscription.subNameMaster.subName}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${subscription.price}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${subscription.project}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${subscription.rowCount}"></td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span th:classappend="${sub.status == 'Active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}"
-      class="text-xs font-semibold px-2 py-1 rounded flex items-center justify-center w-20">
-    <i th:classappend="${sub.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
-   <span th:text="${sub.status}" class="ml-1"></span>
-</span>
-
+                                    <span th:id="'status-' + ${subscription.subscriptionId}"
+                                        class="text-xs font-semibold px-3 py-1 rounded text-white inline-flex items-center justify-center"
+                                        th:classappend="${subscription.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
+                                        style="width: 80px; height: 32px;">
+                                        <i
+                                            th:classappend="${subscription.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span th:text="${subscription.status}" class="ml-1"></span>
+                                    </span>
                                 </td>
-                               <td class="p-2 text-center border border-gray-300 relative">
-    <button onclick="toggleDropdown(event, this)" class="dropdown-btn bg-gray-200 p-2 rounded px-4 py-2 focus:outline-none">
-        Action ▼
-    </button>
-
-    <!-- Dropdown Menu -->
-    <div class="dropdown-menu absolute bottom-full right-0 mb-2 min-w-[150px] bg-white border rounded shadow-md hidden z-50">
-        <a th:href="@{/subscription/edit/{id}(id=${sub.id})}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-            <i class="ri-edit-box-line mr-2"></i> Edit
-        </a>
-        <a href="javascript:void(0);" th:attr="onclick='toggleSubscriptionStatus(this, event, ' + ${sub.id} + ')'"
-           class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-            <i class="ri-close-circle-line mr-2"></i> <span th:text="${sub.status == 'Active' ? 'Deactivate' : 'Activate'}"></span>
-        </a>
-<a href="javascript:void(0);" th:attr="onclick='deleteSubscription(this, event, ' + ${sub.id} + ')'"
-           class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-            <i class="ri-delete-bin-6-line mr-2"></i> Delete
-        </a>
-    </div>
-</td>
-
+                                <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
+                                    <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
+                                        style="width: 80px; height: 32px;" onclick="toggleMenu(event, this)">
+                                        Action
+                                    </button>
+                                    <div
+                                        class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
+                                        <ul class="text-left">
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                onclick="editSubscription(this)">
+                                                Edit
+                                            </li>
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                th:attr="onclick=|toggleSubscriptionStatus(this, '${subscription.subscriptionId}')|"
+                                                th:text="${subscription.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                            </li>
+                                            <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
+                                                onclick="deleteSubscription(this)">
+                                                Delete
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
+                    <div class="flex justify-between items-center mt-4">
+                        <button id="prevBtn" onclick="prevPage()"
+                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
+                                class="fas fa-arrow-left"></i></button>
+                        <span id="pageIndicator" class="px-3 py-1 mx-1 bg-white-300 rounded font-semibold">Page 1</span>
+                        <button id="nextBtn" onclick="nextPage()"
+                            class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
+                                class="fas fa-arrow-right"></i></button>
+                    </div>
                 </div>
-                <div class="flex justify-center items-center mt-4 space-x-4">
-    <!-- Left Arrow (Previous) -->
-    <a th:if="${currentPage > 0}"
-       th:href="@{/subscription/list(page=${currentPage - 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
-       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
-        <i class="ri-arrow-left-s-line"></i> <!-- Left Arrow Icon -->
-    </a>
-
-    <!-- Page Numbers -->
-    <span th:text="'Page ' + (${currentPage + 1}) + ' of ' + ${totalPages}" class="font-semibold"></span>
-
-    <!-- Right Arrow (Next) -->
-    <a th:if="${currentPage + 1 < totalPages}"
-       th:href="@{/subscription/list(page=${currentPage + 1}, keyword=${keyword}, statusFilter=${statusFilter})}"
-       class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-md">
-        <i class="ri-arrow-right-s-line"></i> <!-- Right Arrow Icon -->
-    </a>
-</div>
-                
             </main>
         </div>
     </div>
 
     <script>
-    function toggleDropdown(event, button) {
-        event.stopPropagation();
-        document.querySelectorAll(".dropdown-menu").forEach(menu => {
-            menu.classList.add("hidden");
-        });
-        let menu = button.nextElementSibling;
-        menu.classList.toggle("hidden");
-    }
 
-    document.addEventListener("click", function () {
-        document.querySelectorAll(".dropdown-menu").forEach(menu => {
-            menu.classList.add("hidden");
-        });
-    });
+        function toggleCheckboxes(source) {
+            let checkboxes = document.querySelectorAll(".rowCheckbox");
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
 
-    function editSubscription(subId) {
-        window.location.href = "/subscription/edit/" + subId;
-    }
-
-    function deleteSubscription(element, event, subId) {
-        event.stopPropagation();
-        Swal.fire({
-            title: "Are you sure?",
-            text: "This subscription will be permanently deleted!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch("/subscription/delete/" + subId, {
-                    method: "DELETE"
-                }).then(response => response.text())
-                  .then(data => {
-                      Swal.fire("Deleted!", data, "success").then(() => {
-                          element.closest('tr').remove(); // Remove row from UI
-                      });
-                  }).catch(error => {
-                      console.error("Error:", error);
-                      Swal.fire("Error", "Failed to delete subscription.", "error");
-                  });
+        function toggleMenu(event, button) {
+            event.stopPropagation();
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                if (menu !== button.nextElementSibling) {
+                    menu.classList.add("hidden");
+                }
+            });
+            let menu = button.nextElementSibling;
+            menu.classList.toggle("hidden");
+        }
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".action-menu") && !event.target.closest(".action-btn")) {
+                document.querySelectorAll(".action-menu").forEach(menu => {
+                    menu.classList.add("hidden");
+                });
             }
         });
-    }
 
-    function toggleSubscriptionStatus(element, event, subId) {
-        event.stopPropagation();
-        fetch("/subscription/toggle-status/" + subId, {
-            method: "POST"
-        }).then(response => response.text())
-          .then(data => {
-              Swal.fire("Success!", data, "success").then(() => {
-                  location.reload();
-              });
-          }).catch(error => console.error("Error:", error));
-    }
-</script>
+        function filterByStatus() {
+            let selectedStatus = document.getElementById("statusFilter").value;
+            let rows = document.querySelectorAll("#subscriptionTableBody tr");
 
+            rows.forEach(row => {
+                let statusCell = row.querySelector("td:nth-child(6) span");
+                if (statusCell) {
+                    let statusText = statusCell.textContent.trim();
+                    row.style.display = (selectedStatus === "all" || statusText === selectedStatus) ? "table-row" : "none";
+                }
+            });
+        }
+
+        function searchSubscriptions() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            document.querySelectorAll("#subscriptionTableBody tr").forEach(row => {
+                let name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
+                row.style.display = name.includes(input) ? "table-row" : "none";
+            });
+        }
+
+        function editSubscription(button) {
+            let row = button.closest("tr");
+            let subscriptionId = row.getAttribute("data-subscription-id");
+            let role = row.getAttribute("data-role");
+
+            closeActionMenus();
+
+            if (!subscriptionId) {
+                Swal.fire("Error", "Subscription ID not found!", "error");
+                return;
+            }
+
+            window.location.href = `/subscriptions/add?subscriptionId=` + subscriptionId;
+        }
+
+        function deleteSubscription(button) {
+            let row = button.closest("tr");
+            let subscriptionId = row.getAttribute("data-subscription-id");
+
+            if (!subscriptionId) {
+                Swal.fire("Error", "subscription ID not found!", "error");
+                return;
+            }
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This subscription will be permanently deleted!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/subscriptions/delete/${subscriptionId}`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "success") {
+                                Swal.fire("Deleted!", data.message, "success")
+                                    .then(() => location.reload());
+                            } else if (data.status === "warning") {
+                                Swal.fire("Warning", data.message, "warning");
+                            } else if (data.status === "error") {
+                                Swal.fire("Error", data.message, "error");
+                            } else {
+                                Swal.fire("Error", "Failed to delete company.", "error");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire("Error", "Server error! Please try again later.", "error");
+                        });
+                }
+            });
+        }
+
+        function toggleSubscriptionStatus(element, subscriptionId) {
+            const statusContainer = document.getElementById(`status-${subscriptionId}`);
+            const icon = statusContainer.querySelector("i");
+            const text = statusContainer.querySelector("span");
+
+            if (!statusContainer || !icon || !text) {
+                console.error("Status element or its children not found for subscription ID:", subId);
+                return;
+            }
+
+            fetch(`/subscriptions/toggleStatus/${subscriptionId}`, {
+                method: "POST"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.warning) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Warning',
+                            text: data.message || "Action not allowed.",
+                            confirmButtonColor: "#7367F0"
+                        });
+                        return;
+                    }
+
+                    if (data.success) {
+                        const newStatus = data.newStatus;
+                        text.textContent = newStatus;
+
+                        if (newStatus === "Active") {
+                            statusContainer.classList.remove("bg-red-500");
+                            statusContainer.classList.add("bg-green-500");
+                            icon.className = "fas fa-check-circle";
+                            element.textContent = "Deactivate";
+                        } else {
+                            statusContainer.classList.remove("bg-green-500");
+                            statusContainer.classList.add("bg-red-500");
+                            icon.className = "fas fa-times-circle";
+                            element.textContent = "Activate";
+                        }
+                        closeActionMenus();
+                    } else {
+                        Swal.fire("Error", data.message || "Status update failed!", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire("Error", "Server error! Please try again later.", "error");
+                });
+        }
+
+        function formatDate(inputDate) {
+            let dateObj = new Date(inputDate);
+            let options = { day: "2-digit", month: "short", year: "numeric" };
+            return dateObj.toLocaleDateString("en-GB", options).replace(",", "");
+        }
+
+        const rowsPerPage = 10;
+        let currentPage = 1;
+
+        function updatePagination() {
+            let rows = document.querySelectorAll("#subscriptionTableBody tr");
+            let totalPages = Math.ceil(rows.length / rowsPerPage);
+            document.getElementById("pageIndicator").textContent = `Page ${currentPage} of ${totalPages}`;
+
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = currentPage === totalPages;
+
+            rows.forEach((row, index) => {
+                row.style.display = (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) ? "table-row" : "none";
+            });
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+            }
+        }
+
+        function nextPage() {
+            let rows = document.querySelectorAll("#subscriptionTableBody tr");
+            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+                currentPage++;
+                updatePagination();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", updatePagination);
+
+        function closeActionMenus() {
+            document.querySelectorAll(".action-menu").forEach(menu => {
+                menu.classList.add("hidden");
+            });
+        }
+
+    </script>
 </body>
 
 </html>
