@@ -8,10 +8,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.dop.Model.SubNameMaster;
 import com.example.dop.Model.Subscription;
 import com.example.dop.Model.User;
-import com.example.dop.Repository.SubNameMasterRepository;
 import com.example.dop.Repository.SubRepo;
 import com.example.dop.Repository.UserRepository;
 
@@ -22,9 +20,6 @@ public class SubService {
 
 	@Autowired
 	UserRepository userRepository;
-
-	@Autowired
-	SubNameMasterRepository subMasterRepo;
 
 	public List<Subscription> searchsubByStatus(String keyword, String statusFilter) {
 		return null;
@@ -66,10 +61,6 @@ public class SubService {
 		return subRepo.findAll();
 	}
 
-	public List<SubNameMaster> getAllSubNameMasters() {
-		return subMasterRepo.findAll();
-	}
-
 	public Subscription getById(Long id) {
 		return subRepo.findById(id).orElse(null);
 	}
@@ -95,8 +86,8 @@ public class SubService {
 		Subscription existingSubscription = subRepo.findById(id)
 				.orElseThrow(() -> new RuntimeException("Subscription not found"));
 
-		if (updatedSubscription.getSubNameMaster() != null) {
-			existingSubscription.setSubNameMaster(updatedSubscription.getSubNameMaster());
+		if (updatedSubscription.getSubscriptionName() != null) {
+			existingSubscription.setSubscriptionName(updatedSubscription.getSubscriptionName());
 		}
 
 		if (updatedSubscription.getPrice() != null) {

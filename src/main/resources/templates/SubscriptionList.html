@@ -58,7 +58,7 @@
                             <tr class="border border-gray-300" th:each="subscription : ${subscriptions}"
                                 th:attr="data-subscription-id=${subscription.subscriptionId}">
                                 <td class="p-2 text-center border border-gray-300"><input type="checkbox" class="rowCheckbox"></td>
-                                <td class="p-2 text-center border border-gray-300" th:text="${subscription.subNameMaster.subName}"></td>
+                                <td class="p-2 text-center border border-gray-300" th:text="${subscription.subscriptionName}"></td>
                                 <td class="p-2 text-center border border-gray-300" th:text="${subscription.price}"></td>
                                 <td class="p-2 text-center border border-gray-300" th:text="${subscription.project}"></td>
                                 <td class="p-2 text-center border border-gray-300" th:text="${subscription.rowCount}"></td>

@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.dop.Model.Subscription;
 import com.example.dop.Model.User;
-import com.example.dop.Repository.SubNameMasterRepository;
 import com.example.dop.Repository.SubRepo;
 import com.example.dop.Service.SubService;
 import com.example.dop.Service.UserService;
@@ -39,8 +39,11 @@ public class SubController {
 	@Autowired
 	private SubRepo subRepo;
 
-	@Autowired
-	private SubNameMasterRepository subNameMasterRepository;
+	@GetMapping("/all")
+	@ResponseBody
+	public List<Subscription> getAllSubscriptions() {
+		return subRepo.findAll();
+	}
 
 	@GetMapping("/add")
 	public String showAddSubscriptionPage(Model model, HttpSession session) {

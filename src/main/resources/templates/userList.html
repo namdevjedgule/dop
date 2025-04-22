@@ -57,7 +57,8 @@
                             <tr th:if="${#lists.isEmpty(users)}">
                                 <td colspan="7" class="text-center text-gray-500 p-4">No users found.</td>
                             </tr>
-                            <tr class="border border-gray-300" th:each="user : ${users}" th:attr="data-user-id=${user.id}, data-role=${user.role.roleName}">
+                            <tr class="border border-gray-300" th:each="user : ${users}"
+                                th:attr="data-user-id=${user.id}, data-role=${user.role.roleName}">
                                 <td class="p-2 text-center border border-gray-300"><input type="checkbox"
                                         class="rowCheckbox"></td>
                                 <td class="p-2 border text-center border-gray-300">
@@ -100,7 +101,7 @@
                                         Action
                                     </button>
                                     <div
-                                        class="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
+                                        class="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
                                         <ul class="text-left">
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                                 onclick="editUser(this)">
@@ -108,6 +109,15 @@
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                                 th:attr="onclick=|toggleUserStatus(this, '${user.id}', '${user.role.roleName}')|"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
+                                            </li>
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                th:onclick="|location.href='@{/users/addUserSubscription(userId=${user.id})}'|">
+                                                Add Subscription
+                                            </li>
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                onclick="editUserSubscription(this)"
+                                                data-subscription-id="[[${user.subscription.userSubscriptionId}]]">
+                                                Edit Subscription
                                             </li>
                                             <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
                                                 onclick="deleteUser(this)">Delete</li>
@@ -236,6 +246,15 @@
             window.location.href = `/users/add?userId=` + userId;
         }
 
+        function editUserSubscription(element) {
+            const userSubscriptionId = element.getAttribute('data-subscription-id');
+            if (!userSubscriptionId) {
+                showToast("Error", "Subscription ID not found!", "error");
+                return;
+            }
+            window.location.href = `/users/addUserSubscription?userSubscriptionId=${userSubscriptionId}`;
+        }
+
         function deleteUser(button) {
             let row = button.closest("tr");
             let userId = row.getAttribute("data-user-id");
@@ -277,8 +296,6 @@
                 }
             });
         }
-
-
 
         function toggleUserStatus(element, userId) {
             const statusContainer = document.getElementById(`status-${userId}`);

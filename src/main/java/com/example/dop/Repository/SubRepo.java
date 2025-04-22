@@ -8,8 +8,6 @@ import com.example.dop.Model.Subscription;
 
 public interface SubRepo extends JpaRepository<Subscription, Long> {
 
-	List<Subscription> findBySubNameMaster_SubNameContainingIgnoreCase(String keyword);
-
 	List<Subscription> findByStatus(String status);
 
 	List<Subscription> findByCreatedBy(String createdBy);

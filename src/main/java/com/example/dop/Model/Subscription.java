@@ -2,31 +2,27 @@ package com.example.dop.Model;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "subscriptions")
 public class Subscription {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long subscriptionId;
 
-	@ManyToOne
-	@JoinColumn(name = "sub_name_master_id")
-	@JsonIgnoreProperties("subscriptionList")
-	private SubNameMaster subNameMaster;
+	private String subscriptionName;
 
 	private Long price;
+
 	private String project;
-	@Column(name = "row_count")
+
 	private String rowCount;
+
 	private Long days;
 
 	private String createdBy;
@@ -95,12 +91,12 @@ public class Subscription {
 		this.createdBy = createdBy;
 	}
 
-	public SubNameMaster getSubNameMaster() {
-		return subNameMaster;
+	public String getSubscriptionName() {
+		return subscriptionName;
 	}
 
-	public void setSubNameMaster(SubNameMaster subNameMaster) {
-		this.subNameMaster = subNameMaster;
+	public void setSubscriptionName(String subscriptionName) {
+		this.subscriptionName = subscriptionName;
 	}
 
 	public String getUpdatedBy() {

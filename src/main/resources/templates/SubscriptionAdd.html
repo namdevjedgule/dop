@@ -19,7 +19,7 @@
                 th:insert="~{layout/sidebar :: sidebar}"></aside>
             <main class="flex-1 p-10 ml-60">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">ADD SUBSCRIPTION</h1>
+                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">ADD SERVICE</h1>
 
                     <form id="addSubscription" novalidate>
                         <input type="hidden" id="subscriptionId" name="subscriptionId">
@@ -27,12 +27,10 @@
                             <div class="w-full bg-white p-4 rounded-lg shadow-md">
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="text-sm font-semibold text-gray-700">NAME <span
+                                        <label class="text-sm font-semibold text-gray-700">SUBSCRIPTION NAME <span
                                                 class="text-red-500">*</span></label>
-                                        <select id="nameSelect"
+                                        <input type="text" id="subscriptionName" name="subscriptionName" placeholder="Enter Subscription Name"
                                             class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
-                                            <option value="">Select Name</option>
-                                        </select>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">PRICE <span
@@ -80,31 +78,8 @@
     </div>
 
     <script>
-
-        async function loadNameDropdowns() {
-            try {
-                const response = await fetch("/names/all");
-                if (!response.ok) throw new Error("Error fetching names");
-                const data = await response.json();
-
-                const nameSelect = document.getElementById("nameSelect");
-                nameSelect.innerHTML = '<option value="">Select Name</option>';
-
-                data.forEach(sub => {
-                    const option = document.createElement("option");
-                    option.value = sub.subNameId;
-                    option.textContent = sub.subName;
-                    nameSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Error loading name dropdown:", error);
-                showPopup("Error", "Unable to load names. Please try again later.", "error");
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", async function () {
-            await loadNameDropdowns();
-
+    
             const urlParams = new URLSearchParams(window.location.search);
             const subscriptionId = urlParams.get("subscriptionId");
 
@@ -119,7 +94,7 @@
                     const subscription = await response.json();
 
                     document.getElementById("subscriptionId").value = subscription.subscriptionId || '';
-                    document.getElementById("nameSelect").value = subscription.subNameMaster?.subNameId || '';
+                    document.getElementById("subscriptionName").value = subscription.subscriptionName || '';
                     document.getElementById("price").value = subscription.price || '';
                     document.getElementById("projectAuthorized").value = subscription.project || '';
                     document.getElementById("fileRows").value = subscription.rowCount || '';
@@ -135,17 +110,20 @@
                 event.preventDefault();
 
                 let subscriptionId = document.getElementById("subscriptionId").value || null;
-                let nameId = document.getElementById("nameSelect").value;
+                let subscriptionName = document.getElementById("subscriptionName").value;
                 let price = document.getElementById("price").value.trim();
                 let projectAuthorized = document.getElementById("projectAuthorized").value.trim();
                 let fileRows = document.getElementById("fileRows").value.trim();
                 let days = document.getElementById("days").value.trim();
 
-                if (!nameId) return showToast("Missing Field", "Please select a name!", "warning");
+                let nameRegex = /^[a-z]+$/;
+
+                if (!subscriptionName) return showToast("Missing Field", "Please select a name!", "warning");
+                if (!subscriptionName.match(nameRegex)) return showToast("Invalid Input", "Subscription Name should contain only small letters.", "error");
                 if (!price) return showToast("Missing Field", "Price field is required!", "warning");
                 if (isNaN(price) || Number(price) <= 0) return showToast("Invalid Field", "Price must be a positive number!", "warning");
                 if (!projectAuthorized) return showToast("Missing Field", "Project Authorized field is required!", "warning");
-                if (isNaN(projectAuthorized) || Number(projectAuthorized) <= 0)  return showToast("Invalid Field", "Project Authorized must be a positive number!", "warning");
+                if (isNaN(projectAuthorized) || Number(projectAuthorized) <= 0) return showToast("Invalid Field", "Project Authorized must be a positive number!", "warning");
                 if (!fileRows) return showToast("Missing Field", "File Rows field is required!", "warning");
                 if (isNaN(fileRows) || Number(fileRows) <= 0) return showToast("Invalid Field", "File Rows must be a positive number!", "warning");
                 if (!days) return showToast("Missing Field", "Days field is required!", "warning");
@@ -154,7 +132,7 @@
 
                 let formData = new FormData();
                 if (subscriptionId) formData.append("subscriptionId", subscriptionId);
-                formData.append("subNameMaster.subNameId", nameId);
+                formData.append("subscriptionName", subscriptionName);
                 formData.append("price", price);
                 formData.append("project", projectAuthorized);
                 formData.append("rowCount", fileRows);
