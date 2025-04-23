@@ -12,4 +12,6 @@ public interface SubRepo extends JpaRepository<Subscription, Long> {
 
 	List<Subscription> findByCreatedBy(String createdBy);
 
+	Subscription findBySubscriptionName(String subscriptionName);
+
 }

@@ -115,8 +115,7 @@
                                                 Add Subscription
                                             </li>
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
-                                                onclick="editUserSubscription(this)"
-                                                data-subscription-id="[[${user.subscription.userSubscriptionId}]]">
+                                                th:onclick="|location.href='@{/users/editUserSubscription(userId=${user.id})}'|">
                                                 Edit Subscription
                                             </li>
                                             <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"

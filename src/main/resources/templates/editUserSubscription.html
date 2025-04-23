@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User Subscription</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-[#e9f5f5]">
+    <div class="flex flex-col min-h-screen">
+        <header class="fixed top-0 left-0 w-full z-50" th:insert="~{layout/header :: header}"></header>
+        <div class="flex flex-1 pt-20">
+            <aside class="w-60 bg-white shadow-lg fixed top-14 left-0 h-full z-40"
+                th:insert="~{layout/sidebar :: sidebar}"></aside>
+            <main class="flex-1 p-10 ml-60">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">EDIT SUBSCRIPTION</h1>
+
+                    <form id="addUserSubscription" novalidate>
+                        <input type="hidden" id="userSubscriptionId" name="userSubscriptionId">
+                        <input type="hidden" id="userId" name="userId" th:value="${user.id}" />
+                        <div class="flex gap-6">
+                            <div class="w-full bg-white p-4 pt-0 rounded-lg shadow-md">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">PROJECT AUTHORIZED <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="number" id="projectAuthorized" name="projectAuthorized"
+                                            placeholder="Enter authorized project count"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">FILE ROWS <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="number" id="fileRows" name="fileRows" placeholder="Enter file rows"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-semibold text-gray-700">STATUS <span
+                                                class="text-red-500">*</span></label>
+                                        <select id="paymentBy" name="paymentBy"
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end space-x-4">
+                                    <button type="submit" id="saveBtn"
+                                        class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">
+                                        Update
+                                    </button>
+                                    <button type="button"
+                                        class="bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-2 rounded-md"
+                                        onclick="handleCancel()">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userSubscriptionId = urlParams.get("userSubscriptionId");
+
+            if (userSubscriptionId) {
+                try {
+                    let response = await fetch(`/users/subscriptions/${userSubscriptionId}`);
+                    if (!response.ok) throw new Error("Subscription not found");
+
+                    let subscription = await response.json();
+
+                    document.getElementById("userSubscriptionId").value = subscription.userSubscriptionId || '';
+                    document.getElementById("userId").value = subscription.user?.userId || '';
+                    document.getElementById("projectAuthorized").value = subscription.projectAuthorized || '';
+                    document.getElementById("fileRows").value = subscription.fileRows || '';
+                    document.getElementById("paymentBy").value = subscription.paymentBy || 'Active';
+                } catch (error) {
+                    console.error(error);
+                    showToast("Error", "Failed to load subscription data", "error");
+                }
+            }
+
+            document.getElementById("addUserSubscription").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                let userSubscriptionId = document.getElementById("userSubscriptionId").value;
+                let userId = document.getElementById("userId").value;
+                let projectAuthorized = document.getElementById("projectAuthorized").value;
+                let fileRows = document.getElementById("fileRows").value;
+                let paymentBy = document.getElementById("paymentBy").value;
+
+                if (!projectAuthorized || isNaN(projectAuthorized) || Number(projectAuthorized) <= 0) {
+                    return showToast("Invalid Input", "Enter valid Project Authorized!", "warning");
+                }
+                if (!fileRows || isNaN(fileRows) || Number(fileRows) <= 0) {
+                    return showToast("Invalid Input", "Enter valid File Rows!", "warning");
+                }
+
+                let formData = new FormData();
+                formData.append("user.userId", userId);
+                formData.append("projectAuthorized", projectAuthorized);
+                formData.append("fileRows", fileRows);
+                formData.append("paymentBy", paymentBy);
+
+                try {
+                    let response = await fetch(`/users/updateUserSubscriptionOnly/${userSubscriptionId}`, {
+                        method: "PUT",
+                        body: formData
+                    });
+
+                    let result = await response.json();
+
+                    if (response.ok) {
+                        showToast("Success", "Subscription updated successfully!", "success");
+                        setTimeout(() => window.location.href = "/users/list", 1500);
+                    } else {
+                        showToast("Error", result.message || "Failed to update subscription", "error");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showToast("Error", "Something went wrong!", "error");
+                }
+            });
+        });
+
+        function showToast(title, message, icon) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: icon,
+                position: "top",
+                showConfirmButton: false,
+                timer: 1500,
+                toast: true,
+                timerProgressBar: true
+            });
+        }
+
+        function handleCancel() {
+            window.location.href = '/users/list';
+        }
+    </script>
+
+</body>
+
+</html>

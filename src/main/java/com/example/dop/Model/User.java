@@ -75,7 +75,7 @@ public class User {
 	private AboutUs aboutUs;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private UserSubscription subscription;
+	private UserSubscription userSubscription;
 
 	private LocalDateTime updatedDate;
 
@@ -245,12 +245,12 @@ public class User {
 		this.aboutUs = aboutUs;
 	}
 
-	public UserSubscription getSubscription() {
-		return subscription;
+	public UserSubscription getUserSubscription() {
+		return userSubscription;
 	}
 
-	public void setSubscription(UserSubscription subscription) {
-		this.subscription = subscription;
+	public void setUserSubscription(UserSubscription userSubscription) {
+		this.userSubscription = userSubscription;
 	}
 
 	public String getFullName() {

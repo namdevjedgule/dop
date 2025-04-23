@@ -160,39 +160,30 @@
                 }
             }
 
-            // const userIdElement = document.getElementById("userId");
-            // if (userIdElement && userId) {
-            //     userIdElement.value = userId;
-            // } else {
-            //     console.error("userId element or userId value not found.");
-            // }
+            document.getElementById("planSelect").addEventListener("change", async function () {
+                const selectedSubscriptionId = this.value;
+                if (selectedSubscriptionId) {
+                    try {
+                        const response = await fetch(`http://localhost:8080/subscriptions/id/${selectedSubscriptionId}`);
+                        if (!response.ok) {
+                            throw new Error("Error fetching subscription details");
+                        }
+                        const subscription = await response.json();
+                        console.log("Selected subscription details:", subscription);
 
-            if (userSubscriptionId) {
-                document.getElementById("formTitle").textContent = "EDIT SUBSCRIPTION";
-                document.getElementById("saveBtn").textContent = "Update";
-
-                try {
-                    const response = await fetch(`/users/subscriptions/${userSubscriptionId}`);
-                    if (!response.ok) throw new Error("Failed to fetch subscription details");
-
-                    const userSubscription = await response.json();
-                    console.log(userSubscription);
-
-                    document.getElementById("userSubscriptionId").value = userSubscription.userSubscriptionId || '';
-                    document.getElementById("transactionId").value = userSubscription.transactionId || '';
-                    document.getElementById("planSelect").value = userSubscription.subscription?.subscriptionId || '';
-                    document.getElementById("projectAuthorized").value = userSubscription.projectAuthorized || '';
-                    document.getElementById("fileRows").value = userSubscription.fileRows || '';
-                    document.getElementById("paymentBy").value = userSubscription.paymentBy || '';
-                    document.getElementById("currency").value = userSubscription.currency || '';
-                    document.getElementById("amount").value = userSubscription.amount || '';
-                    document.getElementById("paymentStatus").value = userSubscription.paymentStatus || '';
-
-                } catch (error) {
-                    console.error("Error fetching subscription:", error);
-                    showToast("Error", "Failed to load subscription data!", "error");
+                        document.getElementById("projectAuthorized").value = subscription.project;
+                        document.getElementById("fileRows").value = subscription.rowCount;
+                        document.getElementById("amount").value = subscription.price;
+                    } catch (error) {
+                        console.error("Error fetching selected subscription:", error);
+                        document.getElementById("projectAuthorized").value = '';
+                        document.getElementById("fileRows").value = '';
+                    }
+                } else {
+                    document.getElementById("projectAuthorized").value = '';
+                    document.getElementById("fileRows").value = '';
                 }
-            }
+            });
 
             document.getElementById("addUserSubscription").addEventListener("submit", async function (event) {
                 event.preventDefault();
@@ -232,12 +223,9 @@
                 formData.append("paymentStatus", paymentStatus);
                 if (userIdValue) formData.append("user.userId", userIdValue);
 
-                let method = userSubscriptionId ? "PUT" : "POST";
-                let url = userSubscriptionId ? `/users/updateUserSubscription/${userSubscriptionId}` : "/users/saveUserSubscription";
-
                 try {
-                    let response = await fetch(url, {
-                        method: method,
+                    let response = await fetch("/users/saveUserSubscription", {
+                        method: "POST",
                         body: formData
                     });
 
@@ -245,12 +233,16 @@
                     console.log(data);
 
                     if (response.ok) {
-                        showToast("Success", userSubscriptionId ? "Subscription updated successfully!" : "Subscription added successfully!", "success");
+                        showToast("Success", data.message || "Subscription added successfully!", "success");
                         setTimeout(() => {
                             window.location.href = "/users/list";
                         }, 1500);
                     } else {
-                        showToast("Error", data.message || "Something went wrong!", "error");
+                        if (data.message && data.message.includes("Subscription already exists")) {
+                            showToast("Duplicate", "Subscription already exists for this user!", "error");
+                        } else {
+                            showToast("Error", data.message || "Something went wrong!", "error");
+                        }
                     }
                 } catch (error) {
                     console.error("Error saving subscription:", error);

@@ -1,5 +1,7 @@
 package com.example.dop.Service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,78 +28,48 @@ public class UserSubscriptionService {
 	@Autowired
 	private SubRepo subRepo;
 
-//	public UserSubscription saveSubscription(UserSubscriptionRequest request) {
-//		UserSubscription subscription = new UserSubscription();
-//
-//		subscription.setTransactionId(request.getTransactionId());
-//
-//		Subscription sub = subRepo.findById(request.getSubscriptionId()).orElseThrow(
-//				() -> new RuntimeException("Subscription not found with id: " + request.getSubscriptionId()));
-//		subscription.setSubscription(sub);
-//
-//		User user = userRepository.findById(request.getUserId())
-//				.orElseThrow(() -> new RuntimeException("User not found with id: " + request.getUserId()));
-//		subscription.setUser(user);
-//
-//		subscription.setProjectAuthorized(request.getProjectAuthorized());
-//		subscription.setFileRows(request.getFileRows());
-//		subscription.setPaymentBy(request.getPaymentBy());
-//		subscription.setCurrency(request.getCurrency());
-//		subscription.setAmount(request.getAmount());
-//		subscription.setPaymentStatus(request.getPaymentStatus());
-//		subscription.setCreatedBy(request.getCreatedBy());
-//		subscription.setCreatedDate(LocalDateTime.now());
-//		subscription.setUpdatedBy(request.getCreatedBy());
-//		subscription.setUpdatedDate(LocalDateTime.now());
-//
-//		return userSubscriptionRepository.save(subscription);
+//	public UserSubscription saveUserSubscription(UserSubscription userSubscription) {
+//		if (userSubscription.getUser() == null || userSubscription.getSubscription() == null) {
+//			throw new RuntimeException("User or Subscription is missing in UserSubscription!");
+//		}
+//		return userSubscriptionRepository.save(userSubscription);
 //	}
 
-	public UserSubscription saveUserSubscription(UserSubscription userSubscription) {
-		if (userSubscription.getUser() != null && userSubscription.getUser().getId() != null) {
-			Long userId = userSubscription.getUser().getId();
-			User existingUser = userRepository.findById(userId)
-					.orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-			userSubscription.setUser(existingUser);
-		} else {
-			throw new RuntimeException("User ID is missing while saving UserSubscription!");
+	public UserSubscription createUserSubscription(UserSubscription userSubscription, Long userId, Long subscriptionId,
+			String createdBy) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+
+		Subscription subscription = subRepo.findById(subscriptionId)
+				.orElseThrow(() -> new RuntimeException("Subscription not found with ID: " + subscriptionId));
+
+		if (existsByUserAndSubscription(user, subscription)) {
+			throw new RuntimeException("Subscription already exists for this user!");
 		}
 
-		if (userSubscription.getSubscription() != null
-				&& userSubscription.getSubscription().getSubscriptionId() != null) {
-			Long subId = userSubscription.getSubscription().getSubscriptionId();
-			Subscription existingSub = subRepo.findById(subId)
-					.orElseThrow(() -> new RuntimeException("Subscription not found with ID: " + subId));
-			userSubscription.setSubscription(existingSub);
-		} else {
-			throw new RuntimeException("Subscription ID is missing while saving UserSubscription!");
-		}
+		userSubscription.setUser(user);
+		userSubscription.setSubscription(subscription);
+		userSubscription.setCreatedBy(createdBy);
+		userSubscription.setCreatedDate(LocalDateTime.now());
 
 		return userSubscriptionRepository.save(userSubscription);
 	}
 
-//	public UserSubscription saveUserSubscription(UserSubscription userSubscription) {
-//		if (userSubscription.getUser() != null && userSubscription.getUser().getId() != null) {
-//			Long userId = userSubscription.getUser().getId();
-//			User existingUser = userRepository.findById(userId)
-//					.orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
-//			userSubscription.setUser(existingUser);
-//		} else {
-//			throw new IllegalArgumentException("User ID is missing while saving UserSubscription!");
-//		}
-//
-//		if (userSubscription.getSubscription() != null
-//				&& userSubscription.getSubscription().getSubscriptionId() != null) {
-//			Long subId = userSubscription.getSubscription().getSubscriptionId();
-//			Subscription existingSub = subRepo.findById(subId)
-//					.orElseThrow(() -> new EntityNotFoundException("Subscription not found with ID: " + subId));
-//			userSubscription.setSubscription(existingSub);
-//		} else {
-//			throw new IllegalArgumentException("Subscription ID is missing while saving UserSubscription!");
-//		}
-//
-//		// Now save the UserSubscription and return it
-//		return userSubscriptionRepository.save(userSubscription);
-//	}
+	public Subscription getSubscriptionById(Long subscriptionId) {
+		return subRepo.findById(subscriptionId).orElseThrow(() -> new RuntimeException("Subscription not found"));
+	}
+
+	public boolean existsByUserAndSubscription(User user, Subscription subscription) {
+		return userSubscriptionRepository.existsByUserAndSubscription(user, subscription);
+	}
+
+	public UserSubscription updateUserSubscription(UserSubscription userSubscription) {
+		return userSubscriptionRepository.save(userSubscription);
+	}
+
+	public UserSubscription getUserSubscriptionById(Long id) {
+		return userSubscriptionRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("User Subscription not found with ID: " + id));
+	}
 
 }

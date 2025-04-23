@@ -70,7 +70,6 @@ public class SubController {
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
-//		List<Subscription> subscriptions = subService.getSubscriptionsForUser(loggedInUser);
 		List<Subscription> subscriptions = subService.getAllSubscriptions();
 
 		model.addAttribute("subscriptions", subscriptions);
@@ -167,6 +166,11 @@ public class SubController {
 		Subscription updatedSubscription = subService.toggleSubscriptionStatus(id);
 
 		return ResponseEntity.ok(Map.of("success", true, "newStatus", updatedSubscription.getStatus()));
+	}
+
+	@GetMapping("/id/{subscriptionId}")
+	public ResponseEntity<Subscription> getSubscriptionBySubId(@PathVariable Long subscriptionId) {
+		return subRepo.findById(subscriptionId).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
 	}
 
 }
