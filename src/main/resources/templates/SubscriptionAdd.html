@@ -121,7 +121,7 @@
                 if (!subscriptionName) return showToast("Missing Field", "Please select a name!", "warning");
                 if (!subscriptionName.match(nameRegex)) return showToast("Invalid Input", "Subscription Name should contain only small letters.", "error");
                 if (!price) return showToast("Missing Field", "Price field is required!", "warning");
-                if (isNaN(price) || Number(price) <= 0) return showToast("Invalid Field", "Price must be a positive number!", "warning");
+                if (isNaN(price) || Number(price) < 0) return showToast("Invalid Field", "Price must be a positive number!", "warning");
                 if (!projectAuthorized) return showToast("Missing Field", "Project Authorized field is required!", "warning");
                 if (isNaN(projectAuthorized) || Number(projectAuthorized) <= 0) return showToast("Invalid Field", "Project Authorized must be a positive number!", "warning");
                 if (!fileRows) return showToast("Missing Field", "File Rows field is required!", "warning");

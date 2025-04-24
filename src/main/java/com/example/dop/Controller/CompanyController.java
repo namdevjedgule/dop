@@ -3,6 +3,7 @@ package com.example.dop.Controller;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -84,6 +85,12 @@ public class CompanyController {
 		try {
 			User loggedInUser = (User) session.getAttribute("user");
 			String createdBy = loggedInUser != null ? loggedInUser.getEmail() : "System";
+
+			Optional<Company> existingCompany = companyService.findByName(company.getCompanyName());
+			if (existingCompany.isPresent()) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(Map.of("status", "error", "message", "Company with the same name already exists"));
+			}
 
 			company.setCreatedBy(createdBy);
 			company.setCreatedOn(LocalDateTime.now());

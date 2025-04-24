@@ -36,4 +36,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	List<User> findByCreatedBy(String createdBy);
 
+	@Query("SELECT u FROM User u LEFT JOIN FETCH u.userSubscription")
+	List<User> findAllWithUserSubscription();
+
 }

@@ -67,6 +67,27 @@ public class AuthController {
 
 			if (passwordEncoder.matches(password, user.getPassword())) {
 
+				if ("Inactive".equalsIgnoreCase(user.getStatus())) {
+					Long roleId = user.getRole().getRoleId();
+
+					if (roleId == 1L) {
+						response.put("success", false);
+						response.put("message", "Your account is inactive. Please contact the Super Admin.");
+					} else if (roleId == 2L) {
+						response.put("success", false);
+						response.put("message", "Your account is inactive. Please contact the Admin.");
+					} else if (roleId == 3L) {
+						response.put("success", false);
+						response.put("message",
+								"Your Super Admin account is inactive. Please contact technical support.");
+					} else {
+						response.put("success", false);
+						response.put("message", "Your account is inactive. Please contact support.");
+					}
+
+					return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+				}
+
 				user.setLastLogin(LocalDateTime.now());
 				userRepository.save(user);
 

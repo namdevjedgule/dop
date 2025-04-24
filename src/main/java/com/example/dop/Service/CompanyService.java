@@ -95,4 +95,8 @@ public class CompanyService {
 		return null;
 	}
 
+	public Optional<Company> findByName(String companyName) {
+		return companyRepo.findByCompanyNameIgnoreCase(companyName);
+	}
+
 }

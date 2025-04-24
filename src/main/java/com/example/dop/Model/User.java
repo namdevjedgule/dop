@@ -16,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "users")
@@ -84,6 +85,9 @@ public class User {
 	private LocalDateTime lastLogin;
 
 	private String status;
+
+	@Transient
+	private String subscriptionName;
 
 	public Long getId() {
 		return id;
@@ -251,6 +255,14 @@ public class User {
 
 	public void setUserSubscription(UserSubscription userSubscription) {
 		this.userSubscription = userSubscription;
+	}
+
+	public String getSubscriptionName() {
+		return subscriptionName;
+	}
+
+	public void setSubscriptionName(String subscriptionName) {
+		this.subscriptionName = subscriptionName;
 	}
 
 	public String getFullName() {

@@ -21,9 +21,12 @@
                 <div class="bg-white p-6 rounded-lg shadow-md">
                     <h1 id="formTitle" class="text-2xl font-bold text-teal-700 mb-6">EDIT SUBSCRIPTION</h1>
 
-                    <form id="addUserSubscription" novalidate>
-                        <input type="hidden" id="userSubscriptionId" name="userSubscriptionId">
-                        <input type="hidden" id="userId" name="userId" th:value="${user.id}" />
+                    <form id="addUserSubscription" th:action="@{/users/updateUserSubscription}" method="post"
+                        novalidate>
+                        <input type="hidden" id="userSubscriptionId" name="userSubscriptionId"
+                            th:value="${userSubscription.userSubscriptionId}" />
+                        <input type="hidden" id="userId" name="userId" th:value="${userSubscription.user.id}" />
+
                         <div class="flex gap-6">
                             <div class="w-full bg-white p-4 pt-0 rounded-lg shadow-md">
                                 <div class="grid grid-cols-3 gap-4">
@@ -31,28 +34,32 @@
                                         <label class="text-sm font-semibold text-gray-700">PROJECT AUTHORIZED <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" id="projectAuthorized" name="projectAuthorized"
+                                            th:value="${userSubscription.projectAuthorized}"
                                             placeholder="Enter authorized project count"
                                             class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">FILE ROWS <span
                                                 class="text-red-500">*</span></label>
-                                        <input type="number" id="fileRows" name="fileRows" placeholder="Enter file rows"
+                                        <input type="number" id="fileRows" name="fileRows"
+                                            th:value="${userSubscription.fileRows}" placeholder="Enter file rows"
                                             class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">STATUS <span
                                                 class="text-red-500">*</span></label>
-                                        <select id="paymentBy" name="paymentBy"
+                                        <select id="status" name="status"
                                             class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
-                                            <option value="Active">Active</option>
-                                            <option value="Inactive">Inactive</option>
+                                            <option th:selected="${userSubscription.status == 'Active'}" value="Active">
+                                                Active</option>
+                                            <option th:selected="${userSubscription.status == 'Inactive'}"
+                                                value="Inactive">Inactive</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="mt-6 flex justify-end space-x-4">
                                     <button type="submit" id="saveBtn"
-                                        class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md">
+                                        class="bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-2 rounded-md flex items-center gap-2">
                                         Update
                                     </button>
                                     <button type="button"
@@ -69,69 +76,47 @@
         </div>
     </div>
     <script>
-        document.addEventListener("DOMContentLoaded", async function () {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userSubscriptionId = urlParams.get("userSubscriptionId");
+        document.getElementById("addUserSubscription").addEventListener("submit", async function (event) {
+            event.preventDefault();
 
-            if (userSubscriptionId) {
-                try {
-                    let response = await fetch(`/users/subscriptions/${userSubscriptionId}`);
-                    if (!response.ok) throw new Error("Subscription not found");
+            let userSubscriptionId = document.getElementById("userSubscriptionId").value;
+            // let userId = document.getElementById("userId").value;
+            let projectAuthorized = document.getElementById("projectAuthorized").value;
+            let fileRows = document.getElementById("fileRows").value;
+            let status = document.getElementById("status").value;
 
-                    let subscription = await response.json();
-
-                    document.getElementById("userSubscriptionId").value = subscription.userSubscriptionId || '';
-                    document.getElementById("userId").value = subscription.user?.userId || '';
-                    document.getElementById("projectAuthorized").value = subscription.projectAuthorized || '';
-                    document.getElementById("fileRows").value = subscription.fileRows || '';
-                    document.getElementById("paymentBy").value = subscription.paymentBy || 'Active';
-                } catch (error) {
-                    console.error(error);
-                    showToast("Error", "Failed to load subscription data", "error");
-                }
+            if (!projectAuthorized || isNaN(projectAuthorized) || Number(projectAuthorized) <= 0) {
+                return showToast("Invalid Input", "Enter valid Project Authorized!", "warning");
+            }
+            if (!fileRows || isNaN(fileRows) || Number(fileRows) <= 0) {
+                return showToast("Invalid Input", "Enter valid File Rows!", "warning");
             }
 
-            document.getElementById("addUserSubscription").addEventListener("submit", async function (event) {
-                event.preventDefault();
+            let formData = new FormData();
+            formData.append("userSubscriptionId", userSubscriptionId);
+            // formData.append("user.userId", userId);
+            formData.append("projectAuthorized", projectAuthorized);
+            formData.append("fileRows", fileRows);
+            formData.append("status", status);
 
-                let userSubscriptionId = document.getElementById("userSubscriptionId").value;
-                let userId = document.getElementById("userId").value;
-                let projectAuthorized = document.getElementById("projectAuthorized").value;
-                let fileRows = document.getElementById("fileRows").value;
-                let paymentBy = document.getElementById("paymentBy").value;
+            try {
+                let response = await fetch("/users/updateUserSubscription", {
+                    method: "POST",
+                    body: formData
+                });
 
-                if (!projectAuthorized || isNaN(projectAuthorized) || Number(projectAuthorized) <= 0) {
-                    return showToast("Invalid Input", "Enter valid Project Authorized!", "warning");
+                let result = await response.json();
+
+                if (response.ok) {
+                    showToast("Success", result.message || "Subscription updated successfully!", "success");
+                    setTimeout(() => window.location.href = "/users/list", 1500);
+                } else {
+                    showToast("Error", result.message || "Failed to update subscription", "error");
                 }
-                if (!fileRows || isNaN(fileRows) || Number(fileRows) <= 0) {
-                    return showToast("Invalid Input", "Enter valid File Rows!", "warning");
-                }
-
-                let formData = new FormData();
-                formData.append("user.userId", userId);
-                formData.append("projectAuthorized", projectAuthorized);
-                formData.append("fileRows", fileRows);
-                formData.append("paymentBy", paymentBy);
-
-                try {
-                    let response = await fetch(`/users/updateUserSubscriptionOnly/${userSubscriptionId}`, {
-                        method: "PUT",
-                        body: formData
-                    });
-
-                    let result = await response.json();
-
-                    if (response.ok) {
-                        showToast("Success", "Subscription updated successfully!", "success");
-                        setTimeout(() => window.location.href = "/users/list", 1500);
-                    } else {
-                        showToast("Error", result.message || "Failed to update subscription", "error");
-                    }
-                } catch (error) {
-                    console.error(error);
-                    showToast("Error", "Something went wrong!", "error");
-                }
-            });
+            } catch (error) {
+                console.error(error);
+                showToast("Error", "Something went wrong!", "error");
+            }
         });
 
         function showToast(title, message, icon) {

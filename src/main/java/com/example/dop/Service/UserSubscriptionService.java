@@ -1,6 +1,8 @@
 package com.example.dop.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.example.dop.Model.Subscription;
 import com.example.dop.Model.User;
 import com.example.dop.Model.UserSubscription;
-import com.example.dop.Repository.PlanRepository;
 import com.example.dop.Repository.SubRepo;
 import com.example.dop.Repository.UserRepository;
 import com.example.dop.Repository.UserSubscriptionRepository;
@@ -23,19 +24,24 @@ public class UserSubscriptionService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private PlanRepository planRepository;
-
-	@Autowired
 	private SubRepo subRepo;
 
-//	public UserSubscription saveUserSubscription(UserSubscription userSubscription) {
-//		if (userSubscription.getUser() == null || userSubscription.getSubscription() == null) {
-//			throw new RuntimeException("User or Subscription is missing in UserSubscription!");
-//		}
-//		return userSubscriptionRepository.save(userSubscription);
-//	}
+	public String generateNextTransactionId() {
+		String prefix = "TXN";
+		String startingPoint = "1111111110";
 
-	public UserSubscription createUserSubscription(UserSubscription userSubscription, Long userId, Long subscriptionId,
+		Optional<UserSubscription> latest = userSubscriptionRepository.findTopByOrderByUserSubscriptionIdDesc();
+		String lastId = latest.map(UserSubscription::getTransactionId).orElse(prefix + startingPoint);
+
+		String lastIdNumber = lastId.replace(prefix, "");
+		long nextIdNumber = Long.parseLong(lastIdNumber) + 1;
+
+		String nextId = String.format("%010d", nextIdNumber);
+
+		return prefix + nextId;
+	}
+
+	public UserSubscription saveUserSubscription(UserSubscription userSubscription, Long userId, Long subscriptionId,
 			String createdBy) {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
@@ -46,6 +52,10 @@ public class UserSubscriptionService {
 		if (existsByUserAndSubscription(user, subscription)) {
 			throw new RuntimeException("Subscription already exists for this user!");
 		}
+
+		String transactionId = generateNextTransactionId();
+		System.out.println("Generated Transaction ID: " + transactionId);
+		userSubscription.setTransactionId(transactionId);
 
 		userSubscription.setUser(user);
 		userSubscription.setSubscription(subscription);
@@ -63,13 +73,36 @@ public class UserSubscriptionService {
 		return userSubscriptionRepository.existsByUserAndSubscription(user, subscription);
 	}
 
-	public UserSubscription updateUserSubscription(UserSubscription userSubscription) {
-		return userSubscriptionRepository.save(userSubscription);
+	public UserSubscription updateUserSubscription(UserSubscription userSubscription, String updatedBy) {
+		UserSubscription existingSubscription = userSubscriptionRepository
+				.findById(userSubscription.getUserSubscriptionId())
+				.orElseThrow(() -> new RuntimeException("User Subscription not found"));
+
+		existingSubscription.setProjectAuthorized(userSubscription.getProjectAuthorized());
+		existingSubscription.setFileRows(userSubscription.getFileRows());
+		existingSubscription.setStatus(userSubscription.getStatus());
+
+		existingSubscription.setUpdatedBy(updatedBy);
+		existingSubscription.setUpdatedDate(LocalDateTime.now());
+
+		return userSubscriptionRepository.save(existingSubscription);
 	}
 
-	public UserSubscription getUserSubscriptionById(Long id) {
-		return userSubscriptionRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("User Subscription not found with ID: " + id));
+	public UserSubscription getUserSubscriptionByUserId(Long id) {
+		return userSubscriptionRepository.findByUserId(id);
+	}
+
+	public UserSubscription getUserSubscriptionById(Long userSubscriptionId) {
+		return userSubscriptionRepository.findById(userSubscriptionId).orElse(null);
+	}
+
+	public List<UserSubscription> getAllUserSubscriptions() {
+		return userSubscriptionRepository.findAll();
+	}
+
+	public UserSubscription findById(Long userSubscriptionId) {
+		return userSubscriptionRepository.findById(userSubscriptionId)
+				.orElseThrow(() -> new RuntimeException("Subscription not found"));
 	}
 
 }

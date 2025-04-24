@@ -50,6 +50,8 @@ public class UserSubscription {
 
 	private LocalDateTime updatedDate = LocalDateTime.now();
 
+	private String status;
+
 	public Long getUserSubscriptionId() {
 		return userSubscriptionId;
 	}
@@ -160,6 +162,14 @@ public class UserSubscription {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

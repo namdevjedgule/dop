@@ -9,6 +9,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        input[readonly] {
+            background-color: #f9fafb;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
 <body class="bg-[#e9f5f5]">
@@ -33,7 +39,7 @@
                                             <span class="text-red-500">*</span></label>
                                         <input type="text" id="transactionId" name="transactionId"
                                             placeholder="Enter transaction Id"
-                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" readonly>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">SELECT PLAN <span
@@ -48,13 +54,15 @@
                                                 class="text-red-500">*</span></label>
                                         <input type="number" id="projectAuthorized" name="projectAuthorized"
                                             placeholder="Enter authorized project count"
-                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                            readonly>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">FILE ROWS <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" id="fileRows" name="fileRows" placeholder="Enter file rows"
-                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                            readonly>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">PAYMENT BY <span
@@ -82,7 +90,8 @@
                                         <label class="text-sm font-semibold text-gray-700">AMOUNT <span
                                                 class="text-red-500">*</span></label>
                                         <input type="number" id="amount" name="amount" placeholder="Enter Amount"
-                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                            readonly>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">PAYMENT STATUS
@@ -116,6 +125,30 @@
     </div>
 
     <script>
+
+        async function loadLatestTransactionId() {
+            try {
+                const response = await fetch("http://localhost:8080/users/last-transaction-id");
+                if (!response.ok) {
+                    throw new Error("Error fetching latest transaction ID");
+                }
+
+                const data = await response.json();  
+                const transactionId = data.transactionId || ''; 
+
+                if (transactionId) {
+                    document.getElementById("transactionId").value = transactionId;
+                } else {
+                    console.error("Transaction ID is missing in the response");
+                    showToast("Error", "Invalid response from server.", "error");
+                }
+            } catch (error) {
+                console.error("Error fetching latest transaction ID:", error);
+                showToast("Error", "Unable to load transaction ID. Try again later.", "error");
+            }
+        }
+
+
         async function loadSubscriptionPlans() {
             try {
                 const response = await fetch("http://localhost:8080/subscriptions/all");
@@ -144,6 +177,7 @@
 
         document.addEventListener("DOMContentLoaded", async function () {
             await loadSubscriptionPlans();
+            await loadLatestTransactionId();
 
             const urlParams = new URLSearchParams(window.location.search);
             const userSubscriptionId = urlParams.get("userSubscriptionId");

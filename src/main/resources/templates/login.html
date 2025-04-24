@@ -8,6 +8,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-webkit-credentials-auto-fill-button {
+            display: none;
+        }
+        </style>
 </head>
 
 <body class="flex items-center justify-center min-h-screen bg-gray-200">
@@ -27,7 +34,7 @@
                     <i class="fa fa-envelope absolute left-3 top-3 text-teal-600"></i>
                 </div>
                 <div class="relative">
-                    <input type="password" id="password" name="password" placeholder="Password"
+                    <input type="password" id="password" name="password" placeholder="Password" autocomplete="new-password"
                         class="w-full px-4 py-2 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600">
                     <i class="fa fa-lock absolute left-3 top-3 text-teal-600"></i>
                     <i class="fa fa-eye absolute right-3 top-3 text-teal-600 cursor-pointer" id="togglePassword"></i>
@@ -95,162 +102,179 @@
                 </p>
             </div>
         </div>
+    </div>
 
 
-        <script>
-            document.getElementById("loginForm").addEventListener("submit", async function (event) {
-                event.preventDefault();
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
 
-                const email = document.getElementById("email").value.trim();
-                const password = document.getElementById("password").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
 
-                if (email === "" || password === "") {
-                    showPopup("Missing Fields!", "Please enter both email and password.", "warning");
-                    return;
-                }
+            if (email === "" || password === "") {
+                showPopup("Missing Fields!", "Please enter both email and password.", "warning");
+                return;
+            }
 
-                try {
-                    const response = await fetch("/checkdata", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, password })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok && data.success) {
-                        showPopup("Login Success!", data.message, "success");
-                        setTimeout(() => {
-                            if (data.role === "SuperAdmin") {
-                                window.location.href = "/dashboard";
-                            } else if (data.role === "Admin" || data.role === "User") {
-                                window.location.href = "/profile";
-                            } else {
-                                showPopup("Login Error!", "Unknown role: " + data.role, "error");
-                            }
-                        }, 1500);
-                    } else {
-                        showPopup("Login Failed!", data.message || "Invalid email or password.", "error");
-                    }
-                } catch (error) {
-                    showPopup("Error!", "Something went wrong. Please try again.", "error");
-                }
-            });
-
-            function showPopup(title, message, icon) {
-                let backgroundColor = "#ffffff";
-
-                if (icon === "success") {
-                    backgroundColor = "#d4edda";
-                } else if (icon === "error") {
-                    backgroundColor = "#f8d7da";
-                } else if (icon === "warning") {
-                    backgroundColor = "#fff3cd";
-                }
-
-                Swal.fire({
-                    title: title,
-                    text: message,
-                    icon: icon,
-                    background: backgroundColor,
-                    toast: true,
-                    position: "top",
-                    showConfirmButton: false,
-                    timer: 1500,
-                    timerProgressBar: true,
-                    customClass: {
-                        popup: 'colored-toast'
-                    }
+            try {
+                const response = await fetch("/checkdata", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
                 });
-            }
 
+                const data = await response.json();
 
-            document.getElementById("togglePassword").addEventListener("click", function () {
-                const passwordField = document.getElementById("password");
-                const eyeIcon = this;
-
-                if (passwordField.type === "password") {
-                    passwordField.type = "text";
-                    eyeIcon.classList.remove("fa-eye");
-                    eyeIcon.classList.add("fa-eye-slash");
+                if (response.ok && data.success) {
+                    showPopup("Login Success!", data.message, "success");
+                    setTimeout(() => {
+                        if (data.role === "SuperAdmin") {
+                            window.location.href = "/dashboard";
+                        } else if (data.role === "Admin" || data.role === "User") {
+                            window.location.href = "/profile";
+                        } else {
+                            showPopup("Login Error!", "Unknown role: " + data.role, "error");
+                        }
+                    }, 1500);
                 } else {
-                    passwordField.type = "password";
-                    eyeIcon.classList.remove("fa-eye-slash");
-                    eyeIcon.classList.add("fa-eye");
+                    showPopup("Login Failed!", data.message || "Invalid email or password.", "error");
                 }
-            });
+            } catch (error) {
+                showPopup("Error!", "Something went wrong. Please try again.", "error");
+            }
+        });
 
+        function showPopup(title, message, icon) {
+            let backgroundColor = "#ffffff";
 
-            const signupModal = document.getElementById("signupModal");
-            const openSignup = document.getElementById("openSignup");
-            const closeSignup = document.getElementById("closeSignup");
-            const closeSignup2 = document.getElementById("closeSignup2");
-            const step1 = document.getElementById("step1");
-            const step2 = document.getElementById("step2");
-            const nextStep = document.getElementById("nextStep");
-
-            openSignup.addEventListener("click", () => {
-                signupModal.classList.remove("hidden");
-            });
-
-            closeSignup.addEventListener("click", () => {
-                signupModal.classList.add("hidden");
-                step1.classList.remove("hidden");
-                step2.classList.add("hidden");
-            });
-
-            closeSignup2.addEventListener("click", () => {
-                signupModal.classList.add("hidden");
-                step1.classList.remove("hidden");
-                step2.classList.add("hidden");
-            });
-
-            async function loadSignupDropdowns() {
-                try {
-                    const response = await fetch("/signupOptions");
-                    const data = await response.json();
-
-                    const designationSelect = document.getElementById("designationSelect");
-                    designationSelect.innerHTML = '<option value="">Select Designation</option>';
-                    data.designations.forEach(designation => {
-                        const option = document.createElement("option");
-                        option.value = designation.designationId;
-                        option.textContent = designation.designationName;
-                        designationSelect.appendChild(option);
-                    });
-
-                    const countrySelect = document.getElementById("countrySelect");
-                    countrySelect.innerHTML = '<option value="">Select Country</option>';
-                    data.countries.forEach(country => {
-                        const option = document.createElement("option");
-                        option.value = country.countryId;
-                        option.textContent = country.countryName;
-                        countrySelect.appendChild(option);
-                    });
-
-                    const aboutUsSelect = document.getElementById("aboutUsSelect");
-                    aboutUsSelect.innerHTML = '<option value="">How did you find in2in global?</option>';
-                    data.aboutUs.forEach(source => {
-                        const option = document.createElement("option");
-                        option.value = source.id;
-                        option.textContent = source.description;
-                        aboutUsSelect.appendChild(option);
-                    });
-
-                } catch (error) {
-                    console.error("Error loading signup dropdowns:", error);
-                    showPopup("Error", "Unable to load signup options. Please try again later.", "error");
-                }
+            if (icon === "success") {
+                backgroundColor = "#d4edda";
+            } else if (icon === "error") {
+                backgroundColor = "#f8d7da";
+            } else if (icon === "warning") {
+                backgroundColor = "#fff3cd";
             }
 
-
-            nextStep.addEventListener("click", async () => {
-                const email = document.getElementById("signupEmail").value.trim();
-
-                if (email === "") {
-                    showPopup("Missing Email", "Please enter your email.", "warning");
-                    return;
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: icon,
+                background: backgroundColor,
+                toast: true,
+                position: "top",
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'colored-toast'
                 }
+            });
+        }
+
+
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            const passwordField = document.getElementById("password");
+            const eyeIcon = this;
+
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordField.type = "password";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            }
+        });
+
+
+        const signupModal = document.getElementById("signupModal");
+        const openSignup = document.getElementById("openSignup");
+        const closeSignup = document.getElementById("closeSignup");
+        const closeSignup2 = document.getElementById("closeSignup2");
+        const step1 = document.getElementById("step1");
+        const step2 = document.getElementById("step2");
+        const nextStep = document.getElementById("nextStep");
+
+        openSignup.addEventListener("click", () => {
+            signupModal.classList.remove("hidden");
+        });
+
+        closeSignup.addEventListener("click", () => {
+            signupModal.classList.add("hidden");
+            step1.classList.remove("hidden");
+            step2.classList.add("hidden");
+        });
+
+        closeSignup2.addEventListener("click", () => {
+            signupModal.classList.add("hidden");
+            step1.classList.remove("hidden");
+            step2.classList.add("hidden");
+        });
+
+        async function loadSignupDropdowns() {
+            try {
+                const response = await fetch("/signupOptions");
+                const data = await response.json();
+
+                const designationSelect = document.getElementById("designationSelect");
+                designationSelect.innerHTML = '<option value="">Select Designation</option>';
+                data.designations.forEach(designation => {
+                    const option = document.createElement("option");
+                    option.value = designation.designationId;
+                    option.textContent = designation.designationName;
+                    designationSelect.appendChild(option);
+                });
+
+                const countrySelect = document.getElementById("countrySelect");
+                countrySelect.innerHTML = '<option value="">Select Country</option>';
+                data.countries.forEach(country => {
+                    const option = document.createElement("option");
+                    option.value = country.countryId;
+                    option.textContent = country.countryName;
+                    countrySelect.appendChild(option);
+                });
+
+                const aboutUsSelect = document.getElementById("aboutUsSelect");
+                aboutUsSelect.innerHTML = '<option value="">How did you find in2in global?</option>';
+                data.aboutUs.forEach(source => {
+                    const option = document.createElement("option");
+                    option.value = source.id;
+                    option.textContent = source.description;
+                    aboutUsSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error("Error loading signup dropdowns:", error);
+                showPopup("Error", "Unable to load signup options. Please try again later.", "error");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let step1Data = {};
+
+            document.getElementById("nextStep").addEventListener("click", async function () {
+                let firstName = document.getElementById("firstName").value.trim();
+                let lastName = document.getElementById("lastName").value.trim();
+                let email = document.getElementById("signupEmail").value.trim();
+                let password = document.getElementById("signupPassword").value.trim();
+
+                let nameRegex = /^[A-Za-z]+$/;
+                let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+                if (!firstName) return showPopup("Missing Field", "First Name is required", "warning");
+                if (!firstName.match(nameRegex)) return showPopup("Invalid Input", "First Name should contain only letters.", "error");
+
+                if (!lastName) return showPopup("Missing Field", "Last Name is required", "warning");
+                if (!lastName.match(nameRegex)) return showPopup("Invalid Input", "Last Name should contain only letters.", "error");
+
+                if (!email) return showPopup("Missing Field", "Email is required", "warning");
+                if (!emailRegex.test(email)) return showPopup("Invalid Email", "Enter a valid email address.", "error");
+
+                if (!password) return showPopup("Missing Field", "Password is required", "warning");
+                if (!password.match(passwordRegex)) return showPopup("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");
 
                 try {
                     const response = await fetch("/checkEmail", {
@@ -262,134 +286,104 @@
                     const data = await response.json();
 
                     if (data.success) {
-                        step1.classList.add("hidden");
-                        step2.classList.remove("hidden");
+                        step1Data = { firstName, lastName, email, password };
+
+                        document.getElementById("step1").classList.add("hidden");
+                        document.getElementById("step2").classList.remove("hidden");
                         await loadSignupDropdowns();
                     } else {
                         showPopup("Email Exists", data.message || "This email is already registered.", "error");
                     }
                 } catch (error) {
+                    console.error("Error checking email:", error);
                     showPopup("Error", "Something went wrong while checking email.", "error");
                 }
             });
 
-            document.addEventListener("DOMContentLoaded", function () {
-                let step1Data = {};
+            document.getElementById("signupForm").addEventListener("submit", async function (event) {
+                event.preventDefault();
 
-                document.getElementById("nextStep").addEventListener("click", function () {
-                    let firstName = document.getElementById("firstName").value.trim();
-                    let lastName = document.getElementById("lastName").value.trim();
-                    let email = document.getElementById("signupEmail").value.trim();
-                    let password = document.getElementById("signupPassword").value.trim();
+                let designationId = document.getElementById("designationSelect").value;
+                let companyName = document.getElementById("companyName").value.trim();
+                let countryId = document.getElementById("countrySelect").value;
+                let phoneNumber = document.getElementById("phoneNumber").value.trim();
+                let aboutUsId = document.getElementById("aboutUsSelect").value;
 
-                    let nameRegex = /^[A-Za-z]+$/;
-                    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    let passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                let phoneRegex = /^[0-9]{10,15}$/;
 
-                    if (!firstName) return showPopup("Missing Field", "First Name is required", "warning");
-                    if (!firstName.match(nameRegex)) return showPopup("Invalid Input", "First Name should contain only letters.", "error");
+                if (!step1Data.email) return showPopup("Error", "Step 1 data missing. Please fill it first.", "error");
 
-                    if (!lastName) return showPopup("Missing Field", "Last Name is required", "warning");
-                    if (!lastName.match(nameRegex)) return showPopup("Invalid Input", "Last Name should contain only letters.", "error");
+                try {
+                    let checkUrl = `/check-email?email=${encodeURIComponent(step1Data.email)}`;
+                    let checkRes = await fetch(checkUrl);
+                    let checkData = await checkRes.json();
 
-                    if (!email) return showPopup("Missing Field", "Email is required", "warning");
-                    if (!emailRegex.test(email)) return showPopup("Invalid Email", "Enter a valid email address.", "error");
-
-                    if (!password) return showPopup("Missing Field", "Password is required", "warning");
-                    if (!password.match(passwordRegex)) return showPopup("Weak Password", "Password must have at least 8 characters, an uppercase letter, a number, and a special character.", "error");
-
-                    step1Data = { firstName, lastName, email, password };
-
-                    document.getElementById("step1").classList.add("hidden");
-                    document.getElementById("step2").classList.remove("hidden");
-                });
-
-                document.getElementById("signupForm").addEventListener("submit", async function (event) {
-                    event.preventDefault();
-
-                    let designationId = document.getElementById("designationSelect").value;
-                    let companyName = document.getElementById("companyName").value.trim();
-                    let countryId = document.getElementById("countrySelect").value;
-                    let phoneNumber = document.getElementById("phoneNumber").value.trim();
-                    let aboutUsId = document.getElementById("aboutUsSelect").value;
-
-                    let phoneRegex = /^[0-9]{10,15}$/;
-
-                    if (!step1Data.email) return showPopup("Error", "Step 1 data missing. Please fill it first.", "error");
-
-                    try {
-                        let checkUrl = `/check-email?email=${encodeURIComponent(step1Data.email)}`;
-                        let checkRes = await fetch(checkUrl);
-                        let checkData = await checkRes.json();
-
-                        if (checkData.exists) {
-                            return showPopup("Email Exists", "This email is already registered.", "error");
-                        }
-                    } catch (checkErr) {
-                        console.error("Email check error:", checkErr);
-                        return showPopup("Error", "Failed to validate email. Try again later.", "error");
+                    if (checkData.exists) {
+                        return showPopup("Email Exists", "This email is already registered.", "error");
                     }
+                } catch (checkErr) {
+                    console.error("Email check error:", checkErr);
+                    return showPopup("Error", "Failed to validate email. Try again later.", "error");
+                }
 
-                    try {
-                        let companyCheckUrl = `/check-company?companyName=${encodeURIComponent(companyName)}`;
-                        let companyRes = await fetch(companyCheckUrl);
-                        let companyData = await companyRes.json();
+                try {
+                    let companyCheckUrl = `/check-company?companyName=${encodeURIComponent(companyName)}`;
+                    let companyRes = await fetch(companyCheckUrl);
+                    let companyData = await companyRes.json();
 
-                        if (companyData.exists) {
-                            return showPopup("Company Exists", "This company already exists. Please enter a different name.", "error");
-                        }
-                    } catch (companyErr) {
-                        console.error("Company check error:", companyErr);
-                        return showPopup("Error", "Failed to validate company name. Try again later.", "error");
+                    if (companyData.exists) {
+                        return showPopup("Company Exists", "This company already exists. Please enter a different name.", "error");
                     }
+                } catch (companyErr) {
+                    console.error("Company check error:", companyErr);
+                    return showPopup("Error", "Failed to validate company name. Try again later.", "error");
+                }
 
-                    if (!designationId) return showPopup("Missing Field", "Please select a Designation", "warning");
-                    if (!companyName) return showPopup("Missing Field", "Company Name is required", "warning");
-                    if (!countryId) return showPopup("Missing Field", "Please select a Country", "warning");
+                if (!designationId) return showPopup("Missing Field", "Please select a Designation", "warning");
+                if (!companyName) return showPopup("Missing Field", "Company Name is required", "warning");
+                if (!countryId) return showPopup("Missing Field", "Please select a Country", "warning");
 
-                    if (!phoneNumber) return showPopup("Missing Field", "Phone Number is required", "warning");
-                    if (!phoneRegex.test(phoneNumber)) return showPopup("Invalid Phone", "Enter a valid phone number (10–15 digits)", "error");
+                if (!phoneNumber) return showPopup("Missing Field", "Phone Number is required", "warning");
+                if (!phoneRegex.test(phoneNumber)) return showPopup("Invalid Phone", "Enter a valid phone number (10–15 digits)", "error");
 
-                    if (!aboutUsId) return showPopup("Missing Field", "Please tell us how you found in2in global", "warning");
+                if (!aboutUsId) return showPopup("Missing Field", "Please tell us how you found in2in global", "warning");
 
-                    let formData = new FormData();
-                    formData.append("firstName", step1Data.firstName);
-                    formData.append("lastName", step1Data.lastName);
-                    formData.append("email", step1Data.email);
-                    formData.append("password", step1Data.password);
-                    formData.append("designationId", designationId);
-                    formData.append("companyName", companyName);
-                    formData.append("countryId", countryId);
-                    formData.append("phoneNumber", phoneNumber);
-                    formData.append("aboutUsId", aboutUsId);
+                let formData = new FormData();
+                formData.append("firstName", step1Data.firstName);
+                formData.append("lastName", step1Data.lastName);
+                formData.append("email", step1Data.email);
+                formData.append("password", step1Data.password);
+                formData.append("designationId", designationId);
+                formData.append("companyName", companyName);
+                formData.append("countryId", countryId);
+                formData.append("phoneNumber", phoneNumber);
+                formData.append("aboutUsId", aboutUsId);
 
-                    try {
-                        let response = await fetch("/signup", {
-                            method: "POST",
-                            body: formData
-                        });
+                try {
+                    let response = await fetch("/signup", {
+                        method: "POST",
+                        body: formData
+                    });
 
-                        let result = await response.json();
+                    let result = await response.json();
 
-                        if (response.ok) {
-                            showPopup("Success!", "Signup completed successfully!", "success");
-                            step1Data = {}; // reset
-                            document.getElementById("signupForm").reset();
-                            setTimeout(() => {
-                                window.location.href = "/";
-                            }, 1500);
-                        } else {
-                            showPopup("Error", result.message || "Signup failed!", "error");
-                        }
-                    } catch (error) {
-                        console.error("Signup error:", error);
-                        showPopup("Error", "Server error! Please try again later.", "error");
+                    if (response.ok) {
+                        showPopup("Success!", "Signup completed successfully!", "success");
+                        step1Data = {};
+                        document.getElementById("signupForm").reset();
+                        setTimeout(() => {
+                            window.location.href = "/";
+                        }, 1500);
+                    } else {
+                        showPopup("Error", result.message || "Signup failed!", "error");
                     }
-                });
+                } catch (error) {
+                    console.error("Signup error:", error);
+                    showPopup("Error", "Server error! Please try again later.", "error");
+                }
             });
-
-
-        </script>
+        });
+    </script>
 </body>
 
 </html>

@@ -25,6 +25,7 @@ import com.example.dop.Model.User;
 import com.example.dop.Repository.RoleMasterRepository;
 import com.example.dop.Repository.UserRepository;
 import com.example.dop.Service.UserService;
+import com.example.dop.Service.UserSubscriptionService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -33,6 +34,9 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private UserSubscriptionService userSubscriptionService;
 
 	@Autowired
 	private RoleMasterRepository roleMasterRepository;
@@ -122,6 +126,31 @@ public class UserController {
 		model.addAttribute("currentPage", "userList");
 		return "userList";
 	}
+
+//	@GetMapping("/users/list")
+//	public String showUserListPage(HttpSession session, Model model) {
+//		User loggedInUser = (User) session.getAttribute("user");
+//		if (loggedInUser == null)
+//			return "redirect:/";
+//
+//		model.addAttribute("fname", loggedInUser.getFirstName());
+//		model.addAttribute("email", loggedInUser.getEmail());
+//		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+//
+//		List<User> users;
+//		if (loggedInUser.getRole().getRoleId() == 3) {
+//			users = userService.getUsersByRoleId(2L);
+//		} else {
+//			users = userService.getUsersCreatedByAdmin(loggedInUser.getEmail());
+//		}
+//		model.addAttribute("users", users);
+//
+//		List<UserSubscription> userSubscriptions = userSubscriptionService.getAllUserSubscriptions();
+//		model.addAttribute("subscriptions", userSubscriptions);
+//
+//		model.addAttribute("currentPage", "userList");
+//		return "userList";
+//	}
 
 	@PostMapping("/admins/saveAdmin")
 	public ResponseEntity<?> saveAdmin(@ModelAttribute User admin,
