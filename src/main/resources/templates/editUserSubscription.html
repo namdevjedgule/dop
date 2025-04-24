@@ -46,16 +46,12 @@
                                             class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
                                     </div>
                                     <div>
-                                        <label class="text-sm font-semibold text-gray-700">STATUS <span
-                                                class="text-red-500">*</span></label>
-                                        <select id="status" name="status"
-                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
-                                            <option th:selected="${userSubscription.status == 'Active'}" value="Active">
-                                                Active</option>
-                                            <option th:selected="${userSubscription.status == 'Inactive'}"
-                                                value="Inactive">Inactive</option>
+                                        <label class="text-sm font-semibold text-gray-700">STATUS <span class="text-red-500">*</span></label>
+                                        <select id="status" name="status" class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300">
+                                            <option th:selected="${userSubscription.status == 'Active'}" value="Active">Active</option>
+                                            <option th:selected="${userSubscription.status == 'Inactive'}" value="Inactive">Inactive</option>
                                         </select>
-                                    </div>
+                                    </div>                                    
                                 </div>
                                 <div class="mt-6 flex justify-end space-x-4">
                                     <button type="submit" id="saveBtn"
@@ -80,7 +76,6 @@
             event.preventDefault();
 
             let userSubscriptionId = document.getElementById("userSubscriptionId").value;
-            // let userId = document.getElementById("userId").value;
             let projectAuthorized = document.getElementById("projectAuthorized").value;
             let fileRows = document.getElementById("fileRows").value;
             let status = document.getElementById("status").value;
@@ -94,7 +89,6 @@
 
             let formData = new FormData();
             formData.append("userSubscriptionId", userSubscriptionId);
-            // formData.append("user.userId", userId);
             formData.append("projectAuthorized", projectAuthorized);
             formData.append("fileRows", fileRows);
             formData.append("status", status);

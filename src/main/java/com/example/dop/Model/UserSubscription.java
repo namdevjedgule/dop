@@ -2,6 +2,7 @@ package com.example.dop.Model;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -50,7 +51,8 @@ public class UserSubscription {
 
 	private LocalDateTime updatedDate = LocalDateTime.now();
 
-	private String status;
+	@Column(name = "status")
+	private String status = "Active";
 
 	public Long getUserSubscriptionId() {
 		return userSubscriptionId;

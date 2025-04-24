@@ -80,7 +80,12 @@ public class UserSubscriptionService {
 
 		existingSubscription.setProjectAuthorized(userSubscription.getProjectAuthorized());
 		existingSubscription.setFileRows(userSubscription.getFileRows());
-		existingSubscription.setStatus(userSubscription.getStatus());
+
+		if (userSubscription.getStatus() != null) {
+			existingSubscription.setStatus(userSubscription.getStatus());
+		} else {
+			existingSubscription.setStatus("Active");
+		}
 
 		existingSubscription.setUpdatedBy(updatedBy);
 		existingSubscription.setUpdatedDate(LocalDateTime.now());

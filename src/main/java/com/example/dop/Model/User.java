@@ -89,6 +89,9 @@ public class User {
 	@Transient
 	private String subscriptionName;
 
+	@Transient
+	private boolean hasSubscription;
+
 	public Long getId() {
 		return id;
 	}
@@ -263,6 +266,14 @@ public class User {
 
 	public void setSubscriptionName(String subscriptionName) {
 		this.subscriptionName = subscriptionName;
+	}
+
+	public boolean isHasSubscription() {
+		return hasSubscription;
+	}
+
+	public void setHasSubscription(boolean hasSubscription) {
+		this.hasSubscription = hasSubscription;
 	}
 
 	public String getFullName() {

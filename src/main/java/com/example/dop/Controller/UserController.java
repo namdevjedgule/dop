@@ -115,13 +115,26 @@ public class UserController {
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
+		List<User> users = null;
 		if (loggedInUser.getRole().getRoleId() == 3) {
-			List<User> users = userService.getUsersByRoleId(2L);
+			users = userService.getUsersByRoleId(2L);
 			model.addAttribute("users", users);
 		} else {
 			List<User> usersCreatedByAdmin = userService.getUsersCreatedByAdmin(loggedInUser.getEmail());
 			model.addAttribute("users", usersCreatedByAdmin);
 		}
+
+		if (users != null) {
+			for (User user : users) {
+				if (user.getUserSubscription() != null && user.getUserSubscription().getSubscription() != null) {
+					user.setSubscriptionName(user.getUserSubscription().getSubscription().getSubscriptionName());
+				} else {
+					user.setSubscriptionName("free");
+				}
+			}
+		}
+
+		model.addAttribute("users", users);
 
 		model.addAttribute("currentPage", "userList");
 		return "userList";
