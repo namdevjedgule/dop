@@ -105,38 +105,88 @@ public class UserController {
 		return "adminList";
 	}
 
+//	@GetMapping("/users/list")
+//	public String showUserListPage(HttpSession session, Model model) {
+//		User loggedInUser = (User) session.getAttribute("user");
+//		if (loggedInUser == null)
+//			return "redirect:/";
+//
+//		model.addAttribute("fname", loggedInUser.getFirstName());
+//		model.addAttribute("email", loggedInUser.getEmail());
+//		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+//
+//		List<User> users = null;
+//		if (loggedInUser.getRole().getRoleId() == 3) {
+//			users = userService.getUsersByRoleId(2L);
+//			model.addAttribute("users", users);
+//		} else {
+//			List<User> usersCreatedByAdmin = userService.getUsersCreatedByAdmin(loggedInUser.getEmail());
+//			model.addAttribute("users", usersCreatedByAdmin);
+//		}
+//
+//		if (users != null) {
+//			for (User user : users) {
+//				if (user.getUserSubscription() != null && user.getUserSubscription().getSubscription() != null) {
+//					user.setSubscriptionName(user.getUserSubscription().getSubscription().getSubscriptionName());
+//				} else {
+//					user.setSubscriptionName("free");
+//				}
+//			}
+//		}
+//
+//		model.addAttribute("users", users);
+//
+//		model.addAttribute("currentPage", "userList");
+//		return "userList";
+//	}
+
 	@GetMapping("/users/list")
 	public String showUserListPage(HttpSession session, Model model) {
 		User loggedInUser = (User) session.getAttribute("user");
-		if (loggedInUser == null)
+		if (loggedInUser == null) {
 			return "redirect:/";
+		}
 
 		model.addAttribute("fname", loggedInUser.getFirstName());
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
 
-		List<User> users = null;
+		List<User> users;
 		if (loggedInUser.getRole().getRoleId() == 3) {
 			users = userService.getUsersByRoleId(2L);
-			model.addAttribute("users", users);
 		} else {
-			List<User> usersCreatedByAdmin = userService.getUsersCreatedByAdmin(loggedInUser.getEmail());
-			model.addAttribute("users", usersCreatedByAdmin);
+			users = userService.getUsersCreatedByAdmin(loggedInUser.getEmail());
 		}
 
-		if (users != null) {
-			for (User user : users) {
-				if (user.getUserSubscription() != null && user.getUserSubscription().getSubscription() != null) {
-					user.setSubscriptionName(user.getUserSubscription().getSubscription().getSubscriptionName());
-				} else {
-					user.setSubscriptionName("free");
-				}
+		for (User user : users) {
+			if (user.getUserSubscription() != null && user.getUserSubscription().getSubscription() != null) {
+				user.setSubscriptionName(user.getUserSubscription().getSubscription().getSubscriptionName());
+//				user.setStatus(user.getUserSubscription().getStatus());
+				user.setSubscriptionStatus(user.getUserSubscription().getStatus());
+				user.setHasSubscription("Active".equalsIgnoreCase(user.getUserSubscription().getStatus()));
+			} else {
+				user.setSubscriptionName("free");
+				user.setStatus("Active");
+				user.setHasSubscription(true);
 			}
+
+			user.setRoleName(user.getRole() != null ? user.getRole().getRoleName() : "N/A");
+			user.setDesignationName(user.getDesignation() != null ? user.getDesignation().getDesignationName() : "N/A");
+			user.setCompanyName(user.getCompany() != null ? user.getCompany().getCompanyName() : "N/A");
+			user.setCountryName(user.getCountry() != null ? user.getCountry().getCountryName() : "N/A");
+			user.setAbout(user.getAboutUs() != null ? user.getAboutUs().getDescription() : "N/A");
+			user.setCreatedBy(user.getCreatedBy());
+			user.setCreatedDate(user.getCreatedDate());
+			user.setUpdatedBy(user.getUpdatedBy());
+			user.setUpdatedDate(user.getUpdatedDate());
+			user.setMemberSince(user.getMemberSince());
+			user.setLastLogin(user.getLastLogin());
+			user.setCreatedByType(user.getCreatedByType());
 		}
 
 		model.addAttribute("users", users);
-
 		model.addAttribute("currentPage", "userList");
+
 		return "userList";
 	}
 

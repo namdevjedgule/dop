@@ -97,7 +97,6 @@
     </div>
 
     <script>
-
         document.getElementById("imageUpload").addEventListener("change", function (event) {
             let file = event.target.files[0];
 
@@ -133,19 +132,16 @@
                     return;
                 }
 
-                document.getElementById("no-image-text").style.display = "none";
+                let noImageText = document.getElementById("no-image-text");
+                if (noImageText) {
+                    noImageText.style.display = "none";
+                }
                 let preview = document.getElementById("preview");
                 preview.src = img.src;
                 preview.classList.remove("hidden");
             };
         });
-
-        function resetPreview() {
-            document.getElementById("preview").classList.add("hidden");
-            document.getElementById("preview").src = "";
-            document.getElementById("no-image-text").style.display = "flex";
-        }
-
+        
         document.addEventListener("DOMContentLoaded", async function () {
             const urlParams = new URLSearchParams(window.location.search);
             const userId = urlParams.get("userId");
@@ -168,9 +164,17 @@
                         let preview = document.getElementById("preview");
                         preview.src = user.profilePhoto;
                         preview.classList.remove("hidden");
-                        // document.getElementById("no-image-text").style.display = "none";
-                        console.log("Image path:", user.profilePhoto);
 
+                        let noImageText = document.getElementById("no-image-text");
+                        if (noImageText) {
+                            noImageText.style.display = "none";
+                        }
+                    } else {
+                        document.getElementById("preview").classList.add("hidden");
+                        let noImageText = document.getElementById("no-image-text");
+                        if (noImageText) {
+                            noImageText.style.display = "flex";
+                        }
                     }
                 } catch (error) {
                     console.error("Error fetching user:", error);

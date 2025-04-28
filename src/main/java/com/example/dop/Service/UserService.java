@@ -124,6 +124,7 @@ public class UserService {
 		user.setDesignation(designationRepo.findById(request.getDesignationId()).orElse(null));
 		user.setCountry(countryRepo.findById(request.getCountryId()).orElse(null));
 		user.setAboutUs(aboutUsRepo.findById(request.getAboutUsId()).orElse(null));
+		user.setCreatedByType("SIGNUP");
 
 		return userRepository.save(user);
 	}
@@ -160,6 +161,7 @@ public class UserService {
 		user.setMemberSince(LocalDateTime.now());
 		user.setLastLogin(null);
 		user.setStatus("Active");
+		user.setCreatedByType("ADMIN");
 
 		return userRepository.save(user);
 	}

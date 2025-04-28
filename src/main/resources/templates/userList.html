@@ -9,6 +9,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.10.3/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
 </head>
 
 <body class="bg-[#e9f5f5]">
@@ -50,6 +67,7 @@
                                 <th class="p-2 border border-gray-300">LAST LOGIN</th>
                                 <th class="p-2 border border-gray-300">SUBSCRIPTION</th>
                                 <th class="p-2 border border-gray-300">STATUS</th>
+                                <th class="p-2 border border-gray-300">VIEW</th>
                                 <th class="p-2 border border-gray-300">ACTION</th>
                             </tr>
                         </thead>
@@ -57,8 +75,29 @@
                             <tr th:if="${#lists.isEmpty(users)}">
                                 <td colspan="7" class="text-center text-gray-500 p-4">No users found.</td>
                             </tr>
+                            <!-- <tr class="border border-gray-300" th:each="user : ${users}"
+                                th:attr="data-user-id=${user.id}, data-role=${user.role.roleName}"> -->
                             <tr class="border border-gray-300" th:each="user : ${users}"
-                                th:attr="data-user-id=${user.id}, data-role=${user.role.roleName}">
+                                th:attr="data-user-id=${user.id}, 
+                                         data-first-name=${user.firstName},
+                                         data-last-name=${user.lastName},
+                                         data-email=${user.email},
+                                         data-phone-no=${user.phoneNumber},
+                                         data-role=${user.roleName != null ? user.roleName : 'N/A'},
+                                         data-designation=${user.designationName != null ? user.designationName : 'N/A'},
+                                         data-company=${user.companyName != null ? user.companyName : 'N/A'},
+                                         data-country=${user.countryName != null ? user.countryName : 'N/A'},
+                                         data-about=${user.about != null ? user.about : 'N/A'},
+                                         data-status=${user.status != null ? user.status : 'Inactive'},
+                                         data-member-since=${#temporals.format(user.memberSince, 'dd MMM, yyyy')},
+                                         data-last-login=${user.lastLogin != null ? #temporals.format(user.lastLogin, 'dd MMM, yyyy') : 'N/A'},
+                                         data-created-by=${user.createdBy},
+                                         data-created-date=${#temporals.format(user.createdDate, 'dd MMM, yyyy')},
+                                         data-updated-by=${user.updatedBy},
+                                         data-updated-date=${user.updatedDate != null ? #temporals.format(user.updatedDate, 'dd MMM, yyyy') : 'N/A'},
+                                         data-subscription-name=${user.subscriptionName != null ? user.subscriptionName : 'Free'},
+                                         data-has-subscription=${user.hasSubscription ? 'true' : 'false'},
+                                         data-created-by-type=${user.createdByType != null ? user.createdByType : 'N/A'}">
                                 <td class="p-2 text-center border border-gray-300"><input type="checkbox"
                                         class="rowCheckbox"></td>
                                 <td class="p-2 border text-center border-gray-300">
@@ -71,30 +110,34 @@
                                     <span th:text="${user.firstName} + ' ' + ${user.lastName}"></span>
                                     <span class="block text-sm text-gray-600" th:text="${user.email}"></span>
                                 </td>
-                                <td class="p-2 text-gray-600 border border-gray-300">
-                                    Member Since: <span
+                                <td class="p-1 text-gray-600 border border-gray-300">
+                                    MemberSince: <span
                                         th:text="${#temporals.format(user.memberSince, 'dd MMM, yyyy')}"></span><br>
-                                    Last Login: <span
+                                    LastLogin: <span
                                         th:text="${#temporals.format(user.lastLogin, 'dd MMM, yyyy')}"></span>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300">
-                                    <span class="block" th:text="${user.subscriptionName != null ? user.subscriptionName : 'free'}">free</span>
+                                    <span class="block"
+                                        th:text="${user.subscriptionName != null ? user.subscriptionName : 'free'}">free</span>
                                     <span th:if="${user.userSubscription != null}">
-                                        <span class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center"
-                                              th:classappend="${user.userSubscription.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
-                                              style="width: 80px; display: inline-flex; align-items: center; justify-content: center;">
-                                            <i th:classappend="${user.userSubscription.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                        <span
+                                            class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center"
+                                            th:classappend="${user.userSubscription.status == 'Active' ? 'bg-green-500' : 'bg-red-500'}"
+                                            style="width: 80px; display: inline-flex; align-items: center; justify-content: center;">
+                                            <i
+                                                th:classappend="${user.userSubscription.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
                                             <span th:text="${user.userSubscription.status}" class="ml-1"></span>
                                         </span>
                                     </span>
                                     <span th:if="${user.userSubscription == null}">
-                                        <span class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center bg-green-500"
-                                              style="width: 80px;  display: inline-flex; align-items: center; justify-content: center;">
+                                        <span
+                                            class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center bg-green-500"
+                                            style="width: 80px;  display: inline-flex; align-items: center; justify-content: center;">
                                             <i class="fas fa-check-circle"></i>
                                             <span class="ml-1">Active</span>
                                         </span>
                                     </span>
-                                </td>                                
+                                </td>
                                 <td class="p-2 text-center border border-gray-300">
                                     <span th:id="'status-' + ${user.id}"
                                         class="text-xs font-semibold px-2 py-1 rounded text-white inline-flex items-center justify-center"
@@ -104,6 +147,12 @@
                                             th:classappend="${user.status == 'Active' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
                                         <span th:text="${user.status}" class="ml-1"></span>
                                     </span>
+                                </td>
+                                <td class="p-1 text-center border border-gray-300 relative" data-status="View">
+                                    <button class="bg-teal-500 text-white rounded action-btn"
+                                        style="width: 85px; height: 32px; font-size: 14px;" onclick="openView(event, this)">
+                                        View Details
+                                    </button>
                                 </td>
                                 <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
                                     <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
@@ -115,7 +164,8 @@
                                         <ul class="text-left">
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                                 onclick="editUser(this)">
-                                                Edit</li>
+                                                Edit
+                                            </li>
                                             <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                                 th:attr="onclick=|toggleUserStatus(this, '${user.id}', '${user.role.roleName}')|"
                                                 th:text="${user.status == 'Active' ? 'Deactivate' : 'Activate'}">
@@ -144,6 +194,45 @@
                         <button id="nextBtn" onclick="nextPage()"
                             class="bg-teal-500 text-white px-4 py-2 rounded disabled:opacity-50"><i
                                 class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <div id="viewUserModal"
+                    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 backdrop-blur-sm flex">
+                    <div class="relative bg-white rounded-xl shadow-xl w-full max-w-lg p-6 sm:p-8 overflow-y-auto max-h-[90vh] animate-fadeIn">
+                        <button onclick="closeModal()"
+                            class="absolute top-4 right-4 text-gray-400 hover:text-red-600 text-xl font-bold">&times;
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-700 mb-6 border-b pb-2">👤 <span
+                                id="viewFullName"></span></h2>
+
+                        <div class="flex flex-col sm:flex-row gap-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm text-gray-700">
+                                <p><span class="font-bold">Email:</span> <span id="viewEmail"></span></p>
+                                <p><span class="font-bold">Phone:</span> <span id="viewPhone"></span></p>
+                                <p><span class="font-bold">Role:</span> <span id="viewRole"></span></p>
+                                <p><span class="font-bold">Designation:</span> <span id="viewDesignation"></span>
+                                </p>
+                                <p><span class="font-bold">Company:</span> <span id="viewCompany"></span></p>
+                                <p><span class="font-bold">Country:</span> <span id="viewCountry"></span></p>
+                                <p><span class="font-bold">About Us:</span> <span id="viewAbout"></span></p>
+                                <p><span class="font-bold">Status:</span> <span id="viewStatus"></span></p>
+                                <p><span class="font-bold">Member Since:</span> <span id="viewMemberSince"></span>
+                                </p>
+                                <p><span class="font-bold">Last Login:</span> <span id="viewLastLogin"></span></p>
+                                <p><span class="font-bold">Created By:</span> <span id="viewCreatedBy"></span></p>
+                                <p><span class="font-bold">Created Date:</span> <span id="viewCreatedDate"></span>
+                                </p>
+                                <p><span class="font-bold">Updated By:</span> <span id="viewUpdatedBy"></span></p>
+                                <p><span class="font-bold">Updated Date:</span> <span id="viewUpdatedDate"></span>
+                                </p>
+                                <p><span class="font-bold">Subscription:</span> <span id="viewSubscription"></span>
+                                </p>
+                                <p><span class="font-bold">Created Through:</span> <span
+                                        id="viewCreatedByType"></span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -398,6 +487,36 @@
             });
         }
 
+        function openView(event, button) {
+            const row = button.closest("tr");
+
+            document.getElementById("viewFullName").innerText = row.querySelector("td:nth-child(3) span")?.innerText || '';
+            document.getElementById("viewEmail").innerText = row.dataset.email || '';
+            document.getElementById("viewPhone").innerText = row.dataset.phoneNo || '';
+            document.getElementById("viewRole").innerText = row.dataset.role || '';
+            document.getElementById("viewDesignation").innerText = row.dataset.designation || '';
+            document.getElementById("viewCompany").innerText = row.dataset.company || '';
+            document.getElementById("viewCountry").innerText = row.dataset.country || '';
+            document.getElementById("viewAbout").innerText = row.dataset.about || '';
+            document.getElementById("viewStatus").innerText = row.dataset.status || '';
+            document.getElementById("viewMemberSince").innerText = row.dataset.memberSince || '';
+            document.getElementById("viewLastLogin").innerText = row.dataset.lastLogin || '';
+            document.getElementById("viewCreatedBy").innerText = row.dataset.createdBy || '';
+            document.getElementById("viewCreatedDate").innerText = row.dataset.createdDate || '';
+            document.getElementById("viewUpdatedBy").innerText = row.dataset.updatedBy || '';
+            document.getElementById("viewUpdatedDate").innerText = row.dataset.updatedDate || '';
+            document.getElementById("viewCreatedByType").innerText = row.dataset.createdByType || '';
+
+            const hasSub = row.dataset.hasSubscription === "true"; 
+            const subText = `${row.dataset.subscriptionName || "N/A"} (${hasSub ? "Active" : "Inactive"})`;
+            document.getElementById("viewSubscription").innerText = subText;
+
+            document.getElementById("viewUserModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("viewUserModal").classList.add("hidden");
+        }
     </script>
 </body>
 

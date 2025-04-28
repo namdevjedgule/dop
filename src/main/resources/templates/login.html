@@ -128,6 +128,10 @@
 
                 if (response.ok && data.success) {
                     showPopup("Login Success!", data.message, "success");
+
+                    console.log(data);
+                    sessionStorage.setItem("loggedInUserId", data.user.id); 
+
                     setTimeout(() => {
                         if (data.role === "SuperAdmin") {
                             window.location.href = "/dashboard";

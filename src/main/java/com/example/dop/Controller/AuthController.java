@@ -98,9 +98,15 @@ public class AuthController {
 				String role = user.getRole().getRoleName();
 				session.setAttribute("userRole", role);
 
+				Map<String, Object> userData = new HashMap<>();
+				userData.put("id", user.getId());
+				userData.put("firstName", user.getFirstName());
+				userData.put("email", user.getEmail());
+
 				response.put("success", true);
 				response.put("message", role + " login successful!");
 				response.put("role", role);
+				response.put("user", userData);
 				return ResponseEntity.ok(response);
 			}
 		}

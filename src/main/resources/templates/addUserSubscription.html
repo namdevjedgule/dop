@@ -39,7 +39,8 @@
                                             <span class="text-red-500">*</span></label>
                                         <input type="text" id="transactionId" name="transactionId"
                                             placeholder="Enter transaction Id"
-                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300" readonly>
+                                            class="mt-1 block w-full px-4 py-2 border rounded-md focus:ring focus:ring-teal-300"
+                                            readonly>
                                     </div>
                                     <div>
                                         <label class="text-sm font-semibold text-gray-700">SELECT PLAN <span
@@ -125,7 +126,6 @@
     </div>
 
     <script>
-
         async function loadLatestTransactionId() {
             try {
                 const response = await fetch("http://localhost:8080/users/last-transaction-id");
@@ -133,8 +133,8 @@
                     throw new Error("Error fetching latest transaction ID");
                 }
 
-                const data = await response.json();  
-                const transactionId = data.transactionId || ''; 
+                const data = await response.json();
+                const transactionId = data.transactionId || '';
 
                 if (transactionId) {
                     document.getElementById("transactionId").value = transactionId;
@@ -269,7 +269,13 @@
                     if (response.ok) {
                         showToast("Success", data.message || "Subscription added successfully!", "success");
                         setTimeout(() => {
-                            window.location.href = "/users/list";
+                            // window.location.href = "/users/list";
+                            const loggedInUserId = parseInt(sessionStorage.getItem("loggedInUserId"));
+                            if (parseInt(userIdValue) === loggedInUserId) {
+                                window.location.href = "/subscriptions/list";
+                            } else {
+                                window.location.href = "/users/list";
+                            }
                         }, 1500);
                     } else {
                         if (data.message && data.message.includes("Subscription already exists")) {
@@ -300,7 +306,14 @@
         }
 
         function handleCancel() {
-            window.location.href = '/users/list';
+            const userId = document.getElementById("userId").value;
+            const loggedInUserId = sessionStorage.getItem("loggedInUserId");
+
+            if (userId === loggedInUserId) {
+                window.location.href = "/subscriptions/list";
+            } else {
+                window.location.href = "/users/list";
+            }
         }
     </script>
 </body>

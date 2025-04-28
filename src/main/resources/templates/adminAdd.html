@@ -139,12 +139,6 @@
             };
         });
 
-        function resetPreview() {
-            document.getElementById("preview").classList.add("hidden");
-            document.getElementById("preview").src = "";
-            document.getElementById("no-image-text").style.display = "flex";
-        }
-
         document.addEventListener("DOMContentLoaded", async function () {
             const urlParams = new URLSearchParams(window.location.search);
             const adminId = urlParams.get("adminId");
@@ -180,8 +174,6 @@
                 event.preventDefault();
 
                 let adminId = document.getElementById("adminId").value;
-                console.log("adminId:", adminId);
-
                 let firstName = document.getElementById("firstName").value.trim();
                 let lastName = document.getElementById("lastName").value.trim();
                 let email = document.getElementById("email").value.trim();

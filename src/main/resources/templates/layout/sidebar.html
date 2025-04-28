@@ -134,7 +134,7 @@
                                     <i class="fa-solid fa-list text-white"></i> List
                                 </a>
                             </li>
-                            <li>
+                            <li th:if="${session.user.role.roleName == 'SuperAdmin' or session.user.role.roleName == 'Admin'}">
                                 <a th:href="@{/subscriptions/add}"
                                     class="flex items-center gap-3 p-2 rounded cursor-pointer w-full"
                                     th:classappend="${currentPage == 'subscriptionAdd' ? 'bg-gray-700 text-white font-bold' : 'hover:bg-gray-600'}">

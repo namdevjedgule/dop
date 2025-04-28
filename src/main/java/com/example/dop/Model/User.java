@@ -3,6 +3,7 @@ package com.example.dop.Model;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -76,6 +77,7 @@ public class User {
 	private AboutUs aboutUs;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private UserSubscription userSubscription;
 
 	private LocalDateTime updatedDate;
@@ -86,11 +88,32 @@ public class User {
 
 	private String status;
 
+	@Column(name = "created_by_type")
+	private String createdByType;
+
 	@Transient
 	private String subscriptionName;
 
 	@Transient
 	private boolean hasSubscription;
+
+	@Transient
+	private String roleName;
+
+	@Transient
+	private String designationName;
+
+	@Transient
+	private String companyName;
+
+	@Transient
+	private String countryName;
+
+	@Transient
+	private String about;
+
+	@Transient
+	private String subscriptionStatus;
 
 	public Long getId() {
 		return id;
@@ -274,6 +297,62 @@ public class User {
 
 	public void setHasSubscription(boolean hasSubscription) {
 		this.hasSubscription = hasSubscription;
+	}
+
+	public String getCreatedByType() {
+		return createdByType;
+	}
+
+	public void setCreatedByType(String createdByType) {
+		this.createdByType = createdByType;
+	}
+
+	public String getRoleName() {
+		return roleName;
+	}
+
+	public void setRoleName(String roleName) {
+		this.roleName = roleName;
+	}
+
+	public String getDesignationName() {
+		return designationName;
+	}
+
+	public void setDesignationName(String designationName) {
+		this.designationName = designationName;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public String getCountryName() {
+		return countryName;
+	}
+
+	public void setCountryName(String countryName) {
+		this.countryName = countryName;
+	}
+
+	public String getAbout() {
+		return about;
+	}
+
+	public void setAbout(String about) {
+		this.about = about;
+	}
+
+	public String getSubscriptionStatus() {
+		return subscriptionStatus;
+	}
+
+	public void setSubscriptionStatus(String subscriptionStatus) {
+		this.subscriptionStatus = subscriptionStatus;
 	}
 
 	public String getFullName() {

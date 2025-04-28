@@ -59,20 +59,47 @@ public class SubController {
 		return "subscriptionAdd";
 	}
 
+//	@GetMapping("/list")
+//	public String showSubscriptionListPage(HttpSession session, Model model) {
+//
+//		User loggedInUser = (User) session.getAttribute("user");
+//		if (loggedInUser == null)
+//			return "redirect:/";
+//
+//		model.addAttribute("fname", loggedInUser.getFirstName());
+//		model.addAttribute("email", loggedInUser.getEmail());
+//		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+//
+//		List<Subscription> subscriptions = subService.getAllSubscriptions();
+//
+//		model.addAttribute("subscriptions", subscriptions);
+//		model.addAttribute("currentPage", "subscriptionList");
+//
+//		return "subscriptionList";
+//	}
+
 	@GetMapping("/list")
 	public String showSubscriptionListPage(HttpSession session, Model model) {
 
 		User loggedInUser = (User) session.getAttribute("user");
-		if (loggedInUser == null)
+		if (loggedInUser == null) {
 			return "redirect:/";
+		}
+
+		Long roleId = loggedInUser.getRole().getRoleId();
+		Long userId = loggedInUser.getId();
 
 		model.addAttribute("fname", loggedInUser.getFirstName());
 		model.addAttribute("email", loggedInUser.getEmail());
 		model.addAttribute("picture", loggedInUser.getProfilePhoto());
+		model.addAttribute("roleId", roleId);
+
+		User user = userService.getUserById(userId);
+		model.addAttribute("user", user);
 
 		List<Subscription> subscriptions = subService.getAllSubscriptions();
-
 		model.addAttribute("subscriptions", subscriptions);
+
 		model.addAttribute("currentPage", "subscriptionList");
 
 		return "subscriptionList";

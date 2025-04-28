@@ -72,7 +72,7 @@
                                         <span th:text="${subscription.status}" class="ml-1"></span>
                                     </span>
                                 </td>
-                                <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
+                                <!-- <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
                                     <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn"
                                         style="width: 80px; height: 32px;" onclick="toggleMenu(event, this)">
                                         Action
@@ -94,7 +94,34 @@
                                             </li>
                                         </ul>
                                     </div>
-                                </td>
+                                </td> -->
+                                <td class="p-2 text-center border border-gray-300 relative" data-status="Active">
+                                    <button class="bg-gray-500 text-white px-3 py-1 rounded action-btn" 
+                                        style="width: 80px; height: 32px;" onclick="toggleMenu(event, this)">
+                                        Action
+                                    </button>
+                                    <div class="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-300 shadow-lg rounded-md hidden action-menu z-50">
+                                        <ul class="text-left">
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer" 
+                                                th:if="${roleId == 1 or roleId == 3}" onclick="editSubscription(this)">
+                                                Edit
+                                            </li>
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
+                                                th:attr="onclick=|toggleSubscriptionStatus(this, '${subscription.subscriptionId}')|"
+                                                th:text="${subscription.status == 'Active' ? 'Deactivate' : 'Activate'}"
+                                                th:if="${roleId == 1 or roleId == 3}">
+                                            </li>
+                                            <li class="p-2 hover:bg-red-500 text-red-700 rounded-md cursor-pointer"
+                                                th:if="${roleId == 3}" onclick="deleteSubscription(this)">
+                                                Delete
+                                            </li>
+                                            <li class="p-2 hover:bg-gray-200 rounded-md cursor-pointer" 
+                                                th:if="${roleId == 2}" th:onclick="|location.href='@{/users/addUserSubscription(userId=${user.id})}'|">
+                                                Add Subscrption
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>                                
                             </tr>
                         </tbody>
                     </table>
